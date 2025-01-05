@@ -2,9 +2,6 @@ name: Test
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
@@ -12,7 +9,6 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     timeout-minutes: 10
 
     steps:
