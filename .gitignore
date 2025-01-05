@@ -1,0 +1,5 @@
+.tsup
+
+node_modules
+
+dist

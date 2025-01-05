@@ -1,0 +1,57 @@
+{
+  "name": "fraci",
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "module",
+  "module": "dist/index.js",
+  "main": "dist/index.cjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./prisma": {
+      "import": "./dist/prisma.js",
+      "require": "./dist/prisma.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "author": "SegaraRai",
+  "repository": "https://github.com/SegaraRai/fraci.git",
+  "scripts": {
+    "build": "tsup && bun run ./fix-dts.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "attw": "attw --profile node16 --pack"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.2",
+    "@changesets/cli": "^2.27.11",
+    "@hono/zod-validator": "^0.4.2",
+    "@prisma/client": "^6.1.0",
+    "@types/bun": "latest",
+    "hono": "^4.6.15",
+    "mitata": "^1.0.25",
+    "prisma": "^6.1.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "zod": "^3.24.1"
+  },
+  "peerDependencies": {
+    "@prisma/client": "^5.0.0 | ^6.0.0",
+    "@types/node": ">=16.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@prisma/client": {
+      "optional": true
+    },
+    "@types/node": {
+      "optional": true
+    }
+  }
+}
