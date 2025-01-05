@@ -106,20 +106,36 @@ type FractionalIndexingForPrisma<
   W,
   X
 > = FractionalIndexing<D, L, X> & {
-  getIndicesBefore: (
-    cursor: Prisma.Args<PrismaClient[M], "findMany">["cursor"] | null,
-    where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
-  ) => Promise<
-    | [a: FractionalIndex<D, L, X> | null, b: FractionalIndex<D, L, X> | null]
-    | undefined
-  >;
-  getIndicesAfter: (
-    cursor: Prisma.Args<PrismaClient[M], "findMany">["cursor"] | null,
-    where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
-  ) => Promise<
-    | [a: FractionalIndex<D, L, X> | null, b: FractionalIndex<D, L, X> | null]
-    | undefined
-  >;
+  getIndicesBefore: {
+    (
+      cursor: Prisma.Args<PrismaClient[M], "findMany">["cursor"],
+      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+    ): Promise<
+      | [a: FractionalIndex<D, L, X> | null, b: FractionalIndex<D, L, X> | null]
+      | undefined
+    >;
+    (
+      cursor: null,
+      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+    ): Promise<
+      [a: FractionalIndex<D, L, X> | null, b: FractionalIndex<D, L, X> | null]
+    >;
+  };
+  getIndicesAfter: {
+    (
+      cursor: Prisma.Args<PrismaClient[M], "findMany">["cursor"],
+      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+    ): Promise<
+      | [a: FractionalIndex<D, L, X> | null, b: FractionalIndex<D, L, X> | null]
+      | undefined
+    >;
+    (
+      cursor: null,
+      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+    ): Promise<
+      [a: FractionalIndex<D, L, X> | null, b: FractionalIndex<D, L, X> | null]
+    >;
+  };
 };
 
 /**
@@ -291,14 +307,15 @@ export function createFractionalIndexingExtension<
 
       const helperEx: HelperValue = {
         ...helper,
-        getIndicesAfter: async (cursor: any, where: any) => {
+        getIndicesAfter: async (cursor: any, where: any): Promise<any> => {
           if (!cursor) {
             const firstItem = await (client as any)[model].findFirst({
               where,
               select: { [field]: true },
               orderBy: { [field]: "asc" },
             });
-            return firstItem ? [null, firstItem[field]] : undefined;
+            // We should always return a tuple of two indices if `cursor` is `null`.
+            return [null, firstItem?.[field] ?? null];
           }
 
           const items = await (client as any)[model].findMany({
@@ -312,14 +329,15 @@ export function createFractionalIndexingExtension<
             ? undefined
             : [items[0][field], items[1]?.[field] ?? null];
         },
-        getIndicesBefore: async (cursor: any, where: any) => {
+        getIndicesBefore: async (cursor: any, where: any): Promise<any> => {
           if (!cursor) {
             const lastItem = await (client as any)[model].findFirst({
               where,
               select: { [field]: true },
               orderBy: { [field]: "desc" },
             });
-            return lastItem ? [lastItem[field], null] : undefined;
+            // We should always return a tuple of two indices if `cursor` is `null`.
+            return [lastItem?.[field] ?? null, null];
           }
 
           const items = await (client as any)[model].findMany({

@@ -328,25 +328,25 @@ describe("getIndicesBefore and getIndicesAfter", () => {
       .fractionalIndexing("fi")
       .getIndicesBefore(null, { userId: 1 });
     expect(indicesForLast1).toBeArrayOfSize(2);
-    expect(indicesForLast1?.[0]).toBe(articles[1].__fi_prefix_fi);
-    expect(indicesForLast1?.[1]).toBeNull();
+    expect(indicesForLast1[0]).toBe(articles[1].__fi_prefix_fi);
+    expect(indicesForLast1[1]).toBeNull();
 
     const indicesForLast2 = await prisma.article
       .fractionalIndexing("fi")
       .getIndicesAfter({ id: articles[1].id }, { userId: 1 });
-    expect(indicesForLast2).toEqual(indicesForLast1!);
+    expect(indicesForLast2).toEqual(indicesForLast1);
 
     const indicesForFirst1 = await prisma.article
       .fractionalIndexing("fi")
       .getIndicesAfter(null, { userId: 1 });
     expect(indicesForFirst1).toBeArrayOfSize(2);
-    expect(indicesForFirst1?.[0]).toBeNull();
-    expect(indicesForFirst1?.[1]).toBe(articles[0].__fi_prefix_fi);
+    expect(indicesForFirst1[0]).toBeNull();
+    expect(indicesForFirst1[1]).toBe(articles[0].__fi_prefix_fi);
 
     const indicesForFirst2 = await prisma.article
       .fractionalIndexing("fi")
       .getIndicesBefore({ id: articles[0].id }, { userId: 1 });
-    expect(indicesForFirst2).toEqual(indicesForFirst1!);
+    expect(indicesForFirst2).toEqual(indicesForFirst1);
 
     const indicesForMiddle1 = await prisma.article
       .fractionalIndexing("fi")
@@ -363,7 +363,7 @@ describe("getIndicesBefore and getIndicesAfter", () => {
 
   test("photo (1 item in a group)", async () => {
     const photos = await prisma.photo.findMany({
-      where: { articleId: 2 },
+      where: { articleId: 2, userId: 1 },
       orderBy: { fi: "asc" },
     });
 
@@ -374,25 +374,48 @@ describe("getIndicesBefore and getIndicesAfter", () => {
       .fractionalIndexing("fi")
       .getIndicesBefore(null, { articleId: 2, userId: 1 });
     expect(indicesForLast1).toBeArrayOfSize(2);
-    expect(indicesForLast1?.[0]).toBe(photos[0].__fi_prefix_fi);
-    expect(indicesForLast1?.[1]).toBeNull();
+    expect(indicesForLast1[0]).toBe(photos[0].__fi_prefix_fi);
+    expect(indicesForLast1[1]).toBeNull();
 
     const indicesForLast2 = await prisma.photo
       .fractionalIndexing("fi")
       .getIndicesAfter({ id: photos[0].id }, { articleId: 2, userId: 1 });
-    expect(indicesForLast2).toEqual(indicesForLast1!);
+    expect(indicesForLast2).toEqual(indicesForLast1);
 
     const indicesForFirst1 = await prisma.photo
       .fractionalIndexing("fi")
       .getIndicesAfter(null, { articleId: 2, userId: 1 });
     expect(indicesForFirst1).toBeArrayOfSize(2);
-    expect(indicesForFirst1?.[0]).toBeNull();
-    expect(indicesForFirst1?.[1]).toBe(photos[0].__fi_prefix_fi);
+    expect(indicesForFirst1[0]).toBeNull();
+    expect(indicesForFirst1[1]).toBe(photos[0].__fi_prefix_fi);
 
     const indicesForFirst2 = await prisma.photo
       .fractionalIndexing("fi")
       .getIndicesBefore({ id: photos[0].id }, { articleId: 2, userId: 1 });
-    expect(indicesForFirst2).toEqual(indicesForFirst1!);
+    expect(indicesForFirst2).toEqual(indicesForFirst1);
+  });
+
+  test("photo (no items in a group)", async () => {
+    const photos = await prisma.photo.findMany({
+      where: { articleId: 999, userId: 1 },
+      orderBy: { fi: "asc" },
+    });
+
+    expect(photos).toBeArrayOfSize(0);
+
+    const indicesForLast = await prisma.photo
+      .fractionalIndexing("fi")
+      .getIndicesBefore(null, { articleId: 999, userId: 1 });
+    expect(indicesForLast).toBeArrayOfSize(2);
+    expect(indicesForLast[0]).toBeNull();
+    expect(indicesForLast[1]).toBeNull();
+
+    const indicesForFirst = await prisma.photo
+      .fractionalIndexing("fi")
+      .getIndicesAfter(null, { articleId: 999, userId: 1 });
+    expect(indicesForFirst).toBeArrayOfSize(2);
+    expect(indicesForFirst[0]).toBeNull();
+    expect(indicesForFirst[1]).toBeNull();
   });
 
   test("type check", async () => {
