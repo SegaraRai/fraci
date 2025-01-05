@@ -14,10 +14,6 @@ const prisma = new PrismaClient().$extends(
         lengthBase: BASE64,
       },
     } as const,
-    sign: {
-      secret: "SECRET",
-      encoding: "base64url",
-    },
   })
 );
 
