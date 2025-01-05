@@ -1,5 +1,0 @@
----
-"fraci": minor
----
-
-Automate release.
