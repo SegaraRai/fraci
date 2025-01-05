@@ -96,6 +96,11 @@ type QualifiedFields = {
   }[StringModelFieldName<M>];
 }[ModelKey];
 
+type Indices<D extends string, L extends string, X> = [
+  a: FractionalIndex<D, L, X> | null,
+  b: FractionalIndex<D, L, X> | null
+];
+
 /**
  * `FractionalIndexing` with the some additional methods for Prisma.
  */
@@ -106,36 +111,60 @@ type FractionalIndexingForPrisma<
   W,
   X
 > = FractionalIndexing<D, L, X> & {
-  getIndicesBefore: {
-    (
-      cursor: Prisma.Args<PrismaClient[M], "findMany">["cursor"],
-      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
-    ): Promise<
-      | [a: FractionalIndex<D, L, X> | null, b: FractionalIndex<D, L, X> | null]
-      | undefined
-    >;
-    (
-      cursor: null,
-      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
-    ): Promise<
-      [a: FractionalIndex<D, L, X> | null, b: FractionalIndex<D, L, X> | null]
-    >;
-  };
+  /**
+   * Gets the indices to generate a new fractional index for the item after the specified item.
+   *
+   * @param cursor The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the first item.
+   * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @returns The indices to generate a new fractional index for the item after the specified item, or `undefined` if the item specified by the `cursor` does not exist.
+   */
   getIndicesAfter: {
     (
       cursor: Prisma.Args<PrismaClient[M], "findMany">["cursor"],
       where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
-    ): Promise<
-      | [a: FractionalIndex<D, L, X> | null, b: FractionalIndex<D, L, X> | null]
-      | undefined
-    >;
+    ): Promise<Indices<D, L, X> | undefined>;
     (
       cursor: null,
       where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
-    ): Promise<
-      [a: FractionalIndex<D, L, X> | null, b: FractionalIndex<D, L, X> | null]
-    >;
+    ): Promise<Indices<D, L, X>>;
   };
+  /**
+   * Gets the indices to generate a new fractional index for the item before the specified item.
+   *
+   * @param cursor The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the last item.
+   * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @returns The indices to generate a new fractional index for the item before the specified item, or `undefined` if the item specified by the `cursor` does not exist.
+   */
+  getIndicesBefore: {
+    (
+      cursor: Prisma.Args<PrismaClient[M], "findMany">["cursor"],
+      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+    ): Promise<Indices<D, L, X> | undefined>;
+    (
+      cursor: null,
+      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+    ): Promise<Indices<D, L, X>>;
+  };
+  /**
+   * Gets the indices to generate a new fractional index for the first item.
+   * Equivalent to `getIndicesAfter(null, where)`.
+   *
+   * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @returns The indices to generate a new fractional index for the first item.
+   */
+  getIndicesForFirst(
+    where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+  ): Promise<Indices<D, L, X>>;
+  /**
+   * Gets the indices to generate a new fractional index for the last item.
+   * Equivalent to `getIndicesBefore(null, where)`.
+   *
+   * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @returns The indices to generate a new fractional index for the last item.
+   */
+  getIndicesForLast(
+    where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+  ): Promise<Indices<D, L, X>>;
 };
 
 /**
@@ -305,52 +334,61 @@ export function createFractionalIndexingExtension<
         },
       };
 
-      const helperEx: HelperValue = {
-        ...helper,
-        getIndicesAfter: async (cursor: any, where: any): Promise<any> => {
-          if (!cursor) {
-            const firstItem = await (client as any)[model].findFirst({
-              where,
-              select: { [field]: true },
-              orderBy: { [field]: "asc" },
-            });
-            // We should always return a tuple of two indices if `cursor` is `null`.
-            return [null, firstItem?.[field] ?? null];
-          }
-
-          const items = await (client as any)[model].findMany({
-            cursor,
+      const getIndicesAfter = async (cursor: any, where: any): Promise<any> => {
+        if (!cursor) {
+          const firstItem = await (client as any)[model].findFirst({
             where,
             select: { [field]: true },
             orderBy: { [field]: "asc" },
-            take: 2,
           });
-          return items.length < 1
-            ? undefined
-            : [items[0][field], items[1]?.[field] ?? null];
-        },
-        getIndicesBefore: async (cursor: any, where: any): Promise<any> => {
-          if (!cursor) {
-            const lastItem = await (client as any)[model].findFirst({
-              where,
-              select: { [field]: true },
-              orderBy: { [field]: "desc" },
-            });
-            // We should always return a tuple of two indices if `cursor` is `null`.
-            return [lastItem?.[field] ?? null, null];
-          }
+          // We should always return a tuple of two indices if `cursor` is `null`.
+          return [null, firstItem?.[field] ?? null];
+        }
 
-          const items = await (client as any)[model].findMany({
-            cursor,
+        const items = await (client as any)[model].findMany({
+          cursor,
+          where,
+          select: { [field]: true },
+          orderBy: { [field]: "asc" },
+          take: 2,
+        });
+        return items.length < 1
+          ? undefined
+          : [items[0][field], items[1]?.[field] ?? null];
+      };
+
+      const getIndicesBefore = async (
+        cursor: any,
+        where: any
+      ): Promise<any> => {
+        if (!cursor) {
+          const lastItem = await (client as any)[model].findFirst({
             where,
             select: { [field]: true },
             orderBy: { [field]: "desc" },
-            take: 2,
           });
-          return items.length < 1
-            ? undefined
-            : [items[1]?.[field] ?? null, items[0][field]];
-        },
+          // We should always return a tuple of two indices if `cursor` is `null`.
+          return [lastItem?.[field] ?? null, null];
+        }
+
+        const items = await (client as any)[model].findMany({
+          cursor,
+          where,
+          select: { [field]: true },
+          orderBy: { [field]: "desc" },
+          take: 2,
+        });
+        return items.length < 1
+          ? undefined
+          : [items[1]?.[field] ?? null, items[0][field]];
+      };
+
+      const helperEx: HelperValue = {
+        ...helper,
+        getIndicesAfter,
+        getIndicesBefore,
+        getIndicesForFirst: (where: any) => getIndicesAfter(null, where),
+        getIndicesForLast: (where: any) => getIndicesBefore(null, where),
       };
 
       helperMap.set(`${model}\0${field}`, helperEx);

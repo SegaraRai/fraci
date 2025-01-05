@@ -45,6 +45,7 @@ const clearAll = async () => {
     await tx.$queryRaw`DELETE FROM article`;
     await tx.$queryRaw`DELETE FROM tag`;
     await tx.$queryRaw`DELETE FROM user`;
+    await tx.$queryRaw`DELETE FROM sqlite_sequence WHERE name != 'exampleItem'`;
     await tx.$queryRaw`PRAGMA foreign_keys = ON;`;
   });
 };
