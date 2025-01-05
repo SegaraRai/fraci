@@ -43,14 +43,10 @@
     "zod": "^3.24.1"
   },
   "peerDependencies": {
-    "@prisma/client": "^5.0.0 | ^6.0.0",
-    "@types/node": ">=16.0.0"
+    "@prisma/client": "^5.0.0 || ^6.0.0"
   },
   "peerDependenciesMeta": {
     "@prisma/client": {
-      "optional": true
-    },
-    "@types/node": {
       "optional": true
     }
   }
