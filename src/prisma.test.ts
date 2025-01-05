@@ -11,29 +11,6 @@ const prisma = basePrisma.$extends(
     prefix: "__fi_prefix_" as const,
     fields: {
       "article.fi": {
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-      "photo.fi": {
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-      "tagsOnPhotos.tagFI": {
-        digitBase: BASE95,
-        lengthBase: BASE95,
-      },
-      "tagsOnPhotos.photoFI": {
-        digitBase: BASE95,
-        lengthBase: BASE95,
-      },
-    } as const,
-  })
-);
-
-const prismaS = basePrisma.$extends(
-  createFractionalIndexingExtension({
-    fields: {
-      "article.fi": {
         group: ["userId"],
         digitBase: BASE36,
         lengthBase: BASE26,
@@ -55,10 +32,6 @@ const prismaS = basePrisma.$extends(
         lengthBase: BASE95,
       },
     } as const,
-    sign: {
-      secret: "EXAMPLE_SECRET",
-      encoding: "base64url",
-    },
   })
 );
 
@@ -235,19 +208,6 @@ test("instantiation type check", () => {
   createFractionalIndexingExtension({
     fields: {
       "article.fi": {
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-      "photo.fi": {
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-    } as const,
-  });
-
-  createFractionalIndexingExtension({
-    fields: {
-      "article.fi": {
         group: [],
         digitBase: BASE36,
         lengthBase: BASE26,
@@ -258,70 +218,6 @@ test("instantiation type check", () => {
         lengthBase: BASE26,
       },
     } as const,
-    sign: { secret: "" },
-  });
-
-  createFractionalIndexingExtension({
-    fields: {
-      "article.fi": {
-        group: ["userId"],
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-      "photo.fi": {
-        group: ["articleId", "userId"],
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-    } as const,
-    sign: () => "",
-    verify: () => true,
-  });
-
-  createFractionalIndexingExtension({
-    // @ts-expect-error `group` is not allowed if `sign` is not provided.
-    fields: {
-      "article.fi": {
-        group: [],
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-      "photo.fi": {
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-    } as const,
-  });
-
-  // @ts-expect-error `group` is required if `sign` is provided.
-  createFractionalIndexingExtension({
-    fields: {
-      "article.fi": {
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-      "photo.fi": {
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-    } as const,
-    sign: { secret: "" },
-  });
-
-  createFractionalIndexingExtension({
-    // @ts-expect-error `group` is required if `sign` is provided.
-    fields: {
-      "article.fi": {
-        group: [],
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-      "photo.fi": {
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-    } as const,
-    sign: { secret: "" },
   });
 
   createFractionalIndexingExtension({
@@ -338,7 +234,6 @@ test("instantiation type check", () => {
         lengthBase: BASE26,
       },
     } as const,
-    sign: { secret: "" },
   });
 
   createFractionalIndexingExtension({
@@ -355,7 +250,6 @@ test("instantiation type check", () => {
         lengthBase: BASE26,
       },
     } as const,
-    sign: { secret: "" },
   });
 
   createFractionalIndexingExtension({
@@ -372,28 +266,12 @@ test("instantiation type check", () => {
         lengthBase: BASE26,
       },
     } as const,
-    sign: { secret: "" },
-  });
-
-  // @ts-expect-error `verify` is not allowed if `sign` is not set.
-  createFractionalIndexingExtension({
-    fields: {
-      "article.fi": {
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-      "photo.fi": {
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-    } as const,
-    verify: () => true,
   });
 
   expect(true).toBe(true);
 });
 
-describe("without signing", () => {
+describe("basic", () => {
   test("photo.fi", async () => {
     const photo = await prisma.photo.findUniqueOrThrow({ where: { id: 1 } });
     expect(photo.__fi_prefix_fi as string).toBe(photo.fi);
@@ -435,78 +313,127 @@ describe("without signing", () => {
   });
 });
 
-describe("with signing", () => {
-  test("photo.fi", async () => {
-    const photo = await prismaS.photo.findUniqueOrThrow({ where: { id: 1 } });
-    expect(photo.__fi_fi as string).toBe(photo.fi);
-
-    expect(prismaS.photo.fractionalIndexing("fi")).toBeObject();
-
-    expect(prismaS.photo.fractionalIndexing("fi")).toBeObject();
-  });
-
-  test("should not exist in photo.title", async () => {
-    const photo = await prismaS.photo.findUniqueOrThrow({ where: { id: 1 } });
-
-    // @ts-expect-error
-    expect(photo.__fi_title).toBeUndefined();
-
-    // @ts-expect-error
-    expect(prismaS.photo.fractionalIndexing("title")).toBeUndefined();
-  });
-
-  test("should not exist in tag.name", async () => {
-    const tag = await prisma.tag.findUniqueOrThrow({ where: { id: 1 } });
-
-    // @ts-expect-error
-    expect(tag.__fi_name).toBeUndefined();
-
-    // @ts-expect-error
-    expect(prismaS.tag.fractionalIndexing("name")).toBeUndefined();
-  });
-
-  test("tagsOnPhotos", async () => {
-    const item = await prismaS.tagsOnPhotos.findUniqueOrThrow({
-      where: { id: 1 },
+describe("getIndicesBefore and getIndicesAfter", () => {
+  test("article (2 items in a group)", async () => {
+    const articles = await prisma.article.findMany({
+      where: { userId: 1 },
+      orderBy: { fi: "asc" },
     });
 
-    expect(item.__fi_tagFI as string).toBe(item.tagFI);
+    expect(articles).toBeArrayOfSize(2);
+    expect(articles[0].title).toBe("article1 (user1)");
+    expect(articles[1].title).toBe("article2 (user1)");
 
-    expect(item.__fi_photoFI as string).toBe(item.photoFI);
+    const indicesForLast1 = await prisma.article
+      .fractionalIndexing("fi")
+      .getIndicesBefore(null, { userId: 1 });
+    expect(indicesForLast1).toBeArrayOfSize(2);
+    expect(indicesForLast1?.[0]).toBe(articles[1].__fi_prefix_fi);
+    expect(indicesForLast1?.[1]).toBeNull();
 
-    // @ts-expect-error
-    item.__fi_tagFI === item.__fi_photoFI;
+    const indicesForLast2 = await prisma.article
+      .fractionalIndexing("fi")
+      .getIndicesAfter({ id: articles[1].id }, { userId: 1 });
+    expect(indicesForLast2).toEqual(indicesForLast1!);
+
+    const indicesForFirst1 = await prisma.article
+      .fractionalIndexing("fi")
+      .getIndicesAfter(null, { userId: 1 });
+    expect(indicesForFirst1).toBeArrayOfSize(2);
+    expect(indicesForFirst1?.[0]).toBeNull();
+    expect(indicesForFirst1?.[1]).toBe(articles[0].__fi_prefix_fi);
+
+    const indicesForFirst2 = await prisma.article
+      .fractionalIndexing("fi")
+      .getIndicesBefore({ id: articles[0].id }, { userId: 1 });
+    expect(indicesForFirst2).toEqual(indicesForFirst1!);
+
+    const indicesForMiddle1 = await prisma.article
+      .fractionalIndexing("fi")
+      .getIndicesBefore({ id: articles[1].id }, { userId: 1 });
+    expect(indicesForMiddle1).toBeArrayOfSize(2);
+    expect(indicesForMiddle1?.[0]).toBe(articles[0].__fi_prefix_fi);
+    expect(indicesForMiddle1?.[1]).toBe(articles[1].__fi_prefix_fi);
+
+    const indicesForMiddle2 = await prisma.article
+      .fractionalIndexing("fi")
+      .getIndicesAfter({ id: articles[0].id }, { userId: 1 });
+    expect(indicesForMiddle2).toEqual(indicesForMiddle1!);
   });
 
-  test("signing", async () => {
-    const item = await prismaS.tagsOnPhotos.findUniqueOrThrow({
-      where: { id: 1 },
+  test("photo (1 item in a group)", async () => {
+    const photos = await prisma.photo.findMany({
+      where: { articleId: 2 },
+      orderBy: { fi: "asc" },
     });
 
-    expect(
-      prismaS.tagsOnPhotos
-        .fractionalIndexing("tagFI")
-        .parse(item.tagFI, item.__fi_tagFI_sign, {
-          photoId: item.photoId,
-        })
-    ).toBe(item.__fi_tagFI);
+    expect(photos).toBeArrayOfSize(1);
+    expect(photos[0].title).toBe("photo3 (article2)");
 
-    // signature is incorrect
-    expect(
-      prismaS.tagsOnPhotos
-        .fractionalIndexing("tagFI")
-        .parse(item.tagFI, item.__fi_photoFI_sign, {
-          photoId: item.photoId,
-        })
-    ).toBeUndefined();
+    const indicesForLast1 = await prisma.photo
+      .fractionalIndexing("fi")
+      .getIndicesBefore(null, { articleId: 2, userId: 1 });
+    expect(indicesForLast1).toBeArrayOfSize(2);
+    expect(indicesForLast1?.[0]).toBe(photos[0].__fi_prefix_fi);
+    expect(indicesForLast1?.[1]).toBeNull();
 
-    // photoId is incorrect
-    expect(
-      prismaS.tagsOnPhotos
-        .fractionalIndexing("tagFI")
-        .parse(item.tagFI, item.__fi_tagFI_sign, {
-          photoId: item.photoId + 1,
-        })
-    ).toBeUndefined();
+    const indicesForLast2 = await prisma.photo
+      .fractionalIndexing("fi")
+      .getIndicesAfter({ id: photos[0].id }, { articleId: 2, userId: 1 });
+    expect(indicesForLast2).toEqual(indicesForLast1!);
+
+    const indicesForFirst1 = await prisma.photo
+      .fractionalIndexing("fi")
+      .getIndicesAfter(null, { articleId: 2, userId: 1 });
+    expect(indicesForFirst1).toBeArrayOfSize(2);
+    expect(indicesForFirst1?.[0]).toBeNull();
+    expect(indicesForFirst1?.[1]).toBe(photos[0].__fi_prefix_fi);
+
+    const indicesForFirst2 = await prisma.photo
+      .fractionalIndexing("fi")
+      .getIndicesBefore({ id: photos[0].id }, { articleId: 2, userId: 1 });
+    expect(indicesForFirst2).toEqual(indicesForFirst1!);
+  });
+
+  test("type check", async () => {
+    try {
+      const pfi = await prisma.photo.fractionalIndexing("fi");
+
+      // Test `where` argument
+
+      await pfi.getIndicesBefore(null, { articleId: 2, userId: 1 });
+
+      // @ts-expect-error missing field
+      await pfi.getIndicesBefore(null, {});
+
+      // @ts-expect-error missing field
+      await pfi.getIndicesBefore(null, { articleId: 2 });
+
+      // @ts-expect-error missing field
+      await pfi.getIndicesBefore(null, { userId: 1 });
+
+      // Test `cursor` argument
+
+      await pfi.getIndicesBefore({ id: 1 }, { articleId: 2, userId: 1 });
+
+      // @ts-expect-error missing field
+      await pfi.getIndicesBefore({}, { articleId: 2, userId: 1 });
+
+      await pfi.getIndicesBefore(
+        // @ts-expect-error missing field
+        { articleId: 2, userId: 1 },
+        { articleId: 2, userId: 1 }
+      );
+
+      // @ts-expect-error scalar
+      await pfi.getIndicesBefore(1, { articleId: 2, userId: 1 });
+
+      // @ts-expect-error scalar
+      await pfi.getIndicesBefore("1", { articleId: 2, userId: 1 });
+    } catch {
+      // do nothing
+    }
+
+    expect(true).toBe(true);
   });
 });

@@ -5,8 +5,7 @@ An implementation of [fractional indexing](https://www.figma.com/blog/realtime-e
 ## Key Features
 
 - **Fractional Indexing** with arbitrary base characters
-- **Prisma integration** with optional signing feature
-  - `node:crypto` is required for prisma integration to support signing
+- **Prisma integration**
 - **Regeneration on conflict**
 - **TypeScript support**
 - **Zero dependencies**
