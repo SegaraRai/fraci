@@ -1,6 +1,5 @@
 import { describe, expect, it } from "bun:test";
 import { createFractionalIndexing, DEFAULT_MAX_LENGTH } from "./factory.js";
-import { IS_VALID } from "./lib/internal-symbols.js";
 
 describe("createFractionalIndexing", () => {
   const digitBase = "0123456789";
@@ -30,13 +29,6 @@ describe("createFractionalIndexing", () => {
       expect(typeof key).toBe("string");
       expect(key.length).toBeLessThanOrEqual(DEFAULT_MAX_LENGTH);
     });
-  });
-
-  it("should validate a fractional index", () => {
-    const indexing = createFractionalIndexing({ digitBase, lengthBase });
-    const generator = indexing.generateKeyBetween(null, null);
-    const key = generator.next().value;
-    expect(indexing[IS_VALID](key!)).toBe(true);
   });
 
   it("should throw an error if maximum length is exceeded", () => {

@@ -3,9 +3,7 @@ import {
   avoidConflictSuffix,
   generateKeyBetween,
   generateNKeysBetween,
-  isValidFractionalIndex,
 } from "./lib/fractional-indexing.js";
-import { IS_VALID } from "./lib/internal-symbols.js";
 import type { FractionalIndex } from "./lib/types.js";
 import { createDigitBaseMap, createIntegerLengthBaseMap } from "./lib/utils.js";
 
@@ -35,9 +33,6 @@ export interface FractionalIndexing<D extends string, L extends string, X> {
     b: FractionalIndex<D, L, X> | null,
     n: number
   ): Generator<FractionalIndex<D, L, X>[], void, unknown>;
-
-  /** @private */
-  [IS_VALID](index: string): boolean;
 }
 
 export interface FractionalIndexingFactoryOptions<
@@ -117,16 +112,6 @@ export function createFractionalIndexing<
         }
         yield base.map((v) => `${v}${suffix}` as F);
       }
-    },
-
-    [IS_VALID](index: string): boolean {
-      return isValidFractionalIndex(
-        index,
-        digBaseForward,
-        digBaseReverse,
-        lenBaseReverse,
-        smallestInteger
-      );
     },
   };
 }
