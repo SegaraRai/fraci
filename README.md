@@ -1,6 +1,6 @@
 # fraci - Fractional Indexing
 
-An implementation of [fractional indexing](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/) in TypeScript, focused on practicality and ease of use.
+A comprehensive library for [fractional indexing](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/), offering a strongly typed API and seamless Prisma integration.
 
 ## Key Features
 
@@ -120,6 +120,7 @@ async function append() {
 
   // Generate a new fractional index.
   // Note that the `generateKeyBetween` method is a generator to handle conflicts.
+  // If you don't want to handle conflicts, you can just do: `const [fi] = afi.generateKeyBetween(...indices);`.
   for (const fi of afi.generateKeyBetween(...indices)) {
     try {
       const article = await prisma.article.create({
@@ -140,6 +141,8 @@ async function append() {
       throw e;
     }
   }
+
+  throw new Error("Failed to generate a new fractional index.");
 }
 
 /**
@@ -168,9 +171,7 @@ async function move() {
   //                                          ^ Here, one or more properties must be specified that uniquely identify the row.
   //                                                     ^ Here, it's required to specify all columns specified in the `group` property above.
   if (!indices) {
-    throw new Error(
-      "Article 4 does not exist or does not belong to user 1."
-    );
+    throw new Error("Article 4 does not exist or does not belong to user 1.");
   }
 
   for (const fi of afi.generateKeyBetween(...indices)) {
@@ -200,6 +201,8 @@ async function move() {
       throw e;
     }
   }
+
+  throw new Error("Failed to generate a new fractional index.");
 }
 
 // Delete
