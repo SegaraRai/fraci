@@ -419,6 +419,44 @@ describe("getIndicesBefore and getIndicesAfter", () => {
     expect(indicesForFirst[1]).toBeNull();
   });
 
+  test("inconsistent group", async () => {
+    const articlesByUser1 = await prisma.article.findMany({
+      where: { userId: 1 },
+      orderBy: { fi: "asc" },
+    });
+    const articlesByUser2 = await prisma.article.findMany({
+      where: { userId: 2 },
+      orderBy: { fi: "asc" },
+    });
+
+    const indices1 = await prisma.article
+      .fractionalIndexing("fi")
+      .getIndicesAfter({ id: articlesByUser2[0].id }, { userId: 1 });
+    expect(indices1).toBeUndefined();
+
+    const indices2 = await prisma.article
+      .fractionalIndexing("fi")
+      .getIndicesBefore({ id: articlesByUser1[0].id }, { userId: 2 });
+    expect(indices2).toBeUndefined();
+  });
+
+  test("inexistent cursor", async () => {
+    const photo = await prisma.photo.findUnique({
+      where: { id: 999 },
+    });
+    expect(photo).toBeNull();
+
+    const indicesForLast = await prisma.photo
+      .fractionalIndexing("fi")
+      .getIndicesBefore({ id: 999 }, { articleId: 999, userId: 1 });
+    expect(indicesForLast).toBeUndefined();
+
+    const indicesForFirst = await prisma.photo
+      .fractionalIndexing("fi")
+      .getIndicesAfter({ id: 999 }, { articleId: 999, userId: 1 });
+    expect(indicesForFirst).toBeUndefined();
+  });
+
   test("type check", async () => {
     try {
       const pfi = await prisma.photo.fractionalIndexing("fi");
