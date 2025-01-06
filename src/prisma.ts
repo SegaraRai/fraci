@@ -31,8 +31,6 @@ type PrismaBrand<M extends string, F extends string> = {
   [PRISMA_BRAND]: { model: M; field: F };
 };
 
-type WithDefault<T, E, F> = Extract<T, E> extends never ? F : Extract<T, E>;
-
 /**
  * A union of all model names.
  *
@@ -207,13 +205,6 @@ type FieldOptionsRecord = {
 
 export interface FractionalIndexingExtensionOptions {
   /**
-   * The prefix for the fractional index fields.
-   *
-   * @default "__fi_"
-   */
-  readonly prefix?: string;
-
-  /**
    * The maximum number of retries to generate a fractional index.
    *
    * @default 10
@@ -239,12 +230,6 @@ export interface FractionalIndexingExtensionOptions {
 type FieldsUnion<O extends FractionalIndexingExtensionOptions> = {
   [K in keyof O["fields"]]: [K, O["fields"][K]];
 }[keyof O["fields"]];
-
-type Prefix<O extends FractionalIndexingExtensionOptions> = WithDefault<
-  O["prefix"],
-  string,
-  "__fi_"
->;
 
 type FieldInfo<I extends FieldOptions, M extends ModelKey, W, X> = {
   readonly I: I;
@@ -281,23 +266,6 @@ type PerModelFieldInfo<O extends FractionalIndexingExtensionOptions> = {
 };
 
 /**
- * [result component](https://www.prisma.io/docs/orm/prisma-client/client-extensions/result) of the Prisma extension.
- */
-type ExtensionResult<O extends FractionalIndexingExtensionOptions> = {
-  [M in keyof PerModelFieldInfo<O>]: {
-    [F in Extract<
-      keyof PerModelFieldInfo<O>[M],
-      string
-    > as `${Prefix<O>}${F}`]: {
-      needs: { [K in F]: true };
-      compute: (args: {
-        [K in F]: string;
-      }) => PerModelFieldInfo<O>[M][F]["value"];
-    };
-  };
-};
-
-/**
  * [model component](https://www.prisma.io/docs/orm/prisma-client/client-extensions/model) of the Prisma extension.
  */
 type ExtensionModel<O extends FractionalIndexingExtensionOptions> = {
@@ -311,7 +279,6 @@ type ExtensionModel<O extends FractionalIndexingExtensionOptions> = {
 type Extension<O extends FractionalIndexingExtensionOptions> = {
   name: typeof EXTENSION_NAME;
   model: ExtensionModel<O>;
-  result: ExtensionResult<O>;
 };
 
 function isIndexConflictError(
@@ -333,7 +300,6 @@ export function createFractionalIndexingExtension<
   Options extends FractionalIndexingExtensionOptions
 >({
   fields,
-  prefix = "__fi_",
   maxLength = DEFAULT_MAX_LENGTH,
   maxRetries = DEFAULT_MAX_RETRIES,
 }: Options) {
@@ -341,10 +307,7 @@ export function createFractionalIndexingExtension<
     type HelperValue = FractionalIndexingForPrisma<any, any, any, any, any>;
 
     const helperMap = new Map<string, HelperValue>();
-    const extensionResult = Object.create(null) as Record<
-      ModelKey,
-      Record<string, { needs: {}; compute: (args: any) => any }>
-    >;
+
     for (const [modelAndField, { lengthBase, digitBase }] of Object.entries(
       fields
     ) as [string, FieldOptions][]) {
@@ -363,14 +326,6 @@ export function createFractionalIndexingExtension<
         maxLength,
         maxRetries,
       });
-
-      extensionResult[model] ??= Object.create(null);
-      extensionResult[model][`${prefix}${field}`] = {
-        needs: { [field]: true },
-        compute({ [field]: value }) {
-          return value;
-        },
-      };
 
       const getIndicesAfter = async (cursor: any, where: any): Promise<any> => {
         if (!cursor) {
@@ -452,7 +407,6 @@ export function createFractionalIndexingExtension<
     return client.$extends({
       name: EXTENSION_NAME,
       model: extensionModel,
-      result: extensionResult,
     } as unknown as Extension<Options>);
   });
 }

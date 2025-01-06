@@ -8,7 +8,6 @@ const basePrisma = new PrismaClient();
 
 const prisma = basePrisma.$extends(
   createFractionalIndexingExtension({
-    prefix: "__fi_prefix_" as const,
     fields: {
       "article.fi": {
         group: ["userId"],
@@ -274,43 +273,17 @@ test("instantiation type check", () => {
 
 describe("basic", () => {
   test("photo.fi", async () => {
-    const photo = await prisma.photo.findUniqueOrThrow({ where: { id: 1 } });
-    expect(photo.__fi_prefix_fi as string).toBe(photo.fi);
-
     expect(prisma.photo.fractionalIndexing("fi")).toBeObject();
   });
 
   test("should not exist in photo.title", async () => {
-    const photo = await prisma.photo.findUniqueOrThrow({ where: { id: 1 } });
-
-    // @ts-expect-error
-    expect(photo.__fi_prefix_title).toBeUndefined();
-
     // @ts-expect-error
     expect(prisma.photo.fractionalIndexing("title")).toBeUndefined();
   });
 
   test("should not exist in tag.name", async () => {
-    const tag = await prisma.tag.findUniqueOrThrow({ where: { id: 1 } });
-
-    // @ts-expect-error
-    expect(tag.__fi_prefix_name).toBeUndefined();
-
     // @ts-expect-error
     expect(prisma.tag.fractionalIndexing("name")).toBeUndefined();
-  });
-
-  test("tagsOnPhotos", async () => {
-    const item = await prisma.tagsOnPhotos.findUniqueOrThrow({
-      where: { id: 1 },
-    });
-
-    expect(item.__fi_prefix_tagFI as string).toBe(item.tagFI);
-
-    expect(item.__fi_prefix_photoFI as string).toBe(item.photoFI);
-
-    // @ts-expect-error
-    item.__fi_prefix_tagFI === item.__fi_prefix_photoFI;
   });
 });
 
@@ -329,7 +302,7 @@ describe("getIndicesBefore and getIndicesAfter", () => {
       .fractionalIndexing("fi")
       .getIndicesBefore(null, { userId: 1 });
     expect(indicesForLast1).toBeArrayOfSize(2);
-    expect(indicesForLast1[0]).toBe(articles[1].__fi_prefix_fi);
+    expect(indicesForLast1[0] as string).toBe(articles[1].fi);
     expect(indicesForLast1[1]).toBeNull();
 
     const indicesForLast2 = await prisma.article
@@ -342,7 +315,7 @@ describe("getIndicesBefore and getIndicesAfter", () => {
       .getIndicesAfter(null, { userId: 1 });
     expect(indicesForFirst1).toBeArrayOfSize(2);
     expect(indicesForFirst1[0]).toBeNull();
-    expect(indicesForFirst1[1]).toBe(articles[0].__fi_prefix_fi);
+    expect(indicesForFirst1[1] as string).toBe(articles[0].fi);
 
     const indicesForFirst2 = await prisma.article
       .fractionalIndexing("fi")
@@ -353,8 +326,8 @@ describe("getIndicesBefore and getIndicesAfter", () => {
       .fractionalIndexing("fi")
       .getIndicesBefore({ id: articles[1].id }, { userId: 1 });
     expect(indicesForMiddle1).toBeArrayOfSize(2);
-    expect(indicesForMiddle1?.[0]).toBe(articles[0].__fi_prefix_fi);
-    expect(indicesForMiddle1?.[1]).toBe(articles[1].__fi_prefix_fi);
+    expect(indicesForMiddle1?.[0] as string).toBe(articles[0].fi);
+    expect(indicesForMiddle1?.[1] as string).toBe(articles[1].fi);
 
     const indicesForMiddle2 = await prisma.article
       .fractionalIndexing("fi")
@@ -375,7 +348,7 @@ describe("getIndicesBefore and getIndicesAfter", () => {
       .fractionalIndexing("fi")
       .getIndicesBefore(null, { articleId: 2, userId: 1 });
     expect(indicesForLast1).toBeArrayOfSize(2);
-    expect(indicesForLast1[0]).toBe(photos[0].__fi_prefix_fi);
+    expect(indicesForLast1[0] as string).toBe(photos[0].fi);
     expect(indicesForLast1[1]).toBeNull();
 
     const indicesForLast2 = await prisma.photo
@@ -388,7 +361,7 @@ describe("getIndicesBefore and getIndicesAfter", () => {
       .getIndicesAfter(null, { articleId: 2, userId: 1 });
     expect(indicesForFirst1).toBeArrayOfSize(2);
     expect(indicesForFirst1[0]).toBeNull();
-    expect(indicesForFirst1[1]).toBe(photos[0].__fi_prefix_fi);
+    expect(indicesForFirst1[1] as string).toBe(photos[0].fi);
 
     const indicesForFirst2 = await prisma.photo
       .fractionalIndexing("fi")
