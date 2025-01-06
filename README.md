@@ -5,19 +5,19 @@ An implementation of [fractional indexing](https://www.figma.com/blog/realtime-e
 ## Key Features
 
 - **Fractional indexing** with arbitrary base characters.
-- **Prisma integration** - First-class support for Prisma with human-friendly APIs.
+- **Prisma integration** - First-class support for Prisma with human-friendly and strongly typed APIs.
 - **Regeneration on conflict** - Automatic regeneration of fractional indexes on conflict.
-- **TypeScript support** - Protection with Branded Types.
+- **TypeScript support** - Strongly typed APIs with branded types for added protection.
 - **High performance** - Optimized for performance with minimal overhead.
-- **Less bundle size** - Fully tree-shakable. Mangleable except for user options.
-- **Zero dependencies** - No dependence on Node.js either.
+- **Smaller bundle size** - Fully tree-shakable.
+- **Zero dependencies** - No dependencies, not even on Node.js.
 
 ## Getting Started
 
 ### With Prisma
 
-> **Warning:** Fractional Indexing, by its very nature, is difficult to add to existing tables, and our library does not currently support adding it to existing tables.
-> The following steps are based on the assumption that you are creating a new table.
+> **Warning:** Fractional Indexing is inherently difficult to add to existing tables, and our library does not currently support adding it to existing tables.
+> The following steps assume you are creating a new table.
 
 Step 1. Install the package.
 
@@ -86,6 +86,8 @@ const prisma = new PrismaClient().$extends(
         digitBase: BASE64,
         lengthBase: BASE64,
       },
+      // You can add more fractional index columns if you want.
+      // "anotherTable.anotherColumn": { ... },
     } as const,
     // The maximum number of retries to generate a new fractional index when a conflict occurs.
     // The default is 10.
@@ -102,14 +104,20 @@ const prisma = new PrismaClient().$extends(
 Step 4. CRUD operations.
 
 ```typescript
-// Get helper object
+// Get the helper object.
+// Only predefined table and column name combinations are available due to strong typing.
 const afi = prisma.article.fractionalIndexing("fi");
 //                 ^table                     ^column
 
-// Create (append)
+/**
+ * Create (append)
+ * Append a new article to the end.
+ */
 async function append() {
   // Get the fractional indices to generate the new one that represents the last index.
   const indices = await afi.getIndicesForLast({ userId: 1 });
+  //                                            ^ Here, it's required to specify all columns specified in the `group` property above.
+
   // Generate a new fractional index.
   // Note that the `generateKeyBetween` method is a generator to handle conflicts.
   for (const fi of afi.generateKeyBetween(...indices)) {
@@ -124,7 +132,7 @@ async function append() {
       });
     } catch (e) {
       if (afi.isIndexConflictError(e)) {
-        // Conflict occurred (processes are executed simultaneously).
+        // Conflict occurred. (the same operation has been performed simultaneously)
         // Regenerate the fractional index and try again.
         continue;
       }
@@ -134,7 +142,10 @@ async function append() {
   }
 }
 
-// Read (list)
+/**
+ * Read (list)
+ * List all articles in order.
+ */
 async function list() {
   const articles = await prisma.article.findMany({
     where: {
@@ -148,13 +159,18 @@ async function list() {
   return articles;
 }
 
-// Update (move)
+/**
+ * Update (move)
+ * Move article 3 to the position after article 4.
+ */
 async function move() {
-  // Moves the article 3 to the position after the article 4.
-
   const indices = await afi.getIndicesAfter({ id: 4 }, { userId: 1 });
+  //                                          ^ Here, one or more properties must be specified that uniquely identify the row.
+  //                                                     ^ Here, it's required to specify all columns specified in the `group` property above.
   if (!indices) {
-    throw new Error("The article 4 does not exist.");
+    throw new Error(
+      "Article 4 does not exist or does not belong to user 1."
+    );
   }
 
   for (const fi of afi.generateKeyBetween(...indices)) {
@@ -169,7 +185,7 @@ async function move() {
       });
     } catch (e) {
       if (afi.isIndexConflictError(e)) {
-        // Conflict occurred (processes are executed simultaneously).
+        // Conflict occurred.
         // Regenerate the fractional index and try again.
         continue;
       }
@@ -178,7 +194,7 @@ async function move() {
         e instanceof Prisma.PrismaClientKnownRequestError &&
         e.code === "P2001"
       ) {
-        throw new Error("The article 3 does not exist.");
+        throw new Error("Article 3 does not exist.");
       }
 
       throw e;
@@ -207,4 +223,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Credits
 
 - [Realtime editing of ordered sequences](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/) by Figma for the idea
-- [Implementing Fractional Indexing](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/) by David Greenspan for base implementation
+- [Implementing Fractional Indexing](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/) by David Greenspan for the base implementation
