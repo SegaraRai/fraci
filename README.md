@@ -205,7 +205,9 @@ async function move() {
   throw new Error("Failed to generate a new fractional index.");
 }
 
-// Delete
+/**
+ * Delete
+ */
 async function remove() {
   // Just delete the item. No need to touch the fractional index.
   // There is no need to modify the fractional index even for soft delete.
