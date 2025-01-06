@@ -89,7 +89,7 @@ const prisma = new PrismaClient().$extends(
     } as const,
     // The maximum number of retries to generate a new fractional index when a conflict occurs.
     // The default is 10.
-    maxRetry: 10,
+    maxRetries: 10,
     // The maximum length of the fractional index.
     // Fractional index can be made infinitely long by repeating certain operations.
     // To prevent attacks by malicious users, fraci allows a maximum length to be specified for stopping new creation.
@@ -123,14 +123,13 @@ async function append() {
         },
       });
     } catch (e) {
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === "P2002"
-      ) {
+      if (afi.isIndexConflictError(e)) {
         // Conflict occurred (processes are executed simultaneously).
         // Regenerate the fractional index and try again.
         continue;
       }
+
+      throw e;
     }
   }
 }
@@ -169,10 +168,7 @@ async function move() {
         },
       });
     } catch (e) {
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === "P2002"
-      ) {
+      if (afi.isIndexConflictError(e)) {
         // Conflict occurred (processes are executed simultaneously).
         // Regenerate the fractional index and try again.
         continue;
@@ -182,9 +178,10 @@ async function move() {
         e instanceof Prisma.PrismaClientKnownRequestError &&
         e.code === "P2001"
       ) {
-        // The article 3 does not exist.
         throw new Error("The article 3 does not exist.");
       }
+
+      throw e;
     }
   }
 }

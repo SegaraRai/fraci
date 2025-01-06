@@ -1,6 +1,7 @@
 // Import `@prisma/client/extension.js` instead of `@prisma/client` to prevent types in `PrismaClient` from being extracted in the return type of the `createFractionalIndexingExtension` function.
 // In `@prisma/client/extension.js`, `PrismaClient` is exported as `any`, which is not usable by users, so the import destination is modified to `@prisma/client` in post-processing.
 import { Prisma, PrismaClient } from "@prisma/client/extension.js";
+import type { PrismaClientKnownRequestError } from "@prisma/client/runtime/library.js";
 import {
   createFractionalIndexing,
   DEFAULT_MAX_LENGTH,
@@ -11,7 +12,14 @@ import type { FractionalIndex } from "./lib/types.js";
 
 const EXTENSION_NAME = "fractionalIndexing";
 
+const PRISMA_CONFLICT_CODE = "P2002";
+
 declare const PRISMA_BRAND: unique symbol;
+
+export type PrismaClientConflictError = PrismaClientKnownRequestError & {
+  code: typeof PRISMA_CONFLICT_CODE;
+  meta: { modelName: string; target: string[] };
+};
 
 /**
  * A brand for Prisma models and fields.
@@ -111,6 +119,13 @@ type FractionalIndexingForPrisma<
   W,
   X
 > = FractionalIndexing<D, L, X> & {
+  /**
+   * Checks if the error is a conflict error for the fractional index.
+   *
+   * @param error The error to check.
+   * @returns `true` if the error is a conflict error for the fractional index, or `false` otherwise.
+   */
+  isIndexConflictError(error: unknown): error is PrismaClientConflictError;
   /**
    * Gets the indices to generate a new fractional index for the item after the specified item.
    *
@@ -299,6 +314,21 @@ type Extension<O extends FractionalIndexingExtensionOptions> = {
   result: ExtensionResult<O>;
 };
 
+function isIndexConflictError(
+  error: unknown,
+  modelName: string,
+  field: string
+): error is PrismaClientConflictError {
+  return (
+    error instanceof Error &&
+    error.name === "PrismaClientKnownRequestError" &&
+    (error as PrismaClientKnownRequestError).code === PRISMA_CONFLICT_CODE &&
+    (error as any).meta?.modelName === modelName &&
+    Array.isArray((error as any).meta?.target) &&
+    (error as any).meta.target.includes(field)
+  );
+}
+
 export function createFractionalIndexingExtension<
   Options extends FractionalIndexingExtensionOptions
 >({
@@ -319,6 +349,14 @@ export function createFractionalIndexingExtension<
       fields
     ) as [string, FieldOptions][]) {
       const [model, field] = modelAndField.split(".", 2) as [ModelKey, string];
+
+      const { modelName } = (client as any)[model]?.fields?.[field] ?? {};
+      if (!modelName) {
+        throw new Error(
+          `Could not get field information for ${model}.${field}`
+        );
+      }
+
       const helper = createFractionalIndexing({
         digitBase,
         lengthBase,
@@ -385,6 +423,10 @@ export function createFractionalIndexingExtension<
 
       const helperEx: HelperValue = {
         ...helper,
+        isIndexConflictError: (
+          error: unknown
+        ): error is PrismaClientConflictError =>
+          isIndexConflictError(error, modelName, field),
         getIndicesAfter,
         getIndicesBefore,
         getIndicesForFirst: (where: any) => getIndicesAfter(null, where),

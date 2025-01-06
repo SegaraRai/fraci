@@ -86,12 +86,11 @@ const app = new Hono()
             }
           );
         } catch (e) {
-          if (e instanceof Prisma.PrismaClientKnownRequestError) {
-            if (e.code === "P2002") {
-              retryCount++;
-              continue;
-            }
+          if (fiHelper.isIndexConflictError(e)) {
+            retryCount++;
+            continue;
           }
+
           console.error(e);
           return c.json({ error: "Failed to create item (DB Error)" }, 500);
         }
@@ -151,15 +150,18 @@ const app = new Hono()
             "Fraci-Retry-Count": String(retryCount),
           });
         } catch (e) {
-          if (e instanceof Prisma.PrismaClientKnownRequestError) {
-            if (e.code === "P2001") {
-              return c.json({ error: "Item not found" }, 404);
-            }
-            if (e.code === "P2002") {
-              retryCount++;
-              continue;
-            }
+          if (fiHelper.isIndexConflictError(e)) {
+            retryCount++;
+            continue;
           }
+
+          if (
+            e instanceof Prisma.PrismaClientKnownRequestError &&
+            e.code === "P2001"
+          ) {
+            return c.json({ error: "Item not found" }, 404);
+          }
+
           console.error(e);
           return c.json({ error: "Failed to update item (DB Error)" }, 500);
         }
