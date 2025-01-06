@@ -1,5 +1,11 @@
 # fraci
 
+## 0.4.0
+
+### Minor Changes
+
+- 364b106: **BREAKING CHANGE:** Removed result extension.
+
 ## 0.3.0
 
 ### Minor Changes
