@@ -25,7 +25,7 @@
   "repository": "https://github.com/SegaraRai/fraci.git",
   "scripts": {
     "changeset-version": "changeset version",
-    "changeset-publish": "bun publish && git push --follow-tags",
+    "changeset-publish": "changeset publish",
     "build": "tsup && bun run ./fix-dts.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
