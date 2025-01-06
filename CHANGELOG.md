@@ -1,5 +1,11 @@
 # fraci
 
+## 0.4.1
+
+### Patch Changes
+
+- 8eb6ae7: Updated package description.
+
 ## 0.4.0
 
 ### Minor Changes
