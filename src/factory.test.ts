@@ -1,18 +1,18 @@
 import { describe, expect, it } from "bun:test";
-import { createFractionalIndexing, DEFAULT_MAX_LENGTH } from "./factory.js";
+import { fraci, DEFAULT_MAX_LENGTH } from "./factory.js";
 
-describe("createFractionalIndexing", () => {
+describe("fraci", () => {
   const digitBase = "0123456789";
   const lengthBase = "0123456789";
 
-  it("should create a FractionalIndexing instance with default options", () => {
-    const indexing = createFractionalIndexing({ digitBase, lengthBase });
+  it("should create a fraci instance with default options", () => {
+    const indexing = fraci({ digitBase, lengthBase });
     expect(indexing.digitBase).toBe(digitBase);
     expect(indexing.lengthBase).toBe(lengthBase);
   });
 
   it("should generate a key between two indices", () => {
-    const indexing = createFractionalIndexing({ digitBase, lengthBase });
+    const indexing = fraci({ digitBase, lengthBase });
     const generator = indexing.generateKeyBetween(null, null);
     const key = generator.next().value;
     expect(typeof key).toBe("string");
@@ -20,7 +20,7 @@ describe("createFractionalIndexing", () => {
   });
 
   it("should generate multiple keys between two indices", () => {
-    const indexing = createFractionalIndexing({ digitBase, lengthBase });
+    const indexing = fraci({ digitBase, lengthBase });
     const generator = indexing.generateNKeysBetween(null, null, 5);
     const keys = generator.next().value;
     expect(Array.isArray(keys)).toBe(true);
@@ -32,7 +32,7 @@ describe("createFractionalIndexing", () => {
   });
 
   it("should throw an error if maximum length is exceeded", () => {
-    const indexing = createFractionalIndexing({
+    const indexing = fraci({
       digitBase,
       lengthBase,
       maxLength: 5,
@@ -45,7 +45,7 @@ describe("createFractionalIndexing", () => {
   });
 
   it("should stop generation when reached maxRetries", () => {
-    const indexing = createFractionalIndexing({
+    const indexing = fraci({
       digitBase,
       lengthBase,
       maxRetries: 3,

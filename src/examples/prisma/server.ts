@@ -1,12 +1,12 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { zValidator } from "@hono/zod-validator";
-import { createFractionalIndexingExtension } from "fraci/prisma";
+import { fraciExtension } from "fraci/prisma";
 import { Hono } from "hono";
 import * as z from "zod";
 import { BASE64 } from "../../bases";
 
 const prisma = new PrismaClient().$extends(
-  createFractionalIndexingExtension({
+  fraciExtension({
     fields: {
       "exampleItem.fi": {
         group: ["groupId"],
@@ -65,8 +65,8 @@ const app = new Hono()
       const groupId = Number(c.req.param("groupId"));
       const { name } = c.req.valid("json");
 
-      const fiHelper = prisma.exampleItem.fractionalIndexing("fi");
-      const indices = await fiHelper.getIndicesForLast({ groupId });
+      const fiHelper = prisma.exampleItem.fraci("fi");
+      const indices = await fiHelper.indicesForLast({ groupId });
 
       const delay = Number(c.req.query("delay") ?? "0");
       if (delay > 0) {
@@ -124,12 +124,12 @@ const app = new Hono()
       const itemId = Number(c.req.param("itemId"));
       const { before, after } = c.req.valid("json");
 
-      const fiHelper = prisma.exampleItem.fractionalIndexing("fi");
+      const fiHelper = prisma.exampleItem.fraci("fi");
 
       const indices =
         before != null
-          ? await fiHelper.getIndicesBefore({ id: before }, { groupId })
-          : await fiHelper.getIndicesAfter({ id: after }, { groupId });
+          ? await fiHelper.indicesForBefore({ id: before }, { groupId })
+          : await fiHelper.indicesForAfter({ id: after }, { groupId });
       if (!indices) {
         return c.json({ error: "Reference item not found" }, 404);
       }

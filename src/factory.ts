@@ -13,7 +13,7 @@ export const DEFAULT_MAX_RETRIES = 10;
 /**
  * Fractional index pattern for demonstration.
  */
-type FractionalIndexPattern<D extends string, L extends string> = `${L}${D}...`;
+type IndexPattern<D extends string, L extends string> = `${L}${D}...`;
 
 /**
  * A helper type to convert a string to a union of characters.
@@ -25,11 +25,8 @@ type StringToUnion<T extends string> = T extends `${infer First}${infer Rest}`
 /**
  * Fractional indexing utility.
  */
-export interface FractionalIndexing<D extends string, L extends string, X> {
-  readonly __EXAMPLE__?: FractionalIndexPattern<
-    StringToUnion<D>,
-    StringToUnion<L>
-  >;
+export interface Fraci<D extends string, L extends string, X> {
+  readonly __EXAMPLE__?: IndexPattern<StringToUnion<D>, StringToUnion<L>>;
 
   readonly digitBase: D;
   readonly lengthBase: L;
@@ -47,10 +44,7 @@ export interface FractionalIndexing<D extends string, L extends string, X> {
 /**
  * Fractional indexing factory options.
  */
-export interface FractionalIndexingFactoryOptions<
-  D extends string,
-  L extends string
-> {
+export interface FraciOptions<D extends string, L extends string> {
   digitBase: D;
   lengthBase: L;
   maxLength?: number;
@@ -63,16 +57,12 @@ export interface FractionalIndexingFactoryOptions<
  * @param options Options
  * @returns Fractional indexing utility
  */
-export function createFractionalIndexing<
-  D extends string,
-  L extends string,
-  X
->({
+export function fraci<D extends string, L extends string, X>({
   digitBase,
   lengthBase,
   maxLength = DEFAULT_MAX_LENGTH,
   maxRetries = DEFAULT_MAX_RETRIES,
-}: FractionalIndexingFactoryOptions<D, L>): FractionalIndexing<D, L, X> {
+}: FraciOptions<D, L>): Fraci<D, L, X> {
   type F = FractionalIndex<D, L, X>;
 
   const [digBaseForward, digBaseReverse] = createDigitBaseMap(digitBase);

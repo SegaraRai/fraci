@@ -65,10 +65,10 @@ Step 3. Use the Prisma extension of `fraci`.
 ```typescript
 import { PrismaClient } from "@prisma/client";
 import { BASE64 } from "fraci";
-import { createFractionalIndexingExtension } from "fraci/prisma";
+import { fraciExtension } from "fraci/prisma";
 
 const prisma = new PrismaClient().$extends(
-  createFractionalIndexingExtension({
+  fraciExtension({
     fields: {
       // Here, we define the fractional index column.
       // The notation is as follows: `table.column`.
@@ -106,8 +106,8 @@ Step 4. CRUD operations.
 ```typescript
 // Get the helper object.
 // Only predefined table and column name combinations are available due to strong typing.
-const afi = prisma.article.fractionalIndexing("fi");
-//                 ^table                     ^column
+const afi = prisma.article.fraci("fi");
+//                 ^ Table        ^ Column
 
 /**
  * Create (append)
@@ -115,8 +115,8 @@ const afi = prisma.article.fractionalIndexing("fi");
  */
 async function append() {
   // Get the fractional indices to generate the new one that represents the last index.
-  const indices = await afi.getIndicesForLast({ userId: 1 });
-  //                                            ^ Here, it's required to specify all columns specified in the `group` property above.
+  const indices = await afi.indicesForLast({ userId: 1 });
+  //                                         ^ Here, it's required to specify all columns specified in the `group` property above.
 
   // Generate a new fractional index.
   // Note that the `generateKeyBetween` method is a generator to handle conflicts.
@@ -167,7 +167,7 @@ async function list() {
  * Move article 3 to the position after article 4.
  */
 async function move() {
-  const indices = await afi.getIndicesAfter({ id: 4 }, { userId: 1 });
+  const indices = await afi.indicesForAfter({ id: 4 }, { userId: 1 });
   //                                          ^ Here, one or more properties must be specified that uniquely identify the row.
   //                                                     ^ Here, it's required to specify all columns specified in the `group` property above.
   if (!indices) {

@@ -1,13 +1,13 @@
 // Note that this test needs the package to be built before running and type checking.
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { PrismaClient } from "@prisma/client";
-import { createFractionalIndexingExtension } from "fraci/prisma";
+import { fraciExtension } from "fraci/prisma";
 import { BASE26, BASE36, BASE95 } from "./bases";
 
 const basePrisma = new PrismaClient();
 
 const prisma = basePrisma.$extends(
-  createFractionalIndexingExtension({
+  fraciExtension({
     fields: {
       "article.fi": {
         group: ["userId"],
@@ -81,7 +81,7 @@ beforeAll(async () => {
 
     {
       const [fi] = prisma.article
-        .fractionalIndexing("fi")
+        .fraci("fi")
         .generateNKeysBetween(null, null, 3);
       await tx.article.createMany({
         data: [
@@ -125,9 +125,7 @@ beforeAll(async () => {
     }
 
     {
-      const [fi] = prisma.photo
-        .fractionalIndexing("fi")
-        .generateNKeysBetween(null, null, 3);
+      const [fi] = prisma.photo.fraci("fi").generateNKeysBetween(null, null, 3);
       await tx.photo.createMany({
         data: [
           {
@@ -176,10 +174,10 @@ beforeAll(async () => {
 
     {
       const [pfi] = prisma.tagsOnPhotos
-        .fractionalIndexing("photoFI")
+        .fraci("photoFI")
         .generateNKeysBetween(null, null, 1);
       const [tfi] = prisma.tagsOnPhotos
-        .fractionalIndexing("tagFI")
+        .fraci("tagFI")
         .generateNKeysBetween(null, null, 2);
 
       await tx.tagsOnPhotos.createMany({
@@ -205,7 +203,7 @@ beforeAll(async () => {
 });
 
 test("instantiation type check", () => {
-  createFractionalIndexingExtension({
+  fraciExtension({
     fields: {
       "article.fi": {
         group: [],
@@ -220,7 +218,7 @@ test("instantiation type check", () => {
     } as const,
   });
 
-  createFractionalIndexingExtension({
+  fraciExtension({
     fields: {
       "article.fi": {
         // @ts-expect-error Only existing fields can be specified.
@@ -236,7 +234,7 @@ test("instantiation type check", () => {
     } as const,
   });
 
-  createFractionalIndexingExtension({
+  fraciExtension({
     fields: {
       "article.fi": {
         // @ts-expect-error Only serializable fields can be specified.
@@ -252,7 +250,7 @@ test("instantiation type check", () => {
     } as const,
   });
 
-  createFractionalIndexingExtension({
+  fraciExtension({
     fields: {
       "article.fi": {
         // @ts-expect-error The fractional index field itself cannot be specified.
@@ -273,21 +271,21 @@ test("instantiation type check", () => {
 
 describe("basic", () => {
   test("photo.fi", async () => {
-    expect(prisma.photo.fractionalIndexing("fi")).toBeObject();
+    expect(prisma.photo.fraci("fi")).toBeObject();
   });
 
   test("should not exist in photo.title", async () => {
     // @ts-expect-error
-    expect(prisma.photo.fractionalIndexing("title")).toBeUndefined();
+    expect(prisma.photo.fraci("title")).toBeUndefined();
   });
 
   test("should not exist in tag.name", async () => {
     // @ts-expect-error
-    expect(prisma.tag.fractionalIndexing("name")).toBeUndefined();
+    expect(prisma.tag.fraci("name")).toBeUndefined();
   });
 });
 
-describe("getIndicesBefore and getIndicesAfter", () => {
+describe("indicesForBefore and indicesForAfter", () => {
   test("article (2 items in a group)", async () => {
     const articles = await prisma.article.findMany({
       where: { userId: 1 },
@@ -299,39 +297,39 @@ describe("getIndicesBefore and getIndicesAfter", () => {
     expect(articles[1].title).toBe("article2 (user1)");
 
     const indicesForLast1 = await prisma.article
-      .fractionalIndexing("fi")
-      .getIndicesBefore(null, { userId: 1 });
+      .fraci("fi")
+      .indicesForBefore(null, { userId: 1 });
     expect(indicesForLast1).toBeArrayOfSize(2);
     expect(indicesForLast1[0] as string).toBe(articles[1].fi);
     expect(indicesForLast1[1]).toBeNull();
 
     const indicesForLast2 = await prisma.article
-      .fractionalIndexing("fi")
-      .getIndicesAfter({ id: articles[1].id }, { userId: 1 });
+      .fraci("fi")
+      .indicesForAfter({ id: articles[1].id }, { userId: 1 });
     expect(indicesForLast2).toEqual(indicesForLast1);
 
     const indicesForFirst1 = await prisma.article
-      .fractionalIndexing("fi")
-      .getIndicesAfter(null, { userId: 1 });
+      .fraci("fi")
+      .indicesForAfter(null, { userId: 1 });
     expect(indicesForFirst1).toBeArrayOfSize(2);
     expect(indicesForFirst1[0]).toBeNull();
     expect(indicesForFirst1[1] as string).toBe(articles[0].fi);
 
     const indicesForFirst2 = await prisma.article
-      .fractionalIndexing("fi")
-      .getIndicesBefore({ id: articles[0].id }, { userId: 1 });
+      .fraci("fi")
+      .indicesForBefore({ id: articles[0].id }, { userId: 1 });
     expect(indicesForFirst2).toEqual(indicesForFirst1);
 
     const indicesForMiddle1 = await prisma.article
-      .fractionalIndexing("fi")
-      .getIndicesBefore({ id: articles[1].id }, { userId: 1 });
+      .fraci("fi")
+      .indicesForBefore({ id: articles[1].id }, { userId: 1 });
     expect(indicesForMiddle1).toBeArrayOfSize(2);
     expect(indicesForMiddle1?.[0] as string).toBe(articles[0].fi);
     expect(indicesForMiddle1?.[1] as string).toBe(articles[1].fi);
 
     const indicesForMiddle2 = await prisma.article
-      .fractionalIndexing("fi")
-      .getIndicesAfter({ id: articles[0].id }, { userId: 1 });
+      .fraci("fi")
+      .indicesForAfter({ id: articles[0].id }, { userId: 1 });
     expect(indicesForMiddle2).toEqual(indicesForMiddle1!);
   });
 
@@ -345,27 +343,27 @@ describe("getIndicesBefore and getIndicesAfter", () => {
     expect(photos[0].title).toBe("photo3 (article2)");
 
     const indicesForLast1 = await prisma.photo
-      .fractionalIndexing("fi")
-      .getIndicesBefore(null, { articleId: 2, userId: 1 });
+      .fraci("fi")
+      .indicesForBefore(null, { articleId: 2, userId: 1 });
     expect(indicesForLast1).toBeArrayOfSize(2);
     expect(indicesForLast1[0] as string).toBe(photos[0].fi);
     expect(indicesForLast1[1]).toBeNull();
 
     const indicesForLast2 = await prisma.photo
-      .fractionalIndexing("fi")
-      .getIndicesAfter({ id: photos[0].id }, { articleId: 2, userId: 1 });
+      .fraci("fi")
+      .indicesForAfter({ id: photos[0].id }, { articleId: 2, userId: 1 });
     expect(indicesForLast2).toEqual(indicesForLast1);
 
     const indicesForFirst1 = await prisma.photo
-      .fractionalIndexing("fi")
-      .getIndicesAfter(null, { articleId: 2, userId: 1 });
+      .fraci("fi")
+      .indicesForAfter(null, { articleId: 2, userId: 1 });
     expect(indicesForFirst1).toBeArrayOfSize(2);
     expect(indicesForFirst1[0]).toBeNull();
     expect(indicesForFirst1[1] as string).toBe(photos[0].fi);
 
     const indicesForFirst2 = await prisma.photo
-      .fractionalIndexing("fi")
-      .getIndicesBefore({ id: photos[0].id }, { articleId: 2, userId: 1 });
+      .fraci("fi")
+      .indicesForBefore({ id: photos[0].id }, { articleId: 2, userId: 1 });
     expect(indicesForFirst2).toEqual(indicesForFirst1);
   });
 
@@ -378,15 +376,15 @@ describe("getIndicesBefore and getIndicesAfter", () => {
     expect(photos).toBeArrayOfSize(0);
 
     const indicesForLast = await prisma.photo
-      .fractionalIndexing("fi")
-      .getIndicesBefore(null, { articleId: 999, userId: 1 });
+      .fraci("fi")
+      .indicesForBefore(null, { articleId: 999, userId: 1 });
     expect(indicesForLast).toBeArrayOfSize(2);
     expect(indicesForLast[0]).toBeNull();
     expect(indicesForLast[1]).toBeNull();
 
     const indicesForFirst = await prisma.photo
-      .fractionalIndexing("fi")
-      .getIndicesAfter(null, { articleId: 999, userId: 1 });
+      .fraci("fi")
+      .indicesForAfter(null, { articleId: 999, userId: 1 });
     expect(indicesForFirst).toBeArrayOfSize(2);
     expect(indicesForFirst[0]).toBeNull();
     expect(indicesForFirst[1]).toBeNull();
@@ -403,13 +401,13 @@ describe("getIndicesBefore and getIndicesAfter", () => {
     });
 
     const indices1 = await prisma.article
-      .fractionalIndexing("fi")
-      .getIndicesAfter({ id: articlesByUser2[0].id }, { userId: 1 });
+      .fraci("fi")
+      .indicesForAfter({ id: articlesByUser2[0].id }, { userId: 1 });
     expect(indices1).toBeUndefined();
 
     const indices2 = await prisma.article
-      .fractionalIndexing("fi")
-      .getIndicesBefore({ id: articlesByUser1[0].id }, { userId: 2 });
+      .fraci("fi")
+      .indicesForBefore({ id: articlesByUser1[0].id }, { userId: 2 });
     expect(indices2).toBeUndefined();
   });
 
@@ -420,51 +418,51 @@ describe("getIndicesBefore and getIndicesAfter", () => {
     expect(photo).toBeNull();
 
     const indicesForLast = await prisma.photo
-      .fractionalIndexing("fi")
-      .getIndicesBefore({ id: 999 }, { articleId: 999, userId: 1 });
+      .fraci("fi")
+      .indicesForBefore({ id: 999 }, { articleId: 999, userId: 1 });
     expect(indicesForLast).toBeUndefined();
 
     const indicesForFirst = await prisma.photo
-      .fractionalIndexing("fi")
-      .getIndicesAfter({ id: 999 }, { articleId: 999, userId: 1 });
+      .fraci("fi")
+      .indicesForAfter({ id: 999 }, { articleId: 999, userId: 1 });
     expect(indicesForFirst).toBeUndefined();
   });
 
   test("type check", async () => {
     try {
-      const pfi = prisma.photo.fractionalIndexing("fi");
+      const pfi = prisma.photo.fraci("fi");
 
       // Test `where` argument
 
-      await pfi.getIndicesBefore(null, { articleId: 2, userId: 1 });
+      await pfi.indicesForBefore(null, { articleId: 2, userId: 1 });
 
       // @ts-expect-error missing field
-      await pfi.getIndicesBefore(null, {});
+      await pfi.indicesForBefore(null, {});
 
       // @ts-expect-error missing field
-      await pfi.getIndicesBefore(null, { articleId: 2 });
+      await pfi.indicesForBefore(null, { articleId: 2 });
 
       // @ts-expect-error missing field
-      await pfi.getIndicesBefore(null, { userId: 1 });
+      await pfi.indicesForBefore(null, { userId: 1 });
 
       // Test `cursor` argument
 
-      await pfi.getIndicesBefore({ id: 1 }, { articleId: 2, userId: 1 });
+      await pfi.indicesForBefore({ id: 1 }, { articleId: 2, userId: 1 });
 
       // @ts-expect-error missing field
-      await pfi.getIndicesBefore({}, { articleId: 2, userId: 1 });
+      await pfi.indicesForBefore({}, { articleId: 2, userId: 1 });
 
-      await pfi.getIndicesBefore(
+      await pfi.indicesForBefore(
         // @ts-expect-error missing field
         { articleId: 2, userId: 1 },
         { articleId: 2, userId: 1 }
       );
 
       // @ts-expect-error scalar
-      await pfi.getIndicesBefore(1, { articleId: 2, userId: 1 });
+      await pfi.indicesForBefore(1, { articleId: 2, userId: 1 });
 
       // @ts-expect-error scalar
-      await pfi.getIndicesBefore("1", { articleId: 2, userId: 1 });
+      await pfi.indicesForBefore("1", { articleId: 2, userId: 1 });
     } catch {
       // do nothing
     }
@@ -488,7 +486,7 @@ test("custom client", async () => {
     },
   } as unknown as PrismaClient;
 
-  const afi = prisma.article.fractionalIndexing("fi");
+  const afi = prisma.article.fraci("fi");
 
   const article = await prisma.article.findUniqueOrThrow({
     where: { id: 1, userId: 1 },
@@ -496,7 +494,7 @@ test("custom client", async () => {
 
   expect(calledCount).toBe(0);
 
-  await afi.getIndicesBefore(
+  await afi.indicesForBefore(
     { id: article.id },
     {
       userId: article.userId,
@@ -505,7 +503,7 @@ test("custom client", async () => {
   );
   expect(calledCount).toBe(1);
 
-  await afi.getIndicesAfter(
+  await afi.indicesForAfter(
     { id: article.id },
     {
       userId: article.userId,
@@ -514,9 +512,9 @@ test("custom client", async () => {
   );
   expect(calledCount).toBe(2);
 
-  await afi.getIndicesForFirst({ userId: article.userId }, customClient);
+  await afi.indicesForFirst({ userId: article.userId }, customClient);
   expect(calledCount).toBe(3);
 
-  await afi.getIndicesForLast({ userId: article.userId }, customClient);
+  await afi.indicesForLast({ userId: article.userId }, customClient);
   expect(calledCount).toBe(4);
 });
