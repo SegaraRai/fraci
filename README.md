@@ -123,7 +123,7 @@ async function append() {
   // If you don't want to handle conflicts, you can just do: `const [fi] = afi.generateKeyBetween(...indices);`.
   for (const fi of afi.generateKeyBetween(...indices)) {
     try {
-      const article = await prisma.article.create({
+      await prisma.article.create({
         data: {
           title: "Hello, world!",
           content: "This is a test article.",
@@ -131,6 +131,8 @@ async function append() {
           userId: 1,
         },
       });
+
+      return;
     } catch (e) {
       if (afi.isIndexConflictError(e)) {
         // Conflict occurred. (the same operation has been performed simultaneously)
@@ -184,6 +186,8 @@ async function move() {
           fi,
         },
       });
+
+      return;
     } catch (e) {
       if (afi.isIndexConflictError(e)) {
         // Conflict occurred.
