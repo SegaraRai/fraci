@@ -238,7 +238,7 @@ export interface FraciExtensionOptions {
   /**
    * The maximum number of retries to generate a fractional index.
    *
-   * @default 10
+   * @default 5
    */
   readonly maxRetries?: number;
 

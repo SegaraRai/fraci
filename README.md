@@ -90,8 +90,8 @@ const prisma = new PrismaClient().$extends(
       // "anotherTable.anotherColumn": { ... },
     } as const,
     // The maximum number of retries to generate a new fractional index when a conflict occurs.
-    // The default is 10.
-    maxRetries: 10,
+    // The default is 5.
+    maxRetries: 5,
     // The maximum length of the fractional index.
     // Fractional index can be made infinitely long by repeating certain operations.
     // To prevent attacks by malicious users, fraci allows a maximum length to be specified for stopping new creation.

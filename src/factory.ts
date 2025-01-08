@@ -8,7 +8,7 @@ import type { FractionalIndex } from "./lib/types.js";
 import { createDigitBaseMap, createIntegerLengthBaseMap } from "./lib/utils.js";
 
 export const DEFAULT_MAX_LENGTH = 50;
-export const DEFAULT_MAX_RETRIES = 10;
+export const DEFAULT_MAX_RETRIES = 5;
 
 /**
  * Fractional index pattern for demonstration.
