@@ -14,8 +14,14 @@ const EXTENSION_NAME = "fractionalIndexing";
 
 const PRISMA_CONFLICT_CODE = "P2002";
 
+/**
+ * A type-only unique symbol for branding Prisma models and fields.
+ */
 declare const PRISMA_BRAND: unique symbol;
 
+/**
+ * `PrismaClientKnownRequestError` of the conflict error.
+ */
 export type PrismaClientConflictError = PrismaClientKnownRequestError & {
   code: typeof PRISMA_CONFLICT_CODE;
   meta: { modelName: string; target: string[] };
@@ -108,6 +114,18 @@ type Indices<D extends string, L extends string, X> = [
 ];
 
 /**
+ * Prisma client or transaction client.
+ */
+type AnyPrismaClient = PrismaClient | Prisma.TransactionClient;
+
+/**
+ * The arguments for the `findMany` method of a Prisma model.
+ *
+ * @template M The model name.
+ */
+type QueryArgs<M extends ModelKey> = Prisma.Args<PrismaClient[M], "findMany">;
+
+/**
  * `FractionalIndexing` with the some additional methods for Prisma.
  */
 type FractionalIndexingForPrisma<
@@ -129,16 +147,19 @@ type FractionalIndexingForPrisma<
    *
    * @param cursor The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the first item.
    * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the item after the specified item, or `undefined` if the item specified by the `cursor` does not exist.
    */
   getIndicesAfter: {
     (
-      cursor: Prisma.Args<PrismaClient[M], "findMany">["cursor"],
-      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+      cursor: QueryArgs<M>["cursor"],
+      where: W & QueryArgs<M>["where"],
+      client?: AnyPrismaClient
     ): Promise<Indices<D, L, X> | undefined>;
     (
       cursor: null,
-      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+      where: W & QueryArgs<M>["where"],
+      client?: AnyPrismaClient
     ): Promise<Indices<D, L, X>>;
   };
   /**
@@ -146,37 +167,44 @@ type FractionalIndexingForPrisma<
    *
    * @param cursor The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the last item.
    * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the item before the specified item, or `undefined` if the item specified by the `cursor` does not exist.
    */
   getIndicesBefore: {
     (
-      cursor: Prisma.Args<PrismaClient[M], "findMany">["cursor"],
-      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+      cursor: QueryArgs<M>["cursor"],
+      where: W & QueryArgs<M>["where"],
+      client?: AnyPrismaClient
     ): Promise<Indices<D, L, X> | undefined>;
     (
       cursor: null,
-      where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+      where: W & QueryArgs<M>["where"],
+      client?: AnyPrismaClient
     ): Promise<Indices<D, L, X>>;
   };
   /**
    * Gets the indices to generate a new fractional index for the first item.
-   * Equivalent to `getIndicesAfter(null, where)`.
+   * Equivalent to `getIndicesAfter(null, where, client)`.
    *
    * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the first item.
    */
   getIndicesForFirst(
-    where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+    where: W & QueryArgs<M>["where"],
+    client?: AnyPrismaClient
   ): Promise<Indices<D, L, X>>;
   /**
    * Gets the indices to generate a new fractional index for the last item.
-   * Equivalent to `getIndicesBefore(null, where)`.
+   * Equivalent to `getIndicesBefore(null, where, client)`.
    *
    * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the last item.
    */
   getIndicesForLast(
-    where: W & Prisma.Args<PrismaClient[M], "findMany">["where"]
+    where: W & QueryArgs<M>["where"],
+    client?: AnyPrismaClient
   ): Promise<Indices<D, L, X>>;
 };
 
@@ -203,6 +231,9 @@ type FieldOptionsRecord = {
   >;
 };
 
+/**
+ * The options for the fractional indexing extension.
+ */
 export interface FractionalIndexingExtensionOptions {
   /**
    * The maximum number of retries to generate a fractional index.
@@ -227,10 +258,24 @@ export interface FractionalIndexingExtensionOptions {
 // Type definitions below are for the Prisma extension.
 // Although it's easier to define the types without generics of `FractionalIndexingExtensionOptions` inside the function, we define them here to keep the function signature concise.
 
+/**
+ * A union of the pairs of the key and value of the `fields` property of the options.
+ *
+ * @template O The options type.
+ * @example ["article.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ["photo.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ...
+ */
 type FieldsUnion<O extends FractionalIndexingExtensionOptions> = {
   [K in keyof O["fields"]]: [K, O["fields"][K]];
 }[keyof O["fields"]];
 
+/**
+ * The field information for the Prisma extension.
+ *
+ * @template I The field options type.
+ * @template M The model name.
+ * @template W The type of the required fields for the `where` argument of the `findMany` method.
+ * @template X The type of the fractional index brand.
+ */
 type FieldInfo<I extends FieldOptions, M extends ModelKey, W, X> = {
   readonly I: I;
   readonly value: FractionalIndex<I["digitBase"], I["lengthBase"], X>;
@@ -243,6 +288,11 @@ type FieldInfo<I extends FieldOptions, M extends ModelKey, W, X> = {
   >;
 };
 
+/**
+ * The field information for each model.
+ *
+ * @template O The options type.
+ */
 type PerModelFieldInfo<O extends FractionalIndexingExtensionOptions> = {
   [M in ModelKey]: {
     [F in StringModelFieldName<M> as `${M}.${F}` extends FieldsUnion<O>[0]
@@ -276,11 +326,24 @@ type ExtensionModel<O extends FractionalIndexingExtensionOptions> = {
   };
 };
 
+/**
+ * The type of our Prisma extension.
+ *
+ * @template O The options type.
+ */
 type Extension<O extends FractionalIndexingExtensionOptions> = {
   name: typeof EXTENSION_NAME;
   model: ExtensionModel<O>;
 };
 
+/**
+ * Checks if the error is a conflict error for the fractional index.
+ *
+ * @param error The error object to check.
+ * @param modelName The model name.
+ * @param field The field name of the fractional index.
+ * @returns `true` if the error is a conflict error for the fractional index, or `false` otherwise.
+ */
 function isIndexConflictError(
   error: unknown,
   modelName: string,
@@ -296,6 +359,12 @@ function isIndexConflictError(
   );
 }
 
+/**
+ * Creates a Prisma extension for fractional indexing.
+ *
+ * @param param0 The options for the fractional indexing extension.
+ * @returns The Prisma extension.
+ */
 export function createFractionalIndexingExtension<
   Options extends FractionalIndexingExtensionOptions
 >({
@@ -327,9 +396,13 @@ export function createFractionalIndexingExtension<
         maxRetries,
       });
 
-      const getIndicesAfter = async (cursor: any, where: any): Promise<any> => {
+      const getIndicesAfter = async (
+        cursor: any,
+        where: any,
+        pClient: AnyPrismaClient = client
+      ): Promise<any> => {
         if (!cursor) {
-          const firstItem = await (client as any)[model].findFirst({
+          const firstItem = await pClient[model].findFirst({
             where,
             select: { [field]: true },
             orderBy: { [field]: "asc" },
@@ -338,7 +411,7 @@ export function createFractionalIndexingExtension<
           return [null, firstItem?.[field] ?? null];
         }
 
-        const items = await (client as any)[model].findMany({
+        const items = await pClient[model].findMany({
           cursor,
           where,
           select: { [field]: true },
@@ -352,10 +425,11 @@ export function createFractionalIndexingExtension<
 
       const getIndicesBefore = async (
         cursor: any,
-        where: any
+        where: any,
+        pClient: AnyPrismaClient = client
       ): Promise<any> => {
         if (!cursor) {
-          const lastItem = await (client as any)[model].findFirst({
+          const lastItem = await pClient[model].findFirst({
             where,
             select: { [field]: true },
             orderBy: { [field]: "desc" },
@@ -364,7 +438,7 @@ export function createFractionalIndexingExtension<
           return [lastItem?.[field] ?? null, null];
         }
 
-        const items = await (client as any)[model].findMany({
+        const items = await pClient[model].findMany({
           cursor,
           where,
           select: { [field]: true },
@@ -384,8 +458,10 @@ export function createFractionalIndexingExtension<
           isIndexConflictError(error, modelName, field),
         getIndicesAfter,
         getIndicesBefore,
-        getIndicesForFirst: (where: any) => getIndicesAfter(null, where),
-        getIndicesForLast: (where: any) => getIndicesBefore(null, where),
+        getIndicesForFirst: (where: any, pClient?: AnyPrismaClient) =>
+          getIndicesAfter(null, where, pClient),
+        getIndicesForLast: (where: any, pClient?: AnyPrismaClient) =>
+          getIndicesBefore(null, where, pClient),
       };
 
       helperMap.set(`${model}\0${field}`, helperEx);

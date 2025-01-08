@@ -264,11 +264,7 @@ describe("generateNKeysBetween", () => {
             ...args
           );
           if (!result) {
-            console.log("a", keys[keys.length - 1] ?? null, null);
             throw new Error("Unexpected undefined");
-          }
-          if (!isValidFractionalIndex(result, ...vArgs)) {
-            console.log("a", keys[keys.length - 1] ?? null, null, result);
           }
           expect(isValidFractionalIndex(result, ...vArgs)).toBe(true);
           keys.push(result);
@@ -279,11 +275,7 @@ describe("generateNKeysBetween", () => {
         case 1: {
           const result = generateKeyBetween(null, keys[0] ?? null, ...args);
           if (!result) {
-            console.log("p", null, keys[0] ?? null);
             throw new Error("Unexpected undefined");
-          }
-          if (!isValidFractionalIndex(result, ...vArgs)) {
-            console.log("p", null, keys[0] ?? null, result);
           }
           expect(isValidFractionalIndex(result, ...vArgs)).toBe(true);
           keys.unshift(result);
@@ -300,11 +292,7 @@ describe("generateNKeysBetween", () => {
           const after = keys[targetIndex + 1];
           const result = generateKeyBetween(before, after, ...args);
           if (!result) {
-            console.log("i", before, after);
             throw new Error("Unexpected undefined");
-          }
-          if (!isValidFractionalIndex(result, ...vArgs)) {
-            console.log("i", before, after, result);
           }
           expect(isValidFractionalIndex(result, ...vArgs)).toBe(true);
           keys.splice(targetIndex + 1, 0, result);

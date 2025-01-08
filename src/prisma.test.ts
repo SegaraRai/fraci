@@ -432,7 +432,7 @@ describe("getIndicesBefore and getIndicesAfter", () => {
 
   test("type check", async () => {
     try {
-      const pfi = await prisma.photo.fractionalIndexing("fi");
+      const pfi = prisma.photo.fractionalIndexing("fi");
 
       // Test `where` argument
 
@@ -471,4 +471,52 @@ describe("getIndicesBefore and getIndicesAfter", () => {
 
     expect(true).toBe(true);
   });
+});
+
+test("custom client", async () => {
+  let calledCount = 0;
+  const customClient = {
+    article: {
+      findFirst: (...args: any[]) => {
+        calledCount++;
+        return prisma.photo.findFirst(...args);
+      },
+      findMany: (...args: any[]) => {
+        calledCount++;
+        return prisma.photo.findMany(...args);
+      },
+    },
+  } as unknown as PrismaClient;
+
+  const afi = prisma.article.fractionalIndexing("fi");
+
+  const article = await prisma.article.findUniqueOrThrow({
+    where: { id: 1, userId: 1 },
+  });
+
+  expect(calledCount).toBe(0);
+
+  await afi.getIndicesBefore(
+    { id: article.id },
+    {
+      userId: article.userId,
+    },
+    customClient
+  );
+  expect(calledCount).toBe(1);
+
+  await afi.getIndicesAfter(
+    { id: article.id },
+    {
+      userId: article.userId,
+    },
+    customClient
+  );
+  expect(calledCount).toBe(2);
+
+  await afi.getIndicesForFirst({ userId: article.userId }, customClient);
+  expect(calledCount).toBe(3);
+
+  await afi.getIndicesForLast({ userId: article.userId }, customClient);
+  expect(calledCount).toBe(4);
 });

@@ -10,20 +10,29 @@ import { createDigitBaseMap, createIntegerLengthBaseMap } from "./lib/utils.js";
 export const DEFAULT_MAX_LENGTH = 50;
 export const DEFAULT_MAX_RETRIES = 10;
 
+/**
+ * Fractional index pattern for demonstration.
+ */
 type FractionalIndexPattern<D extends string, L extends string> = `${L}${D}...`;
 
+/**
+ * A helper type to convert a string to a union of characters.
+ */
 type StringToUnion<T extends string> = T extends `${infer First}${infer Rest}`
   ? First | StringToUnion<Rest>
   : never;
 
+/**
+ * Fractional indexing utility.
+ */
 export interface FractionalIndexing<D extends string, L extends string, X> {
   readonly __EXAMPLE__?: FractionalIndexPattern<
     StringToUnion<D>,
     StringToUnion<L>
   >;
 
-  readonly digitBase: string;
-  readonly lengthBase: string;
+  readonly digitBase: D;
+  readonly lengthBase: L;
   generateKeyBetween(
     a: FractionalIndex<D, L, X> | null,
     b: FractionalIndex<D, L, X> | null
@@ -35,6 +44,9 @@ export interface FractionalIndexing<D extends string, L extends string, X> {
   ): Generator<FractionalIndex<D, L, X>[], void, unknown>;
 }
 
+/**
+ * Fractional indexing factory options.
+ */
 export interface FractionalIndexingFactoryOptions<
   D extends string,
   L extends string
@@ -45,6 +57,12 @@ export interface FractionalIndexingFactoryOptions<
   maxRetries?: number;
 }
 
+/**
+ * Create fractional indexing utility.
+ *
+ * @param options Options
+ * @returns Fractional indexing utility
+ */
 export function createFractionalIndexing<
   D extends string,
   L extends string,
