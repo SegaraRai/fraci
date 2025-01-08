@@ -1,5 +1,16 @@
 # fraci
 
+## 0.5.0
+
+### Minor Changes
+
+- d46c49a: **BREAKING CHANGE** Renamed methods and types.
+- c0a5d80: Support transaction.
+
+### Patch Changes
+
+- 3c91aed: Changed default max retry count to 5 (from 10).
+
 ## 0.4.1
 
 ### Patch Changes
