@@ -18,7 +18,8 @@ A comprehensive library for [fractional indexing](https://www.figma.com/blog/rea
 
 ### With Prisma
 
-> **Warning:** Fractional Indexing is inherently difficult to add to existing tables, and our library does not currently support adding it to existing tables.
+> [!NOTE]
+> Adding fractional indexing to existing tables is inherently challenging and not supported by our library.
 > The following steps assume you are creating a new table.
 
 Step 1. Install the package.
