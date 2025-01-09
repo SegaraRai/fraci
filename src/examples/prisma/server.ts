@@ -131,7 +131,7 @@ const app = new Hono()
           ? await fiHelper.indicesForBefore({ id: before }, { groupId })
           : await fiHelper.indicesForAfter({ id: after }, { groupId });
       if (!indices) {
-        return c.json({ error: "Reference item not found" }, 404);
+        return c.json({ error: "Reference item not found" }, 400);
       }
 
       const delay = Number(c.req.query("delay") ?? "0");
