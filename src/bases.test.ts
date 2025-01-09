@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { createDigitBaseMap, createIntegerLengthBaseMap } from "./lib/utils.js";
 import * as BASES from "./bases.js";
+import { createDigitBaseMap, createIntegerLengthBaseMap } from "./lib/utils.js";
 
 describe("BASE constants", () => {
   for (const [name, value] of Object.entries(BASES)) {

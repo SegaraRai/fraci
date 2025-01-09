@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { fraci, DEFAULT_MAX_LENGTH } from "./factory.js";
+import { DEFAULT_MAX_LENGTH, fraci } from "./factory.js";
 
 describe("fraci", () => {
   const digitBase = "0123456789";

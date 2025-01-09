@@ -1,13 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import { BASE10, BASE95 } from "../bases.js";
 import {
+  decrementInteger,
   getIntegerLengthSigned,
-  splitParts,
   getIntegerZero,
+  getMidpointFractional,
   getSmallestInteger,
   incrementInteger,
-  decrementInteger,
-  getMidpointFractional,
+  splitParts,
 } from "./decimal.js";
 import { createDigitBaseMap, createIntegerLengthBaseMap } from "./utils.js";
 

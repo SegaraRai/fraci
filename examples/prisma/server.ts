@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient } from "@prisma/client";
 import { zValidator } from "@hono/zod-validator";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { BASE64 } from "fraci";
 import { fraciExtension } from "fraci/prisma";
 import { Hono } from "hono";

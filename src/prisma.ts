@@ -3,9 +3,9 @@
 import { Prisma, PrismaClient } from "@prisma/client/extension.js";
 import type { PrismaClientKnownRequestError } from "@prisma/client/runtime/library.js";
 import {
-  fraci,
   DEFAULT_MAX_LENGTH,
   DEFAULT_MAX_RETRIES,
+  fraci,
   type Fraci,
 } from "./factory.js";
 import type { FractionalIndex } from "./lib/types.js";

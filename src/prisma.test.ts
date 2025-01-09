@@ -1,6 +1,6 @@
 // Note that this test needs the package to be built before running and type checking.
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { PrismaClient } from "@prisma/client";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { fraciExtension } from "fraci/prisma";
 import { BASE26, BASE36, BASE95 } from "./bases";
 

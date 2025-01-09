@@ -2,10 +2,10 @@ import { bench, run } from "mitata";
 import { BASE95 } from "../bases";
 import { getSmallestInteger } from "./decimal";
 import {
-  generateNKeysBetween,
   generateKeyBetween,
+  generateNKeysBetween,
 } from "./fractional-indexing";
-import { createIntegerLengthBaseMap, createDigitBaseMap } from "./utils";
+import { createDigitBaseMap, createIntegerLengthBaseMap } from "./utils";
 
 const [L_LEN_FORWARD, L_LEN_REVERSE] = createIntegerLengthBaseMap(BASE95);
 const [L_DIG_FORWARD, L_DIG_REVERSE] = createDigitBaseMap(BASE95);

@@ -1,9 +1,9 @@
 import {
-  getIntegerZero,
-  splitParts,
-  getMidpointFractional,
   decrementInteger,
+  getIntegerZero,
+  getMidpointFractional,
   incrementInteger,
+  splitParts,
 } from "./decimal.js";
 
 export function isValidFractionalIndex(
