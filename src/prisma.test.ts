@@ -218,16 +218,41 @@ test("instantiation type check", () => {
     } as const,
   });
 
+  expect(() =>
+    basePrisma.$extends(
+      fraciExtension({
+        fields: {
+          // @ts-expect-error Only existing fields can be specified.
+          "notExist.fi": {
+            group: [],
+            digitBase: BASE36,
+            lengthBase: BASE26,
+          },
+        } as const,
+      })
+    )
+  ).toThrowError("Could not get field information for notExist.fi");
+
+  expect(() =>
+    basePrisma.$extends(
+      fraciExtension({
+        fields: {
+          // @ts-expect-error Only existing fields can be specified.
+          "article.notExist": {
+            group: [],
+            digitBase: BASE36,
+            lengthBase: BASE26,
+          },
+        } as const,
+      })
+    )
+  ).toThrowError("Could not get field information for article.notExist");
+
   fraciExtension({
     fields: {
       "article.fi": {
         // @ts-expect-error Only existing fields can be specified.
         group: ["altText"],
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-      "photo.fi": {
-        group: [],
         digitBase: BASE36,
         lengthBase: BASE26,
       },
@@ -242,11 +267,6 @@ test("instantiation type check", () => {
         digitBase: BASE36,
         lengthBase: BASE26,
       },
-      "photo.fi": {
-        group: [],
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
     } as const,
   });
 
@@ -255,11 +275,6 @@ test("instantiation type check", () => {
       "article.fi": {
         // @ts-expect-error The fractional index field itself cannot be specified.
         group: ["fi"],
-        digitBase: BASE36,
-        lengthBase: BASE26,
-      },
-      "photo.fi": {
-        group: [],
         digitBase: BASE36,
         lengthBase: BASE26,
       },
