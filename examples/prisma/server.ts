@@ -1,9 +1,9 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { zValidator } from "@hono/zod-validator";
+import { BASE64 } from "fraci";
 import { fraciExtension } from "fraci/prisma";
 import { Hono } from "hono";
 import * as z from "zod";
-import { BASE64 } from "../../bases";
 
 const prisma = new PrismaClient().$extends(
   fraciExtension({
