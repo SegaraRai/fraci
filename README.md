@@ -1,5 +1,7 @@
 # fraci - Fractional Indexing
 
+[![npm](https://img.shields.io/npm/v/fraci)](https://www.npmjs.com/package/fraci) [![build status](https://img.shields.io/github/actions/workflow/status/SegaraRai/fraci/publish.yml)](https://github.com/SegaraRai/fraci/actions) [![MIT License](https://img.shields.io/github/license/SegaraRai/fraci)](https://github.com/SegaraRai/fraci?tab=MIT-1-ov-file)
+
 A comprehensive library for [fractional indexing](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/), offering a strongly typed API and seamless Prisma integration.
 
 ## Key Features
@@ -227,7 +229,7 @@ See the `examples` directory for more examples.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/SegaraRai/fraci/blob/main/LICENSE) file for details.
 
 ## Credits
 
