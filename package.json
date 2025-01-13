@@ -1,6 +1,6 @@
 {
   "name": "fraci",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A comprehensive library for fractional indexing, offering a strongly typed API and seamless Prisma integration.",
   "author": "SegaraRai",
   "license": "MIT",
