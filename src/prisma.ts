@@ -15,11 +15,6 @@ const EXTENSION_NAME = "fraci";
 const PRISMA_CONFLICT_CODE = "P2002";
 
 /**
- * A type-only unique symbol for branding Prisma models and fields.
- */
-declare const PRISMA_BRAND: unique symbol;
-
-/**
  * `PrismaClientKnownRequestError` of the conflict error.
  */
 export type PrismaClientConflictError = PrismaClientKnownRequestError & {
@@ -34,7 +29,7 @@ export type PrismaClientConflictError = PrismaClientKnownRequestError & {
  * @template F The field name.
  */
 type PrismaBrand<M extends string, F extends string> = {
-  [PRISMA_BRAND]: { model: M; field: F };
+  readonly __prisma__: { model: M; field: F };
 };
 
 /**
