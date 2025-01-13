@@ -11,23 +11,9 @@ export const DEFAULT_MAX_LENGTH = 50;
 export const DEFAULT_MAX_RETRIES = 5;
 
 /**
- * Fractional index pattern for demonstration.
- */
-type IndexPattern<D extends string, L extends string> = `${L}${D}...`;
-
-/**
- * A helper type to convert a string to a union of characters.
- */
-type StringToUnion<T extends string> = T extends `${infer First}${infer Rest}`
-  ? First | StringToUnion<Rest>
-  : never;
-
-/**
  * Fractional indexing utility.
  */
 export interface Fraci<D extends string, L extends string, X> {
-  readonly __EXAMPLE__?: IndexPattern<StringToUnion<D>, StringToUnion<L>>;
-
   readonly digitBase: D;
   readonly lengthBase: L;
   generateKeyBetween(
