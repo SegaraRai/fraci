@@ -1,5 +1,11 @@
 # fraci
 
+## 0.7.0
+
+### Minor Changes
+
+- 1430862: Mark package side-effect free.
+
 ## 0.6.0
 
 ### Minor Changes
