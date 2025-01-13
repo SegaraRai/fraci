@@ -37,23 +37,63 @@ export interface FraciOptions<D extends string, L extends string> {
   maxRetries?: number;
 }
 
+export type FraciCache = Map<string, unknown> & { __fraci__: never };
+
+/**
+ * Create cache.
+ *
+ * @returns Cache
+ */
+export function createFraciCache(): FraciCache {
+  return new Map() as FraciCache;
+}
+
+function withCache<T>(
+  cache: FraciCache | undefined,
+  key: string,
+  fn: () => T
+): T {
+  if (!cache) {
+    return fn();
+  }
+
+  let value = cache.get(key) as T | undefined;
+  if (value === undefined) {
+    value = fn();
+    cache.set(key, value);
+  }
+
+  return value;
+}
+
 /**
  * Create fractional indexing utility.
  *
  * @param options Options
+ * @param cache Cache (optional)
  * @returns Fractional indexing utility
  */
-export function fraci<D extends string, L extends string, X>({
-  digitBase,
-  lengthBase,
-  maxLength = DEFAULT_MAX_LENGTH,
-  maxRetries = DEFAULT_MAX_RETRIES,
-}: FraciOptions<D, L>): Fraci<D, L, X> {
+export function fraci<D extends string, L extends string, X>(
+  {
+    digitBase,
+    lengthBase,
+    maxLength = DEFAULT_MAX_LENGTH,
+    maxRetries = DEFAULT_MAX_RETRIES,
+  }: FraciOptions<D, L>,
+  cache?: FraciCache
+): Fraci<D, L, X> {
   type F = FractionalIndex<D, L, X>;
 
-  const [digBaseForward, digBaseReverse] = createDigitBaseMap(digitBase);
-  const [lenBaseForward, lenBaseReverse] =
-    createIntegerLengthBaseMap(lengthBase);
+  const [digBaseForward, digBaseReverse] = withCache(
+    cache,
+    `D${digitBase}`,
+    createDigitBaseMap.bind(null, digitBase)
+  );
+  const [lenBaseForward, lenBaseReverse] = withCache(
+    cache,
+    `L${lengthBase}`,
+    createIntegerLengthBaseMap.bind(null, lengthBase)
+  );
   const smallestInteger = getSmallestInteger(digBaseForward, lenBaseForward);
 
   return {

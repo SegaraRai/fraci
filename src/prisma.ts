@@ -3,6 +3,7 @@
 import { Prisma, PrismaClient } from "@prisma/client/extension.js";
 import type { PrismaClientKnownRequestError } from "@prisma/client/runtime/library.js";
 import {
+  createFraciCache,
   DEFAULT_MAX_LENGTH,
   DEFAULT_MAX_RETRIES,
   fraci,
@@ -360,6 +361,8 @@ export function fraciExtension<Options extends FraciExtensionOptions>({
   maxRetries = DEFAULT_MAX_RETRIES,
 }: Options) {
   return Prisma.defineExtension((client) => {
+    const cache = createFraciCache();
+
     type HelperValue = FraciForPrisma<any, any, any, any, any>;
 
     const helperMap = new Map<string, HelperValue>();
@@ -376,12 +379,15 @@ export function fraciExtension<Options extends FraciExtensionOptions>({
         );
       }
 
-      const helper = fraci({
-        digitBase,
-        lengthBase,
-        maxLength,
-        maxRetries,
-      });
+      const helper = fraci(
+        {
+          digitBase,
+          lengthBase,
+          maxLength,
+          maxRetries,
+        },
+        cache
+      );
 
       const indicesForAfter = async (
         cursor: any,
