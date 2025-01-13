@@ -24,6 +24,7 @@
       "require": "./dist/prisma.cjs"
     }
   },
+  "sideEffects": false,
   "files": [
     "dist",
     "README.md",
