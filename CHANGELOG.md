@@ -1,5 +1,11 @@
 # fraci
 
+## 0.8.0
+
+### Minor Changes
+
+- 5f3cec8: Do not use unique symbol to brand `FractionalIndex` to avoid TS4058 error.
+
 ## 0.7.0
 
 ### Minor Changes
