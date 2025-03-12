@@ -9,7 +9,7 @@ import {
   fraci,
   type Fraci,
 } from "./factory.js";
-import type { FractionalIndex } from "./lib/types.js";
+import type { FractionalIndex } from "./types.js";
 
 const EXTENSION_NAME = "fraci";
 
