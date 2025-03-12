@@ -4,27 +4,106 @@
 
 A comprehensive library for [fractional indexing](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/), offering a strongly typed API and seamless ORM integrations.
 
+**What is fractional indexing?** It's a technique for maintaining ordered lists in collaborative environments without requiring reindexing. This allows for efficient insertions, deletions, and reordering operations, making it ideal for applications with ordered data like task lists, kanban boards, or document outlines.
+
+## Quick Start
+
+```bash
+# Install the package
+npm install fraci
+```
+
+```typescript
+// With Drizzle ORM
+import { BASE64, fraci, type FractionalIndexOf } from "fraci";
+import { defineDrizzleFraci, drizzleFraci } from "fraci/drizzle";
+
+// Create a fraci instance
+const tasksFraci = fraci<typeof BASE64, typeof BASE64, "tasks.fi">({
+  digitBase: BASE64,
+  lengthBase: BASE64,
+});
+
+// Use it in your schema
+export const tasks = sqliteTable(
+  "tasks",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    title: text("title").notNull(),
+    fi: text("fi").notNull().$type<FractionalIndexOf<typeof tasksFraci>>(),
+    userId: integer("user_id").notNull(),
+  },
+  (t) => [uniqueIndex("tasks_user_id_fi_idx").on(t.userId, t.fi)]
+);
+
+// Define the fractional index configuration
+export const fiTasks = defineDrizzleFraci(
+  tasksFraci,
+  tasks,
+  tasks.fi,
+  { id: tasks.id },
+  { userId: tasks.userId }
+);
+
+// Define a helper function to check for index conflicts (may vary by database)
+function isIndexConflictError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.includes("UNIQUE constraint failed:") &&
+    error.message.includes(".fi")
+  );
+}
+
+// Use it in your application
+const tfi = drizzleFraci(db, fiTasks);
+const indices = await tfi.indicesForLast({ userId: 1 });
+for (const fi of tfi.generateKeyBetween(...indices)) {
+  try {
+    return await db
+      .insert(tasks)
+      .values({ title: "New Task", fi, userId: 1 })
+      .returning()
+      .get();
+  } catch (error) {
+    if (isIndexConflictError(error)) {
+      continue;
+    }
+    throw error;
+  }
+}
+```
+
+See the detailed examples below for more information.
+
 ## Key Features
 
-- **Fractional indexing** with arbitrary base characters.
-- **ORM integrations** - First-class support for Drizzle ORM and Prisma ORM with human-friendly and strongly typed APIs.
-- **Regeneration on conflict** - Automatic regeneration of fractional indexes on conflict.
-- **TypeScript support** - Strongly typed APIs with branded types for added protection.
-- **High performance** - Optimized for performance with minimal overhead.
-- **Smaller bundle size** - Fully tree-shakable.
-- **Zero dependencies** - No dependencies, not even on Node.js.
+- **Fractional indexing** with arbitrary base characters
+- **ORM integrations** - First-class support for Drizzle ORM and Prisma ORM with human-friendly and strongly typed APIs
+- **Regeneration on conflict** - Automatic regeneration of fractional indexes on conflict
+- **TypeScript support** - Strongly typed APIs with branded types for added protection
+- **High performance** - Optimized for performance with minimal overhead
+- **Smaller bundle size** - Fully tree-shakable
+- **Zero dependencies** - No dependencies, not even on Node.js
 
-## Getting Started
+## Security Considerations
 
-> [!NOTE]
-> Adding fractional indexing to existing tables is inherently challenging and not supported by our library.
-> The following steps assume you are creating a new table.
+### Preventing Cross-Group Operations
 
-See the `examples` directory for full examples.
+- **IMPORTANT:** Always filter by group columns (e.g., `userId`) when updating items to prevent cross-group operations
+- The examples in this README demonstrate this pattern with `where` clauses that include both ID and group columns
 
-### With Drizzle ORM
+### Type Safety
 
-Step 1. Install the package.
+- fraci uses branded types to prevent confusion between fractional indices from different columns
+- This provides compile-time protection against mixing indices from different contexts
+
+### Protection Against Index Expansion Attacks
+
+- Fractional indices can grow in length through repeated operations
+- fraci includes a configurable `maxLength` parameter (default: 50) to prevent malicious users from creating excessively long indices
+- When this limit is exceeded, an exception is thrown
+
+## Installation
 
 ```bash
 npm install fraci
@@ -39,7 +118,17 @@ pnpm add fraci
 bun add fraci
 ```
 
-Step 2. Create a new table with a fractional index column.
+> [!NOTE]
+> Adding fractional indexing to existing tables is inherently challenging and not supported by our library.
+> The following examples assume you are creating a new table.
+
+## Usage
+
+See the `examples` directory for full examples.
+
+### With Drizzle ORM
+
+#### 1. Define your Drizzle schema
 
 ```typescript
 import {
@@ -50,85 +139,61 @@ import {
 } from "fraci";
 import { defineDrizzleFraci } from "fraci/drizzle";
 
-// Utility function to define a fractional index column. Should be copied to your project.
+// Utility function for fractional index columns
 function fi<FractionalIndex extends AnyFractionalIndex>() {
   return text().notNull().$type<FractionalIndex>();
 }
 
-// Articles table
+// Define your table with a fractional index column
 export const articles = table(
   "articles",
   {
     id: integer().primaryKey({ autoIncrement: true }),
-
-    // Some random columns...
     title: text().notNull(),
     content: text().notNull(),
-
-    // **Fractional index column**
-    // It is necessary to know in which group the fractional index is defined. In this case, we assume that it is an index on the same `userId`.
-    // If you wish to order the entire table, you may choose to use a fractional index with no groups.
     fi: fi<FractionalIndexOf<typeof fraciForArticles>, "fi">("fi"),
-
-    // Foreign key
     userId: integer()
       .notNull()
       .references(() => users.id),
   },
   (t) => [
-    // **IMPORTANT:** The following compound unique index is necessary to ensure that the fractional index is unique within the group, and to improve the performance of the query.
-    // The fractional index column should be placed at the end of the index. This improves performance by using the index even when searching only by group (in this case `userId`).
+    // IMPORTANT: This compound index is necessary for both uniqueness and performance
     uniqueIndex("user_id_fi_idx").on(t.userId, t.fi),
   ]
 );
 
-// Here, we create a fraci instance for the articles table.
-// You can either 1) create a new instance or 2) use the same instance for multiple fractional index columns.
-// When sharing instances, please be careful not to confuse fractional indices of different tables/columns, as the branded type will not function.
+// Create a fraci instance
 const fraciForArticles = fraci<
-  typeof BASE64, // Digit base
-  typeof BASE64, // Length base
-  "drizzle.articles.fi" // Branding string. Any string is fine.
+  typeof BASE64,
+  typeof BASE64,
+  "drizzle.articles.fi"
 >({
-  // The base properties are used to define the base characters of the fractional index.
-  // - `digitBase` determines the radix of the fractional index and is used from the second character onward.
-  // - `lengthBase` is used to represent the length of the integer part of the fractional index and is used as the first character of the index.
-  // Both `digitBase` and `lengthBase` are more space efficient with more characters. It is recommended to use at least 10 characters.
-  //
-  // Example:
-  // - To always start with a lowercase letter and have the second and subsequent letters be lowercase letters and numbers,
-  //   set `lengthBase` to `abcdefghijklmnopqrstuvwxyz` (`BASE26`) and `digitBase` to `0123456789abcdefghijklmnopqrstuvwxyz` (`BASE36`).
-  digitBase: BASE64,
-  lengthBase: BASE64,
-  // The maximum number of retries to generate a new fractional index when a conflict occurs.
-  // The default is 5.
-  maxRetries: 5,
-  // The maximum length of the fractional index.
-  // Fractional index can be made infinitely long by repeating certain operations.
-  // To prevent attacks by malicious users, fraci allows a maximum length to be specified for stopping new creation.
-  // The default is 50.
-  maxLength: 50,
+  digitBase: BASE64, // Determines the radix of the fractional index (second character onward)
+  lengthBase: BASE64, // Used to represent the length of the integer part (first character)
+  maxRetries: 5, // Maximum number of retries on conflict (default: 5)
+  maxLength: 50, // Maximum length to prevent attacks (default: 50)
 });
 
-// Export the fractional index configuration for the articles table.
+// Export the fractional index configuration
 export const fiArticles = defineDrizzleFraci(
   fraciForArticles, // Fraci instance
   articles, // Table
   articles.fi, // Fractional index column
-  { id: articles.id }, // Cursor (columns that are used to find the row uniquely in the group)
-  { userId: articles.userId } // Group (columns that are used to find the group uniquely)
+  { id: articles.id }, // Cursor (columns that uniquely identify the row)
+  { userId: articles.userId } // Group (columns that uniquely identify the group)
 );
 ```
 
-Step 3. CRUD operations.
+> **Note:** The fractional index column should be placed at the end of the compound index for optimal performance.
+
+#### 2. CRUD operations with Drizzle ORM
 
 ```typescript
 import { drizzleFraci } from "fraci/drizzle";
-// Or import `drizzleFraciSync` if you're using synchronous database (i.e. Bun SQLite).
-import { articles, fiArticles } from "path/to/your/schema";
+// Or import `drizzleFraciSync` if you're using synchronous database (i.e. Bun SQLite)
+import { articles, fiArticles } from "./schema";
 
-// Create your own function to check if the error is a unique constraint error.
-// This may vary depending on the database driver you are using. Here's an example for Bun SQLite.
+// Create your own function to check if the error is a unique constraint error
 function isIndexConflictError(error: unknown): boolean {
   return (
     error instanceof Error &&
@@ -137,25 +202,22 @@ function isIndexConflictError(error: unknown): boolean {
   );
 }
 
-// Prepare the database.
+// Prepare the database
 const db = drizzle(/* ... */);
 
-// Get the helper object.
+// Get the helper object
 const afi = drizzleFraci(db, fiArticles);
 
 /**
  * Create (append)
- * Append a new article to the end.
+ * Append a new article to the end
  */
 async function append() {
-  // Get the fractional indices to generate the new one that represents the last index.
-  // `await` is only necessary for asynchronous databases.
+  // Get the fractional indices to generate the new one that represents the last index
   const indices = await afi.indicesForLast({ userId: 1 });
-  //                                         ^ Here, it's required to specify all columns specified in the group.
+  //                                         ^ Specify all group columns
 
-  // Generate a new fractional index.
-  // Note that the `generateKeyBetween` method is a generator to handle conflicts.
-  // If you don't want to handle conflicts, you can just do: `const [fi] = afi.generateKeyBetween(...indices);`.
+  // Generate a new fractional index and handle conflicts
   for (const fi of afi.generateKeyBetween(...indices)) {
     try {
       return await db
@@ -168,14 +230,12 @@ async function append() {
         })
         .returning()
         .get();
-    } catch (e) {
-      if (isIndexConflictError(e)) {
-        // Conflict occurred. (the same operation has been performed simultaneously)
-        // Regenerate the fractional index and try again.
+    } catch (error) {
+      if (isIndexConflictError(error)) {
+        // Conflict occurred - regenerate and try again
         continue;
       }
-
-      throw e;
+      throw error;
     }
   }
 
@@ -184,26 +244,25 @@ async function append() {
 
 /**
  * Read (list)
- * List all articles in order.
+ * List all articles in order
  */
 async function list() {
   return await db
     .select()
     .from(articles)
     .where(eq(articles.userId, 1))
-    // To sort by fractional index, just use the `ORDER BY` clause.
+    // To sort by fractional index, just use the `ORDER BY` clause
     .orderBy(asc(articles.fi))
     .all();
 }
 
 /**
  * Update (move)
- * Move article 3 to the position after article 4.
+ * Move article 3 to the position after article 4
  */
 async function move() {
   const indices = await afi.indicesForAfter({ id: 4 }, { userId: 1 });
-  //                                          ^ Here, one or more properties must be specified that uniquely identify the row.
-  //                                                     ^ Here, it's required to specify all columns specified in the `group` property above.
+  //                                          ^ Cursor   ^ Group
   if (!indices) {
     throw new Error("Article 4 does not exist or does not belong to user 1.");
   }
@@ -212,32 +271,28 @@ async function move() {
     try {
       const result = await db
         .update(articles)
-        .set({
-          fi,
-        })
+        .set({ fi })
         .where(
           and(
             eq(articles.id, 3),
-            eq(articles.userId, 1) // IMPORTANT: It's required to specify the group columns here to prevent cross-group operations.
+            eq(articles.userId, 1) // IMPORTANT: Always filter by group columns
           )
         )
         .returning()
         .get();
+
       if (!result) {
         throw new Error(
           "Article 3 does not exist or does not belong to user 1."
         );
       }
-
       return result;
-    } catch (e) {
-      if (isIndexConflictError(e)) {
-        // Conflict occurred.
-        // Regenerate the fractional index and try again.
+    } catch (error) {
+      if (isIndexConflictError(error)) {
+        // Conflict occurred - regenerate and try again
         continue;
       }
-
-      throw e;
+      throw error;
     }
   }
 
@@ -250,54 +305,30 @@ async function move() {
 async function remove() {
   // Just delete the item. No need to touch the fractional index.
   // There is no need to modify the fractional index even for soft delete.
-  await db.delete(article).where(eq(articles.id, 3));
+  await db.delete(articles).where(eq(articles.id, 3));
 }
 ```
 
 ### With Prisma ORM
 
-Step 1. Install the package.
-
-```bash
-npm install fraci
-
-# or
-yarn add fraci
-
-# or
-pnpm add fraci
-
-# or
-bun add fraci
-```
-
-Step 2. Create a new table with a fractional index column.
+#### 1. Define your Prisma schema
 
 ```prisma
 model Article {
   id Int @id @default(autoincrement())
-
-  // Some random columns...
   title String
   content String
-
-  // **Fractional index column**
-  // It is necessary to know in which group the fractional index is defined. In this case, we assume that it is an index on the same `userId`.
-  // If you wish to order the entire table, you may choose to use a fractional index with no groups.
-  fi String
-
-  // Foreign key
+  fi String  // Fractional Index
   userId Int
   user User @relation(fields: [userId], references: [id])
 
-  // **IMPORTANT:** The following compound unique index is necessary to ensure that the fractional index is unique within the group, and to improve the performance of the query.
-  // The fractional index column should be placed at the end of the index. This improves performance by using the index even when searching only by group (in this case `userId`).
-  // `@@unique` should translate to UNIQUE INDEX by Prisma, but if it does to UNIQUE CONSTRAINT, manually modify the migration file or create a separate index.
+  // IMPORTANT: This compound unique index is necessary for both uniqueness and performance
+  // The fractional index column should be placed at the end of the index
   @@unique([userId, fi])
 }
 ```
 
-Step 3. Use the Prisma extension of `fraci`.
+#### 2. Configure the Prisma extension
 
 ```typescript
 import { PrismaClient } from "@prisma/client";
@@ -307,57 +338,36 @@ import { fraciExtension } from "fraci/prisma";
 const prisma = new PrismaClient().$extends(
   fraciExtension({
     fields: {
-      // Here, we define the fractional index column.
-      // The notation is as follows: `table.column`.
+      // Define the fractional index column (table.column)
       "article.fi": {
-        // The group property is used to define the group of fractional indexes.
-        group: ["userId"],
-        // The base properties are used to define the base characters of the fractional index.
-        // - `digitBase` determines the radix of the fractional index and is used from the second character onward.
-        // - `lengthBase` is used to represent the length of the integer part of the fractional index and is used as the first character of the index.
-        // Both `digitBase` and `lengthBase` are more space efficient with more characters. It is recommended to use at least 10 characters.
-        //
-        // Example:
-        // - To always start with a lowercase letter and have the second and subsequent letters be lowercase letters and numbers,
-        //   set `lengthBase` to `abcdefghijklmnopqrstuvwxyz` (`BASE26`) and `digitBase` to `0123456789abcdefghijklmnopqrstuvwxyz` (`BASE36`).
-        digitBase: BASE64,
-        lengthBase: BASE64,
+        group: ["userId"], // Group columns
+        digitBase: BASE64, // Determines the radix of the fractional index
+        lengthBase: BASE64, // Used to represent the length of the integer part
       },
-      // You can add more fractional index columns if you want.
-      // "anotherTable.anotherColumn": { ... },
     } as const,
-    // The maximum number of retries to generate a new fractional index when a conflict occurs.
-    // The default is 5.
-    maxRetries: 5,
-    // The maximum length of the fractional index.
-    // Fractional index can be made infinitely long by repeating certain operations.
-    // To prevent attacks by malicious users, fraci allows a maximum length to be specified for stopping new creation.
-    // The default is 50.
-    maxLength: 50,
+    maxRetries: 5, // Maximum number of retries on conflict (default: 5)
+    maxLength: 50, // Maximum length to prevent attacks (default: 50)
   })
 );
 ```
 
-Step 4. CRUD operations.
+#### 3. CRUD operations with Prisma ORM
 
 ```typescript
-// Get the helper object.
-// Only predefined table and column name combinations are available due to strong typing.
+// Get the helper object
 const afi = prisma.article.fraci("fi");
 //                 ^ Table        ^ Column
 
 /**
  * Create (append)
- * Append a new article to the end.
+ * Append a new article to the end
  */
 async function append() {
-  // Get the fractional indices to generate the new one that represents the last index.
+  // Get the fractional indices to generate the new one that represents the last index
   const indices = await afi.indicesForLast({ userId: 1 });
-  //                                         ^ Here, it's required to specify all columns specified in the `group` property above.
+  //                                         ^ Specify all group columns
 
-  // Generate a new fractional index.
-  // Note that the `generateKeyBetween` method is a generator to handle conflicts.
-  // If you don't want to handle conflicts, you can just do: `const [fi] = afi.generateKeyBetween(...indices);`.
+  // Generate a new fractional index and handle conflicts
   for (const fi of afi.generateKeyBetween(...indices)) {
     try {
       return await prisma.article.create({
@@ -368,14 +378,12 @@ async function append() {
           userId: 1,
         },
       });
-    } catch (e) {
-      if (afi.isIndexConflictError(e)) {
-        // Conflict occurred. (the same operation has been performed simultaneously)
-        // Regenerate the fractional index and try again.
+    } catch (error) {
+      if (afi.isIndexConflictError(error)) {
+        // Conflict occurred - regenerate and try again
         continue;
       }
-
-      throw e;
+      throw error;
     }
   }
 
@@ -384,14 +392,14 @@ async function append() {
 
 /**
  * Read (list)
- * List all articles in order.
+ * List all articles in order
  */
 async function list() {
   return await prisma.article.findMany({
     where: {
       userId: 1,
     },
-    // To sort by fractional index, just use the `orderBy` property.
+    // To sort by fractional index, just use the `orderBy` property
     orderBy: {
       fi: "asc",
     },
@@ -400,12 +408,11 @@ async function list() {
 
 /**
  * Update (move)
- * Move article 3 to the position after article 4.
+ * Move article 3 to the position after article 4
  */
 async function move() {
   const indices = await afi.indicesForAfter({ id: 4 }, { userId: 1 });
-  //                                          ^ Here, one or more properties must be specified that uniquely identify the row.
-  //                                                     ^ Here, it's required to specify all columns specified in the `group` property above.
+  //                                          ^ Cursor  ^ Group
   if (!indices) {
     throw new Error("Article 4 does not exist or does not belong to user 1.");
   }
@@ -415,31 +422,28 @@ async function move() {
       await prisma.article.update({
         where: {
           id: 3,
-          userId: 1, // IMPORTANT: It's required to specify the group columns here to prevent cross-group operations.
+          userId: 1, // IMPORTANT: Always filter by group columns
         },
         data: {
           fi,
         },
       });
-
       return;
-    } catch (e) {
-      if (afi.isIndexConflictError(e)) {
-        // Conflict occurred.
-        // Regenerate the fractional index and try again.
+    } catch (error) {
+      if (afi.isIndexConflictError(error)) {
+        // Conflict occurred - regenerate and try again
         continue;
       }
 
       if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === "P2025"
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2025"
       ) {
         throw new Error(
           "Article 3 does not exist or does not belong to user 1."
         );
       }
-
-      throw e;
+      throw error;
     }
   }
 
@@ -451,7 +455,6 @@ async function move() {
  */
 async function remove() {
   // Just delete the item. No need to touch the fractional index.
-  // There is no need to modify the fractional index even for soft delete.
   await prisma.article.delete({
     where: {
       id: 3,
@@ -459,6 +462,100 @@ async function remove() {
   });
 }
 ```
+
+## How It Works
+
+Fractional indexing allows for inserting items between existing items without reindexing:
+
+```plaintext
+A (index: 'a') --- B (index: 'c')
+    |
+    +--- New Item (index: 'b')
+```
+
+When you need to insert between A and B, fraci generates a new index that sorts lexicographically between them. If you need to insert between A and the new item:
+
+```plaintext
+A (index: 'a') --- New Item (index: 'b') --- B (index: 'c')
+    |
+    +--- Another Item (index: 'a5')
+```
+
+fraci handles the generation of these indices automatically, with conflict resolution and type safety.
+
+## Performance Considerations
+
+- The compound index structure (`[groupId, fi]`) is optimized for both uniqueness and query performance
+- Using larger character sets (BASE64, BASE95) results in shorter indices, reducing storage requirements
+- The library is designed to minimize allocations and computations during index generation
+- For optimal performance in high-concurrency scenarios, consider [skipping indices randomly](#skipping-indices-randomly)
+
+## Skipping Indices Randomly
+
+In highly concurrent environments, you may experience index conflicts when multiple operations try to insert items at the same position simultaneously. Since fractional indices are generated in a deterministic sequence, concurrent operations will attempt to use the same index value.
+
+For example, the first fractional index generated between `a` and `b` is always `a5`. If multiple operations try to insert between `a` and `b` at the same time, they'll all try to use `a5`, resulting in conflicts.
+
+To reduce conflicts, you can randomly skip ahead in the index generation sequence:
+
+```typescript
+// Get indices for the position where we want to insert
+const indices = await afi.indicesForAfter({ id: 4 }, { userId: 1 });
+if (!indices) {
+  throw new Error("Reference item not found");
+}
+
+// Skip a random number of indices to reduce collision probability
+let skipCount = Math.floor(Math.random() * 10); // Skip 0-9 indices
+for (const fi of afi.generateKeyBetween(...indices)) {
+  if (skipCount > 0) {
+    skipCount--;
+    continue;
+  }
+
+  try {
+    // Insert with the randomly advanced index
+    await db.insert(items).values({ title: "New Item", fi, userId: 1 });
+    return; // Success
+  } catch (error) {
+    // Still handle potential conflicts
+    if (isIndexConflictError(error)) {
+      // Continue with normal conflict resolution
+      continue;
+    }
+    throw error;
+  }
+}
+
+throw new Error("Failed to generate a new fractional index.");
+```
+
+This technique works because:
+
+1. The fractional index generator produces a sequence of valid indices
+2. Any index in this sequence is valid for insertion at the desired position
+3. By randomly skipping ahead, different concurrent operations are likely to use different indices
+4. Even if conflicts still occur, the normal conflict resolution mechanism will handle them
+
+This approach is particularly effective in scenarios with many concurrent users modifying the same ordered list.
+
+## Troubleshooting
+
+### Index Conflicts
+
+If you're experiencing frequent index conflicts:
+
+- Ensure your compound unique indexes are correctly defined
+- Implement the [skipping indices randomly](#skipping-indices-randomly) technique
+- Verify that your conflict detection logic is working correctly
+
+### Type Errors
+
+If you're seeing TypeScript errors related to fractional indices:
+
+- Ensure you're using the correct branded type for each column
+- Check that you're passing the correct parameters to `fraci()`
+- Verify that your ORM integration is correctly configured
 
 ## License
 
