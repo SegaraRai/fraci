@@ -79,7 +79,7 @@ See the detailed examples below for more information.
 
 - **Fractional indexing** with arbitrary base characters
 - **ORM integrations** - First-class support for Drizzle ORM and Prisma ORM with human-friendly and strongly typed APIs
-- **Regeneration on conflict** - Automatic regeneration of fractional indexes on conflict
+- **Regeneration on conflict** - Automatic regeneration of fractional indices on conflict
 - **TypeScript support** - Strongly typed APIs with branded types for added protection
 - **High performance** - Optimized for performance with minimal overhead
 - **Smaller bundle size** - Fully tree-shakable
@@ -545,7 +545,7 @@ This approach is particularly effective in scenarios with many concurrent users 
 
 If you're experiencing frequent index conflicts:
 
-- Ensure your compound unique indexes are correctly defined
+- Ensure your compound unique indices are correctly defined
 - Implement the [skipping indices randomly](#skipping-indices-randomly) technique
 - Verify that your conflict detection logic is working correctly
 
