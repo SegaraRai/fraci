@@ -543,6 +543,17 @@ This technique works because:
 
 This approach is particularly effective in scenarios with many concurrent users modifying the same ordered list.
 
+### Trade-offs of Skipping Indices
+
+While randomly skipping indices reduces conflicts in concurrent environments, it does come with a trade-off:
+
+- In environments where collisions rarely occur, skipping indices causes the number of digits in the indices to increase faster than necessary
+- This is because the second and subsequent indices in a sequence always have more digits than the first index
+- As a result, index space is consumed approximately twice as quickly when skipping is used
+- However, in high-concurrency environments where collisions are common, this disadvantage is minimal since you would need to use the longer indices anyway after the first collision
+
+Consider your specific use case when deciding whether to implement random index skipping.
+
 ## Troubleshooting
 
 ### Index Conflicts
