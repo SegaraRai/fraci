@@ -1,8 +1,13 @@
 // Note that this test needs the package to be built before running and type checking.
 import { PrismaClient } from "@prisma/client";
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { beforeAll, describe, expect, test } from "bun:test";
 import { fraciExtension } from "fraci/prisma";
-import { BASE26, BASE36, BASE95 } from "./bases";
+import { env } from "node:process";
+import { runPrismaMigrations } from "../test/prisma.js";
+import { BASE26, BASE36, BASE95 } from "./bases.js";
+
+// Prisma doesn't support in-memory SQLite databases, so we use a random file name.
+env["PRISMA_DB_URL"] = `file:test-${crypto.randomUUID()}.db?mode=memory`;
 
 const basePrisma = new PrismaClient();
 
@@ -36,27 +41,8 @@ const prisma = basePrisma.$extends(
 
 // Data seeding
 
-const clearAll = async () => {
-  await prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`PRAGMA foreign_keys = OFF`;
-    await tx.$queryRaw`DELETE FROM tagsOnPhotos`;
-    await tx.$queryRaw`DELETE FROM photo`;
-    await tx.$queryRaw`DELETE FROM article`;
-    await tx.$queryRaw`DELETE FROM tag`;
-    await tx.$queryRaw`DELETE FROM user`;
-    await tx.$queryRaw`DELETE FROM sqlite_sequence WHERE name != 'exampleItem'`;
-    await tx.$queryRaw`PRAGMA foreign_keys = ON;`;
-  });
-};
-
-afterAll(async () => {
-  await clearAll();
-
-  await prisma.$queryRaw`VACUUM`;
-});
-
 beforeAll(async () => {
-  await clearAll();
+  await runPrismaMigrations(basePrisma);
 
   await prisma.$transaction(async (tx) => {
     await tx.user.createMany({

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./prisma.db"
+  url      = env("PRISMA_DB_URL")
 }
 
 // We use a somewhat practical schema in order to check, for example, whether our library can handle the complexity of types.

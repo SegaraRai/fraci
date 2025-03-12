@@ -3,9 +3,15 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { BASE64 } from "fraci";
 import { fraciExtension } from "fraci/prisma";
 import { Hono } from "hono";
+import { env } from "node:process";
 import * as z from "zod";
+import { runPrismaMigrations } from "../../test/prisma.js";
 
-const prisma = new PrismaClient().$extends(
+// Prisma doesn't support in-memory SQLite databases, so we use a random file name.
+env["PRISMA_DB_URL"] = `file:test-${crypto.randomUUID()}.db?mode=memory`;
+
+const basePrisma = new PrismaClient();
+const prisma = basePrisma.$extends(
   fraciExtension({
     fields: {
       "exampleItem.fi": {
@@ -17,16 +23,9 @@ const prisma = new PrismaClient().$extends(
   })
 );
 
+await runPrismaMigrations(basePrisma);
+
 const app = new Hono()
-  .post("/cleanup", async () => {
-    await prisma.$queryRaw`DELETE FROM exampleItem`;
-    await prisma.$queryRaw`DELETE FROM sqlite_sequence WHERE name = 'exampleItem'`;
-    await prisma.$queryRaw`VACUUM`;
-  })
-  .post("/initialize", async () => {
-    await prisma.$queryRaw`DELETE FROM exampleItem`;
-    await prisma.$queryRaw`DELETE FROM sqlite_sequence WHERE name = 'exampleItem'`;
-  })
   .get("/groups/:groupId/items", async (c) => {
     const groupId = Number(c.req.param("groupId"));
     return c.json(
@@ -143,7 +142,7 @@ const app = new Hono()
       for (const fi of fiHelper.generateKeyBetween(indices[0], indices[1])) {
         try {
           const updated = await prisma.exampleItem.update({
-              // SECURITY: Always filter by group id to prevent cross-reference.
+            // SECURITY: Always filter by group id to prevent cross-reference.
             where: { id: itemId, groupId },
             data: { fi },
           });

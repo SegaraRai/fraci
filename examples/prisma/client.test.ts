@@ -1,18 +1,10 @@
 // Note that this test needs the package to be built before running and type checking.
-import { afterAll, beforeAll, expect, test } from "bun:test";
+import { expect, test } from "bun:test";
 import { hc } from "hono/client";
 import app from "./server.js";
 
 const client = hc<typeof app>("/", {
   fetch: app.request,
-});
-
-beforeAll(async () => {
-  await client.initialize.$post();
-});
-
-afterAll(async () => {
-  await client.cleanup.$post();
 });
 
 const getItemsFull = async (groupId: string) => {
