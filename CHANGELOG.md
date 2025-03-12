@@ -1,5 +1,11 @@
 # fraci
 
+## 0.9.0
+
+### Minor Changes
+
+- e7e7a0a: Support Drizzle ORM
+
 ## 0.8.0
 
 ### Minor Changes
