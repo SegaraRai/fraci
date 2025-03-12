@@ -1,16 +1,12 @@
 import { zValidator } from "@hono/zod-validator";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { BASE64 } from "fraci";
 import { fraciExtension } from "fraci/prisma";
 import { Hono } from "hono";
-import { env } from "node:process";
 import * as z from "zod";
-import { runPrismaMigrations } from "../../test/prisma.js";
+import { setupPrisma } from "../../test/prisma.js";
 
-// Prisma doesn't support in-memory SQLite databases, so we use a random file name.
-env["PRISMA_DB_URL"] = `file:test-${crypto.randomUUID()}.db?mode=memory`;
-
-const basePrisma = new PrismaClient();
+const basePrisma = await setupPrisma();
 const prisma = basePrisma.$extends(
   fraciExtension({
     fields: {
@@ -22,8 +18,6 @@ const prisma = basePrisma.$extends(
     } as const,
   })
 );
-
-await runPrismaMigrations(basePrisma);
 
 const app = new Hono()
   .get("/groups/:groupId/items", async (c) => {

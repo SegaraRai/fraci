@@ -2,14 +2,10 @@
 import { PrismaClient } from "@prisma/client";
 import { beforeAll, describe, expect, test } from "bun:test";
 import { fraciExtension } from "fraci/prisma";
-import { env } from "node:process";
-import { runPrismaMigrations } from "../test/prisma.js";
+import { setupPrisma } from "../test/prisma.js";
 import { BASE26, BASE36, BASE95 } from "./bases.js";
 
-// Prisma doesn't support in-memory SQLite databases, so we use a random file name.
-env["PRISMA_DB_URL"] = `file:test-${crypto.randomUUID()}.db?mode=memory`;
-
-const basePrisma = new PrismaClient();
+const basePrisma = await setupPrisma();
 
 const prisma = basePrisma.$extends(
   fraciExtension({
@@ -42,8 +38,6 @@ const prisma = basePrisma.$extends(
 // Data seeding
 
 beforeAll(async () => {
-  await runPrismaMigrations(basePrisma);
-
   await prisma.$transaction(async (tx) => {
     await tx.user.createMany({
       data: [
