@@ -78,13 +78,13 @@ const app = new Hono()
               "Fraci-Retry-Count": String(retryCount),
             }
           );
-        } catch (e) {
-          if (fiHelper.isIndexConflictError(e)) {
+        } catch (error) {
+          if (fiHelper.isIndexConflictError(error)) {
             retryCount++;
             continue;
           }
 
-          console.error(e);
+          console.error(error);
           return c.json({ error: "Failed to create item (DB Error)" }, 500);
         }
       }
@@ -143,20 +143,20 @@ const app = new Hono()
           return c.json(updated, 200, {
             "Fraci-Retry-Count": String(retryCount),
           });
-        } catch (e) {
-          if (fiHelper.isIndexConflictError(e)) {
+        } catch (error) {
+          if (fiHelper.isIndexConflictError(error)) {
             retryCount++;
             continue;
           }
 
           if (
-            e instanceof Prisma.PrismaClientKnownRequestError &&
-            e.code === "P2025"
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === "P2025"
           ) {
             return c.json({ error: "Item not found" }, 404);
           }
 
-          console.error(e);
+          console.error(error);
           return c.json({ error: "Failed to update item (DB Error)" }, 500);
         }
       }

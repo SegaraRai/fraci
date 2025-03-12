@@ -79,13 +79,13 @@ const app = new Hono()
               "Fraci-Retry-Count": String(retryCount),
             }
           );
-        } catch (e) {
-          if (isIndexConflictError(e)) {
+        } catch (error) {
+          if (isIndexConflictError(error)) {
             retryCount++;
             continue;
           }
 
-          console.error(e);
+          console.error(error);
           return c.json({ error: "Failed to create item (DB Error)" }, 500);
         }
       }
@@ -157,8 +157,8 @@ const app = new Hono()
           return c.json(updated, 200, {
             "Fraci-Retry-Count": String(retryCount),
           });
-        } catch (e) {
-          if (isIndexConflictError(e)) {
+        } catch (error) {
+          if (isIndexConflictError(error)) {
             retryCount++;
             continue;
           }
