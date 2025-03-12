@@ -37,6 +37,7 @@
   "scripts": {
     "changeset-version": "changeset version",
     "changeset-publish": "changeset publish",
+    "generate-migrations": "bun run ./generate-migrations.ts",
     "build": "tsup && bun run ./fix-dts.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
