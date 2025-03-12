@@ -1,12 +1,12 @@
 import { zValidator } from "@hono/zod-validator";
 import { asc, sql } from "drizzle-orm";
-import { drizzleFraci } from "fraci/drizzle";
+import { drizzleFraciSync } from "fraci/drizzle";
 import { Hono } from "hono";
 import * as z from "zod";
 import { exampleItems, fiExampleItems } from "../../drizzle/schema.js";
-import { setupDrizzleDBLibSQL } from "../../test/drizzle.js";
+import { setupDrizzleDBBunSQLite } from "../../test/drizzle.js";
 
-const db = await setupDrizzleDBLibSQL();
+const db = setupDrizzleDBBunSQLite();
 
 // Fraci does not have a built-in function to detect index conflict errors for Drizzle ORM, since Drizzle ORM does not have a unified error handling mechanism.
 function isIndexConflictError(error: unknown): boolean {
@@ -57,8 +57,8 @@ const app = new Hono()
       const groupId = Number(c.req.param("groupId"));
       const { name } = c.req.valid("json");
 
-      const fiFetcher = drizzleFraci(db, fiExampleItems);
-      const indices = await fiFetcher.indicesForLast({ groupId });
+      const fiFetcher = drizzleFraciSync(db, fiExampleItems);
+      const indices = fiFetcher.indicesForLast({ groupId });
 
       const delay = Number(c.req.query("delay") ?? "0");
       if (delay > 0) {
@@ -69,7 +69,7 @@ const app = new Hono()
       for (const fi of fiExampleItems.fraci.generateKeyBetween(...indices)) {
         try {
           return c.json(
-            await db
+            db
               .insert(exampleItems)
               .values({ groupId, name, fi })
               .returning()
@@ -118,11 +118,11 @@ const app = new Hono()
       const itemId = Number(c.req.param("itemId"));
       const { before, after } = c.req.valid("json");
 
-      const fiFetcher = drizzleFraci(db, fiExampleItems);
+      const fiFetcher = drizzleFraciSync(db, fiExampleItems);
       const indices =
         before != null
-          ? await fiFetcher.indicesForBefore({ id: before }, { groupId })
-          : await fiFetcher.indicesForAfter({ id: after }, { groupId });
+          ? fiFetcher.indicesForBefore({ id: before }, { groupId })
+          : fiFetcher.indicesForAfter({ id: after }, { groupId });
       if (!indices) {
         return c.json({ error: "Reference item not found" }, 400);
       }
@@ -138,7 +138,7 @@ const app = new Hono()
         indices[1]
       )) {
         try {
-          const updated = await db
+          const updated = db
             .update(exampleItems)
             .set({
               fi,
