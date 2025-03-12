@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- e7e7a0a: Support Drizzle ORM
+- e7e7a0a: Support Drizzle ORM integration.
 
 ## 0.8.0
 
