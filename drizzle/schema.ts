@@ -75,8 +75,8 @@ export const fiArticles = defineDrizzleFraci(
   fraciForArticles, // Fraci instance
   articles, // Table
   articles.fi, // Fractional index column
-  { id: articles.id }, // Cursor (columns that are used to find the row uniquely with dependency)
-  { userId: articles.userId } // Dependency (columns that are used to find the group uniquely)
+  { id: articles.id }, // Cursor (columns that are used to find the row uniquely in the group)
+  { userId: articles.userId } // Group (columns that are used to find the group uniquely)
 );
 
 // photo table

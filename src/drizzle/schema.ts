@@ -7,13 +7,13 @@ export function defineDrizzleFraci<
   T extends Table,
   FraciColumn extends DrizzleFraciColumn<FractionalIndexOf<F>>,
   Cursor extends Record<string, Column>,
-  Dependency extends Record<string, Column>
+  Group extends Record<string, Column>
 >(
   fraci: F,
   table: T,
   column: FraciColumn,
   cursor: Cursor,
-  dependency: Dependency
-): NoInfer<DrizzleFraciConfig<F, T, FraciColumn, Cursor, Dependency>> {
-  return { fraci, table, column, cursor, dependency };
+  group: Group
+): NoInfer<DrizzleFraciConfig<F, T, FraciColumn, Cursor, Group>> {
+  return { fraci, table, column, cursor, group };
 }

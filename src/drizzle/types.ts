@@ -14,7 +14,7 @@ export type DrizzleFraciConfig<
     FractionalIndexOf<F>
   > = DrizzleFraciColumn<FractionalIndexOf<F>>,
   Cursor extends Record<string, Column> = Record<string, Column>,
-  Dependency extends Record<string, Column> = Record<string, Column>
+  Group extends Record<string, Column> = Record<string, Column>
 > = {
   /** A fraci instance. */
   readonly fraci: F;
@@ -26,15 +26,15 @@ export type DrizzleFraciConfig<
    */
   readonly column: FraciColumn;
   readonly cursor: Cursor;
-  readonly dependency: Dependency;
+  readonly group: Group;
 };
 
 export type DrizzleFraciCursor<T extends DrizzleFraciConfig> = {
   [K in keyof T["cursor"]]: T["cursor"][K]["_"]["data"];
 };
 
-export type DrizzleFraciDependency<T extends DrizzleFraciConfig> = {
-  [K in keyof T["dependency"]]: T["dependency"][K]["_"]["data"];
+export type DrizzleFraciGroup<T extends DrizzleFraciConfig> = {
+  [K in keyof T["group"]]: T["group"][K]["_"]["data"];
 };
 
 export type DrizzleFractionalIndex<T extends DrizzleFraciConfig> =

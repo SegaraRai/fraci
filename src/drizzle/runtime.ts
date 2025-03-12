@@ -7,7 +7,7 @@ import { equity, OPERATORS } from "./common.js";
 import type {
   DrizzleFraciConfig,
   DrizzleFraciCursor,
-  DrizzleFraciDependency,
+  DrizzleFraciGroup,
   DrizzleFractionalIndex,
 } from "./types.js";
 
@@ -24,20 +24,20 @@ async function indicesFor(
   client: SupportedDrizzleDatabase,
   {
     cursor: cursorConfig,
-    dependency: dependencyConfig,
+    group: groupConfig,
     column,
     table,
   }: DrizzleFraciConfig,
   cursor: DrizzleFraciCursor<DrizzleFraciConfig> | null,
-  dependency: DrizzleFraciDependency<DrizzleFraciConfig>,
+  group: DrizzleFraciGroup<DrizzleFraciConfig>,
   reverse: boolean
 ): Promise<[AFI | null, AFI | null] | undefined> {
   const [order, compare, tuple] = OPERATORS[Number(reverse)];
   const fiSelector = { v: sql<AFI>`${column}` };
 
   // SECURITY: Always use config for `Object.entries` so that all fields are included
-  const conditions = Object.entries(dependencyConfig).map(([key, column]) =>
-    equity(column, dependency[key])
+  const conditions = Object.entries(groupConfig).map(([key, column]) =>
+    equity(column, group[key])
   );
 
   if (!cursor) {
@@ -80,36 +80,33 @@ function indicesForAfter(
   client: SupportedDrizzleDatabase,
   config: DrizzleFraciConfig,
   cursor: DrizzleFraciCursor<DrizzleFraciConfig> | null,
-  dependency: DrizzleFraciDependency<DrizzleFraciConfig>
+  group: DrizzleFraciGroup<DrizzleFraciConfig>
 ): Promise<[string | null, string | null] | undefined> {
-  return indicesFor(client, config, cursor, dependency, false);
+  return indicesFor(client, config, cursor, group, false);
 }
 
 function indicesForBefore(
   client: SupportedDrizzleDatabase,
   config: DrizzleFraciConfig,
   cursor: DrizzleFraciCursor<DrizzleFraciConfig> | null,
-  dependency: DrizzleFraciDependency<DrizzleFraciConfig>
+  group: DrizzleFraciGroup<DrizzleFraciConfig>
 ): Promise<[AFI | null, AFI | null] | undefined> {
-  return indicesFor(client, config, cursor, dependency, true);
+  return indicesFor(client, config, cursor, group, true);
 }
 
 export type DrizzleFraciFetcher<T extends DrizzleFraciConfig> = {
   /**
    * Returns the indices to calculate the new index of the item to be inserted after the cursor.
    *
-   * @param cursor A record of the cursor row columns that uniquely identifies the item with `dependency`. If `null`, this function returns the indices to calculate the new index of the first item in the group.
-   * @param dependency A record of the columns that uniquely identifies the group.
+   * @param cursor A record of the cursor row columns that uniquely identifies the item within a group. If `null`, this function returns the indices to calculate the new index of the first item in the group.
+   * @param group A record of the columns that uniquely identifies the group.
    * @returns The indices to calculate the new index of the item to be inserted after the cursor.
    */
   readonly indicesForAfter: {
-    (
-      cursor: DrizzleFraciCursor<T>,
-      dependency: DrizzleFraciDependency<T>
-    ): Promise<
+    (cursor: DrizzleFraciCursor<T>, group: DrizzleFraciGroup<T>): Promise<
       [DrizzleFractionalIndex<T>, DrizzleFractionalIndex<T> | null] | undefined
     >;
-    (cursor: null, dependency: DrizzleFraciDependency<T>): Promise<
+    (cursor: null, group: DrizzleFraciGroup<T>): Promise<
       [null, DrizzleFractionalIndex<T> | null]
     >;
   };
@@ -117,42 +114,39 @@ export type DrizzleFraciFetcher<T extends DrizzleFraciConfig> = {
   /**
    * Returns the indices to calculate the new index of the item to be inserted before the cursor.
    *
-   * @param cursor A record of the cursor row columns that uniquely identifies the item with `dependency`. If `null`, this function returns the indices to calculate the new index of the last item in the group.
-   * @param dependency A record of the columns that uniquely identifies the group.
+   * @param cursor A record of the cursor row columns that uniquely identifies the item within a group. If `null`, this function returns the indices to calculate the new index of the last item in the group.
+   * @param group A record of the columns that uniquely identifies the group.
    * @returns The indices to calculate the new index of the item to be inserted before the cursor.
    */
   readonly indicesForBefore: {
-    (
-      cursor: DrizzleFraciCursor<T>,
-      dependency: DrizzleFraciDependency<T>
-    ): Promise<
+    (cursor: DrizzleFraciCursor<T>, group: DrizzleFraciGroup<T>): Promise<
       [DrizzleFractionalIndex<T> | null, DrizzleFractionalIndex<T>] | undefined
     >;
-    (cursor: null, dependency: DrizzleFraciDependency<T>): Promise<
+    (cursor: null, group: DrizzleFraciGroup<T>): Promise<
       [DrizzleFractionalIndex<T> | null, null]
     >;
   };
 
   /**
    * Returns the indices to calculate the new index of the first item in the group.
-   * Identical to `indicesForAfter(null, dependency)`.
+   * Identical to `indicesForAfter(null, group)`.
    *
-   * @param dependency A record of the columns that uniquely identifies the group.
+   * @param group A record of the columns that uniquely identifies the group.
    * @returns The indices to calculate the new index of the first item in the group.
    */
   readonly indicesForFirst: (
-    dependency: DrizzleFraciDependency<T>
+    group: DrizzleFraciGroup<T>
   ) => Promise<[null, DrizzleFractionalIndex<T> | null]>;
 
   /**
    * Returns the indices to calculate the new index of the last item in the group.
-   * Identical to `indicesForBefore(null, dependency)`.
+   * Identical to `indicesForBefore(null, group)`.
    *
-   * @param dependency A record of the columns that uniquely identifies the group.
+   * @param group A record of the columns that uniquely identifies the group.
    * @returns The indices to calculate the new index of the last item in the group.
    */
   readonly indicesForLast: (
-    dependency: DrizzleFraciDependency<T>
+    group: DrizzleFraciGroup<T>
   ) => Promise<[DrizzleFractionalIndex<T> | null, null]>;
 };
 
@@ -163,15 +157,15 @@ export function drizzleFraci<Config extends DrizzleFraciConfig>(
   return {
     indicesForAfter: (
       cursor: DrizzleFraciCursor<Config> | null,
-      dependency: DrizzleFraciDependency<Config>
-    ) => indicesForAfter(client, config, cursor, dependency),
+      group: DrizzleFraciGroup<Config>
+    ) => indicesForAfter(client, config, cursor, group),
     indicesForBefore: (
       cursor: DrizzleFraciCursor<Config> | null,
-      dependency: DrizzleFraciDependency<Config>
-    ) => indicesForBefore(client, config, cursor, dependency),
-    indicesForFirst: (dependency: DrizzleFraciDependency<Config>) =>
-      indicesForAfter(client, config, null, dependency),
-    indicesForLast: (dependency: DrizzleFraciDependency<Config>) =>
-      indicesForBefore(client, config, null, dependency),
+      group: DrizzleFraciGroup<Config>
+    ) => indicesForBefore(client, config, cursor, group),
+    indicesForFirst: (group: DrizzleFraciGroup<Config>) =>
+      indicesForAfter(client, config, null, group),
+    indicesForLast: (group: DrizzleFraciGroup<Config>) =>
+      indicesForBefore(client, config, null, group),
   } as DrizzleFraciFetcher<Config>;
 }
