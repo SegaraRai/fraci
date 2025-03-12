@@ -1,5 +1,11 @@
 # fraci
 
+## 0.10.0
+
+### Minor Changes
+
+- ec3cddd: Add `skip` parameter to `generateKeyBetween` and `generateNKeysBetween` methods.
+
 ## 0.9.0
 
 ### Minor Changes
