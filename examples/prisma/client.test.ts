@@ -33,6 +33,15 @@ const getItemsSimple = async (groupId: string) => {
   return data;
 };
 
+const getItemByName = async (groupId: string, name: string) => {
+  const items = await getItemsFull(groupId);
+  const item = items.find((i) => i.name === name);
+  if (!item) {
+    throw new Error(`Item ${name} not found in group ${groupId}`);
+  }
+  return item;
+};
+
 test("E2E", async () => {
   // Add 3 items
   {
@@ -206,5 +215,125 @@ test("E2E", async () => {
       "DELAY2",
       (await getItemsFull("2")).map((i) => i.fi)
     );
+  }
+
+  // Reorder using `after`
+  {
+    await client.groups[":groupId"].items.$post({
+      param: { groupId: "3" },
+      json: { name: "H" },
+      query: {},
+    });
+    await client.groups[":groupId"].items.$post({
+      param: { groupId: "3" },
+      json: { name: "I" },
+      query: {},
+    });
+    await client.groups[":groupId"].items.$post({
+      param: { groupId: "3" },
+      json: { name: "J" },
+      query: {},
+    });
+
+    // Check if the items are created and ordered
+    expect(await getItemsSimple("3")).toEqual([
+      { name: "H" },
+      { name: "I" },
+      { name: "J" },
+    ]);
+
+    const [itemH, itemI, itemJ] = await getItemsFull("3");
+
+    // Reorder H after J
+    const r1 = await client.groups[":groupId"].items[":itemId"].order.$post({
+      param: { groupId: "3", itemId: String(itemH.id) },
+      json: {
+        after: itemJ.id,
+      },
+      query: {},
+    });
+
+    expect(r1.status).toBe(200);
+    expect(await getItemsSimple("3")).toEqual([
+      { name: "I" },
+      { name: "J" },
+      { name: "H" },
+    ]);
+
+    // Reorder I after J
+    const r2 = await client.groups[":groupId"].items[":itemId"].order.$post({
+      param: { groupId: "3", itemId: String(itemI.id) },
+      json: {
+        after: itemJ.id,
+      },
+      query: {},
+    });
+
+    expect(r2.status).toBe(200);
+    expect(await getItemsSimple("3")).toEqual([
+      { name: "J" },
+      { name: "I" },
+      { name: "H" },
+    ]);
+  }
+
+  // Try to reorder inexistent item
+  {
+    const itemA = await getItemByName("1", "A");
+    const itemH = await getItemByName("3", "H");
+
+    // Try to reorder an inexistent item
+    const r1 = await client.groups[":groupId"].items[":itemId"].order.$post({
+      param: { groupId: "3", itemId: "999999" },
+      json: {
+        before: itemH.id,
+      },
+      query: {},
+    });
+
+    expect(r1.status).toBe(404);
+    expect(await r1.json()).toEqual({ error: "Item not found" });
+
+    // Try to reorder an item in another group
+    const r2 = await client.groups[":groupId"].items[":itemId"].order.$post({
+      param: { groupId: "3", itemId: String(itemA.id) },
+      json: {
+        before: itemH.id,
+      },
+      query: {},
+    });
+
+    expect(r2.status).toBe(404);
+    expect(await r2.json()).toEqual({ error: "Item not found" });
+  }
+
+  // Try to reorder an item by referencing an inexistent item
+  {
+    const itemA = await getItemByName("1", "A");
+    const itemH = await getItemByName("3", "H");
+
+    // Try to reorder an item by referencing an inexistent item
+    const r1 = await client.groups[":groupId"].items[":itemId"].order.$post({
+      param: { groupId: "3", itemId: String(itemH.id) },
+      json: {
+        before: 999999,
+      },
+      query: {},
+    });
+
+    expect(r1.status).toBe(400);
+    expect(await r1.json()).toEqual({ error: "Reference item not found" });
+
+    // Try to reorder an item by referencing an item in another group
+    const r2 = await client.groups[":groupId"].items[":itemId"].order.$post({
+      param: { groupId: "3", itemId: String(itemH.id) },
+      json: {
+        before: itemA.id,
+      },
+      query: {},
+    });
+
+    expect(r2.status).toBe(400);
+    expect(await r2.json()).toEqual({ error: "Reference item not found" });
   }
 });

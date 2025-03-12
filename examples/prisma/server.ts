@@ -143,7 +143,8 @@ const app = new Hono()
       for (const fi of fiHelper.generateKeyBetween(indices[0], indices[1])) {
         try {
           const updated = await prisma.exampleItem.update({
-            where: { id: itemId },
+              // SECURITY: Always filter by group id to prevent cross-reference.
+            where: { id: itemId, groupId },
             data: { fi },
           });
           return c.json(updated, 200, {
@@ -157,7 +158,7 @@ const app = new Hono()
 
           if (
             e instanceof Prisma.PrismaClientKnownRequestError &&
-            e.code === "P2001"
+            e.code === "P2025"
           ) {
             return c.json({ error: "Item not found" }, 404);
           }
