@@ -18,12 +18,14 @@ export interface Fraci<D extends string, L extends string, X> {
   readonly lengthBase: L;
   generateKeyBetween(
     a: FractionalIndex<D, L, X> | null,
-    b: FractionalIndex<D, L, X> | null
+    b: FractionalIndex<D, L, X> | null,
+    skip?: number
   ): Generator<FractionalIndex<D, L, X>, void, unknown>;
   generateNKeysBetween(
     a: FractionalIndex<D, L, X> | null,
     b: FractionalIndex<D, L, X> | null,
-    n: number
+    n: number,
+    skip?: number
   ): Generator<FractionalIndex<D, L, X>[], void, unknown>;
 }
 
@@ -99,7 +101,7 @@ export function fraci<D extends string, L extends string, X>(
   return {
     digitBase,
     lengthBase,
-    *generateKeyBetween(a: F | null, b: F | null) {
+    *generateKeyBetween(a: F | null, b: F | null, skip = 0) {
       const base = generateKeyBetween(
         a,
         b,
@@ -115,14 +117,14 @@ export function fraci<D extends string, L extends string, X>(
       }
 
       for (let i = 0; i < maxRetries; i++) {
-        const value = `${base}${avoidConflictSuffix(i, digBaseForward)}`;
+        const value = `${base}${avoidConflictSuffix(i + skip, digBaseForward)}`;
         if (value.length > maxLength) {
           throw new Error("Exceeded maximum length");
         }
         yield value as F;
       }
     },
-    *generateNKeysBetween(a: F | null, b: F | null, n: number) {
+    *generateNKeysBetween(a: F | null, b: F | null, n: number, skip = 0) {
       const base = generateNKeysBetween(
         a,
         b,
@@ -140,7 +142,7 @@ export function fraci<D extends string, L extends string, X>(
 
       const longest = base.reduce((acc, v) => Math.max(acc, v.length), 0);
       for (let i = 0; i < maxRetries; i++) {
-        const suffix = avoidConflictSuffix(i, digBaseForward);
+        const suffix = avoidConflictSuffix(i + skip, digBaseForward);
         if (longest + suffix.length > maxLength) {
           throw new Error("Exceeded maximum length");
         }

@@ -44,6 +44,23 @@ describe("fraci", () => {
     expect(() => generator.next()).toThrow("Exceeded maximum length");
   });
 
+  it("should handle skip parameter", () => {
+    const indexing = fraci({
+      digitBase,
+      lengthBase,
+      maxRetries: 10,
+    });
+    const generator1 = indexing.generateKeyBetween(null, null, 0);
+    const generator2 = indexing.generateKeyBetween(null, null, 2);
+    generator1.next();
+    generator1.next();
+    expect(generator1.next().value).toBe(generator2.next().value);
+    expect(generator1.next().value).toBe(generator2.next().value);
+    expect(generator1.next().value).toBe(generator2.next().value);
+    expect(generator1.next().value).not.toBeUndefined();
+    expect(generator2.next().value).not.toBeUndefined();
+  });
+
   it("should stop generation when reached maxRetries", () => {
     const indexing = fraci({
       digitBase,
@@ -51,9 +68,22 @@ describe("fraci", () => {
       maxRetries: 3,
     });
     const generator = indexing.generateKeyBetween(null, null);
-    generator.next();
-    generator.next();
-    generator.next();
+    expect(generator.next().done).toBe(false);
+    expect(generator.next().done).toBe(false);
+    expect(generator.next().done).toBe(false);
+    expect(generator.next().done).toBe(true);
+  });
+
+  it("should stop generation when reached maxRetries (with skip)", () => {
+    const indexing = fraci({
+      digitBase,
+      lengthBase,
+      maxRetries: 3,
+    });
+    const generator = indexing.generateKeyBetween(null, null, 100);
+    expect(generator.next().done).toBe(false);
+    expect(generator.next().done).toBe(false);
+    expect(generator.next().done).toBe(false);
     expect(generator.next().done).toBe(true);
   });
 });

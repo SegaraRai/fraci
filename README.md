@@ -500,7 +500,7 @@ In highly concurrent environments, you may experience index conflicts when multi
 
 For example, the first fractional index generated between `a` and `b` is always `a5` (see the note in the [How It Works](#how-it-works) section about simplified indices). If multiple operations try to insert between `a` and `b` at the same time, they'll all try to use `a5`, resulting in conflicts.
 
-To reduce conflicts, you can randomly skip ahead in the index generation sequence:
+To reduce conflicts, fraci provides a built-in `skip` parameter in both `generateKeyBetween` and `generateNKeysBetween` methods. This parameter is implemented directly in the methods to work correctly with the `maxRetries` parameter:
 
 ```typescript
 // Get indices for the position where we want to insert
@@ -510,13 +510,8 @@ if (!indices) {
 }
 
 // Skip a random number of indices to reduce collision probability
-let skipCount = Math.floor(Math.random() * 10); // Skip 0-9 indices
-for (const fi of afi.generateKeyBetween(...indices)) {
-  if (skipCount > 0) {
-    skipCount--;
-    continue;
-  }
-
+const skipCount = Math.floor(Math.random() * 10); // Skip 0-9 indices (adjust as needed)
+for (const fi of afi.generateKeyBetween(...indices, skipCount)) {
   try {
     // Insert with the randomly advanced index
     await db.insert(items).values({ title: "New Item", fi, userId: 1 });
