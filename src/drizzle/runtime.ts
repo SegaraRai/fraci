@@ -36,7 +36,7 @@ async function indicesFor(
   const fiSelector = { v: sql<AFI>`${column}` };
 
   // SECURITY: Always use config for `Object.entries` so that all fields are included
-  const conditions = Object.entries(groupConfig).map(([key, column]) =>
+  const groupConditions = Object.entries(groupConfig).map(([key, column]) =>
     equity(column, group[key])
   );
 
@@ -44,14 +44,14 @@ async function indicesFor(
     const item = await (client as NarrowDatabase)
       .select(fiSelector)
       .from(table)
-      .where(and(...conditions))
+      .where(and(...groupConditions))
       .limit(1)
       .orderBy(order(column));
     return tuple(null, item[0]?.v ?? null);
   }
 
   const cursorCondition = and(
-    ...conditions,
+    ...groupConditions,
     // SECURITY: Always use config for `Object.entries` so that all fields are included
     ...Object.entries(cursorConfig).map(([key, column]) =>
       equity(column, cursor[key])
@@ -67,7 +67,7 @@ async function indicesFor(
   const items = await (client as NarrowDatabase)
     .select(fiSelector)
     .from(table)
-    .where(and(...conditions, compare(column, subQueryFIOfCursor)))
+    .where(and(...groupConditions, compare(column, subQueryFIOfCursor)))
     .limit(2)
     .orderBy(order(column));
 
