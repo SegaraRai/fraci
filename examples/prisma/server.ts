@@ -58,8 +58,8 @@ const app = new Hono()
       const groupId = Number(c.req.param("groupId"));
       const { name } = c.req.valid("json");
 
-      const fiHelper = prisma.exampleItem.fraci("fi");
-      const indices = await fiHelper.indicesForLast({ groupId });
+      const xfi = prisma.exampleItem.fraci("fi");
+      const indices = await xfi.indicesForLast({ groupId });
 
       const delay = Number(c.req.query("delay") ?? "0");
       if (delay > 0) {
@@ -67,7 +67,7 @@ const app = new Hono()
       }
 
       let retryCount = 0;
-      for (const fi of fiHelper.generateKeyBetween(...indices)) {
+      for (const fi of xfi.generateKeyBetween(...indices)) {
         try {
           return c.json(
             await prisma.exampleItem.create({
@@ -79,7 +79,7 @@ const app = new Hono()
             }
           );
         } catch (error) {
-          if (fiHelper.isIndexConflictError(error)) {
+          if (xfi.isIndexConflictError(error)) {
             retryCount++;
             continue;
           }
@@ -117,12 +117,12 @@ const app = new Hono()
       const itemId = Number(c.req.param("itemId"));
       const { before, after } = c.req.valid("json");
 
-      const fiHelper = prisma.exampleItem.fraci("fi");
+      const xfi = prisma.exampleItem.fraci("fi");
 
       const indices =
         before != null
-          ? await fiHelper.indicesForBefore({ id: before }, { groupId })
-          : await fiHelper.indicesForAfter({ id: after }, { groupId });
+          ? await xfi.indicesForBefore({ id: before }, { groupId })
+          : await xfi.indicesForAfter({ id: after }, { groupId });
       if (!indices) {
         return c.json({ error: "Reference item not found" }, 400);
       }
@@ -133,7 +133,7 @@ const app = new Hono()
       }
 
       let retryCount = 0;
-      for (const fi of fiHelper.generateKeyBetween(indices[0], indices[1])) {
+      for (const fi of xfi.generateKeyBetween(indices[0], indices[1])) {
         try {
           const updated = await prisma.exampleItem.update({
             // SECURITY: Always filter by group id to prevent cross-reference.
@@ -144,7 +144,7 @@ const app = new Hono()
             "Fraci-Retry-Count": String(retryCount),
           });
         } catch (error) {
-          if (fiHelper.isIndexConflictError(error)) {
+          if (xfi.isIndexConflictError(error)) {
             retryCount++;
             continue;
           }

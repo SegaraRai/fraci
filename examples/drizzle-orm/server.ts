@@ -57,8 +57,8 @@ const app = new Hono()
       const groupId = Number(c.req.param("groupId"));
       const { name } = c.req.valid("json");
 
-      const fiFetcher = drizzleFraci(db, fiExampleItems);
-      const indices = await fiFetcher.indicesForLast({ groupId });
+      const xfi = drizzleFraci(db, fiExampleItems);
+      const indices = await xfi.indicesForLast({ groupId });
 
       const delay = Number(c.req.query("delay") ?? "0");
       if (delay > 0) {
@@ -66,7 +66,7 @@ const app = new Hono()
       }
 
       let retryCount = 0;
-      for (const fi of fiExampleItems.fraci.generateKeyBetween(...indices)) {
+      for (const fi of xfi.generateKeyBetween(...indices)) {
         try {
           return c.json(
             await db
@@ -118,11 +118,11 @@ const app = new Hono()
       const itemId = Number(c.req.param("itemId"));
       const { before, after } = c.req.valid("json");
 
-      const fiFetcher = drizzleFraci(db, fiExampleItems);
+      const xfi = drizzleFraci(db, fiExampleItems);
       const indices =
         before != null
-          ? await fiFetcher.indicesForBefore({ id: before }, { groupId })
-          : await fiFetcher.indicesForAfter({ id: after }, { groupId });
+          ? await xfi.indicesForBefore({ id: before }, { groupId })
+          : await xfi.indicesForAfter({ id: after }, { groupId });
       if (!indices) {
         return c.json({ error: "Reference item not found" }, 400);
       }
@@ -133,10 +133,7 @@ const app = new Hono()
       }
 
       let retryCount = 0;
-      for (const fi of fiExampleItems.fraci.generateKeyBetween(
-        indices[0],
-        indices[1]
-      )) {
+      for (const fi of xfi.generateKeyBetween(indices[0], indices[1])) {
         try {
           const updated = await db
             .update(exampleItems)

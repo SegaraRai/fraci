@@ -81,7 +81,7 @@ function indicesForAfter(
   config: DrizzleFraciConfig,
   cursor: DrizzleFraciCursor<DrizzleFraciConfig> | null,
   group: DrizzleFraciGroup<DrizzleFraciConfig>
-): Promise<[string | null, string | null] | undefined> {
+): Promise<[AFI | null, AFI | null] | undefined> {
   return indicesFor(client, config, cursor, group, false);
 }
 
@@ -94,7 +94,7 @@ function indicesForBefore(
   return indicesFor(client, config, cursor, group, true);
 }
 
-export type DrizzleFraciFetcher<T extends DrizzleFraciConfig> = {
+export type DrizzleFraciFetcher<T extends DrizzleFraciConfig> = T["fraci"] & {
   /**
    * Returns the indices to calculate the new index of the item to be inserted after the cursor.
    *
@@ -155,6 +155,7 @@ export function drizzleFraci<Config extends DrizzleFraciConfig>(
   config: Config
 ): DrizzleFraciFetcher<Config> {
   return {
+    ...config.fraci,
     indicesForAfter: (
       cursor: DrizzleFraciCursor<Config> | null,
       group: DrizzleFraciGroup<Config>
