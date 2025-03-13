@@ -1,5 +1,44 @@
 # fraci
 
+## 0.11.0
+
+### Minor Changes
+
+- 509d84a: **BREAKING CHANGE**: Renamed `DrizzleFraciFetcher(Sync)` type to `FraciForDrizzle(Sync)`.
+- 54e65e5: **BREAKING CHANGE**: Changed the parameter order in `indicesForAfter` and `indicesForBefore` functions to make it more natural, with the broader grouping context (`where`/`group`) before the more specific cursor (`cursor`).
+
+  Before:
+
+  ```ts
+  indicesForAfter(cursor, where);
+  indicesForBefore(cursor, where);
+  ```
+
+  After:
+
+  ```ts
+  indicesForAfter(where, cursor);
+  indicesForBefore(where, cursor);
+  ```
+
+  This change affects both Drizzle and Prisma implementations.
+
+- 8f28a82: **BREAKING CHANGE**: Changed the parameter order in `defineDrizzleFraci` function.
+
+  The order of the `group` and `cursor` parameters has been swapped to make the API more intuitive. The new order is:
+
+  ```typescript
+  defineDrizzleFraci(
+    fraci, // Fractional index instance
+    table, // Table
+    column, // Fractional index column
+    group, // Group (columns that define the grouping context)
+    cursor // Cursor (columns that uniquely identify a row within a group)
+  );
+  ```
+
+- edb941e: Add fraci methods to Drizzle ORM helper.
+
 ## 0.10.0
 
 ### Minor Changes
