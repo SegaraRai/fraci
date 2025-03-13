@@ -6,14 +6,14 @@ export function defineDrizzleFraci<
   F extends AnyFraci,
   T extends Table,
   FraciColumn extends DrizzleFraciColumn<FractionalIndexOf<F>>,
-  Cursor extends Record<string, Column>,
-  Group extends Record<string, Column>
+  Group extends Record<string, Column>,
+  Cursor extends Record<string, Column>
 >(
   fraci: F,
   table: T,
   column: FraciColumn,
-  cursor: Cursor,
-  group: Group
-): NoInfer<DrizzleFraciConfig<F, T, FraciColumn, Cursor, Group>> {
-  return { fraci, table, column, cursor, group };
+  group: Group,
+  cursor: Cursor
+): NoInfer<DrizzleFraciConfig<F, T, FraciColumn, Group, Cursor>> {
+  return { fraci, table, column, group, cursor };
 }

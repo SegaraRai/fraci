@@ -41,8 +41,8 @@ export const fiTasks = defineDrizzleFraci(
   tasksFraci, // Fraci instance
   tasks, // Table
   tasks.fi, // Fractional index column
-  { id: tasks.id }, // Cursor (columns that uniquely identify the row within a group)
-  { userId: tasks.userId } // Cursor (grouped by column for safe operations)
+  { userId: tasks.userId }, // Group (columns that uniquely identify the group)
+  { id: tasks.id } // Cursor (columns that uniquely identify the row within a group)
 );
 
 // Define a helper function to check for index conflicts (may vary by database)
@@ -180,8 +180,8 @@ export const fiArticles = defineDrizzleFraci(
   fraciForArticles, // Fraci instance
   articles, // Table
   articles.fi, // Fractional index column
-  { id: articles.id }, // Cursor (columns that uniquely identify the row within a group)
-  { userId: articles.userId } // Group (columns that uniquely identify the group)
+  { userId: articles.userId }, // Group (columns that uniquely identify the group)
+  { id: articles.id } // Cursor (columns that uniquely identify the row within a group)
 );
 ```
 

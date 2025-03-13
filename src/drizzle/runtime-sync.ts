@@ -14,8 +14,8 @@ export type SupportedDrizzleDatabaseSync = BaseSQLiteDatabase<"sync", any, any>;
 function indicesFor(
   client: SupportedDrizzleDatabaseSync,
   {
-    cursor: cursorConfig,
     group: groupConfig,
+    cursor: cursorConfig,
     column,
     table,
   }: DrizzleFraciConfig,

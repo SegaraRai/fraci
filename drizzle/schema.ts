@@ -75,8 +75,8 @@ export const fiArticles = defineDrizzleFraci(
   fraciForArticles, // Fraci instance
   articles, // Table
   articles.fi, // Fractional index column
-  { id: articles.id }, // Cursor (columns that are used to find the row uniquely in the group)
-  { userId: articles.userId } // Group (columns that are used to find the group uniquely)
+  { userId: articles.userId }, // Group (columns that are used to find the group uniquely)
+  { id: articles.id } // Cursor (columns that are used to find the row uniquely in the group)
 );
 
 // photo table
@@ -110,8 +110,8 @@ export const fiPhotos = defineDrizzleFraci(
   fraciForPhotos,
   photos,
   photos.fi,
-  { id: photos.id },
-  { articleId: photos.articleId }
+  { articleId: photos.articleId },
+  { id: photos.id }
 );
 
 // tag table
@@ -173,16 +173,16 @@ export const fiTagsInTagsOnPhotos = defineDrizzleFraci(
   fraciForTagFIInTagsOnPhotos,
   tagsOnPhotos,
   tagsOnPhotos.tagFI,
-  { tagId: tagsOnPhotos.tagId },
-  { photoId: tagsOnPhotos.photoId }
+  { photoId: tagsOnPhotos.photoId },
+  { tagId: tagsOnPhotos.tagId }
 );
 
 export const fiPhotosInTagsOnPhotos = defineDrizzleFraci(
   fraciForPhotoFIInTagsOnPhotos,
   tagsOnPhotos,
   tagsOnPhotos.photoFI,
-  { photoId: tagsOnPhotos.photoId },
-  { tagId: tagsOnPhotos.tagId }
+  { tagId: tagsOnPhotos.tagId },
+  { photoId: tagsOnPhotos.photoId }
 );
 
 // exampleItem table
@@ -211,6 +211,6 @@ export const fiExampleItems = defineDrizzleFraci(
   fraciForExampleItem,
   exampleItems,
   exampleItems.fi,
-  { id: exampleItems.id },
-  { groupId: exampleItems.groupId }
+  { groupId: exampleItems.groupId },
+  { id: exampleItems.id }
 );

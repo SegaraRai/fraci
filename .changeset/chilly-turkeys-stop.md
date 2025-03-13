@@ -2,4 +2,4 @@
 "fraci": minor
 ---
 
-**BREAKING CHANGE** Rename `DrizzleFraciFetcher(Sync)` type to `FraciForDrizzle(Sync)`.
+**BREAKING CHANGE**: Renamed `DrizzleFraciFetcher(Sync)` type to `FraciForDrizzle(Sync)`.

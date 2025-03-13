@@ -31,8 +31,8 @@ describe("defineDrizzleFraci", () => {
       testFraci,
       testTable,
       testTable.fi,
-      cursor,
-      group
+      group,
+      cursor
     );
 
     // Verify the config structure
@@ -57,8 +57,8 @@ describe("defineDrizzleFraci", () => {
       testTable,
       // @ts-expect-error
       testTable.name,
-      cursor,
-      group
+      group,
+      cursor
     );
 
     // Type check - should error if the fractional index is not the same as the fraci instance
@@ -70,8 +70,8 @@ describe("defineDrizzleFraci", () => {
       testTable,
       // @ts-expect-error
       testTable.fi,
-      cursor,
-      group
+      group,
+      cursor
     );
   });
 });

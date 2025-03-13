@@ -23,8 +23,8 @@ type NarrowDatabase = BaseSQLiteDatabase<"async", any, any> &
 async function indicesFor(
   client: SupportedDrizzleDatabase,
   {
-    cursor: cursorConfig,
     group: groupConfig,
+    cursor: cursorConfig,
     column,
     table,
   }: DrizzleFraciConfig,

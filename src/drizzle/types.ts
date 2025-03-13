@@ -13,8 +13,8 @@ export type DrizzleFraciConfig<
   FraciColumn extends DrizzleFraciColumn<
     FractionalIndexOf<F>
   > = DrizzleFraciColumn<FractionalIndexOf<F>>,
-  Cursor extends Record<string, Column> = Record<string, Column>,
-  Group extends Record<string, Column> = Record<string, Column>
+  Group extends Record<string, Column> = Record<string, Column>,
+  Cursor extends Record<string, Column> = Record<string, Column>
 > = {
   /** A fraci instance. */
   readonly fraci: F;
@@ -25,8 +25,10 @@ export type DrizzleFraciConfig<
    * Must be branded with the fractional index type using `$type<FractionalIndexOf<F>>()`.
    */
   readonly column: FraciColumn;
-  readonly cursor: Cursor;
+  /** The columns that define the grouping context for the fractional index. */
   readonly group: Group;
+  /** The columns that uniquely identify a row within a group. */
+  readonly cursor: Cursor;
 };
 
 export type DrizzleFraciCursor<T extends DrizzleFraciConfig> = {
