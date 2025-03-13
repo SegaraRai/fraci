@@ -87,69 +87,68 @@ function indicesForBefore(
   return indicesFor(client, config, cursor, group, true);
 }
 
-export type DrizzleFraciFetcherSync<T extends DrizzleFraciConfig> =
-  T["fraci"] & {
-    /**
-     * Returns the indices to calculate the new index of the item to be inserted after the cursor.
-     *
-     * @param cursor A record of the cursor row columns that uniquely identifies the item within a group. If `null`, this function returns the indices to calculate the new index of the first item in the group.
-     * @param group A record of the columns that uniquely identifies the group.
-     * @returns The indices to calculate the new index of the item to be inserted after the cursor.
-     */
-    readonly indicesForAfter: {
-      (cursor: DrizzleFraciCursor<T>, group: DrizzleFraciGroup<T>):
-        | [DrizzleFractionalIndex<T>, DrizzleFractionalIndex<T> | null]
-        | undefined;
-      (cursor: null, group: DrizzleFraciGroup<T>): [
-        null,
-        DrizzleFractionalIndex<T> | null
-      ];
-    };
-
-    /**
-     * Returns the indices to calculate the new index of the item to be inserted before the cursor.
-     *
-     * @param cursor A record of the cursor row columns that uniquely identifies the item within a group. If `null`, this function returns the indices to calculate the new index of the last item in the group.
-     * @param group A record of the columns that uniquely identifies the group.
-     * @returns The indices to calculate the new index of the item to be inserted before the cursor.
-     */
-    readonly indicesForBefore: {
-      (cursor: DrizzleFraciCursor<T>, group: DrizzleFraciGroup<T>):
-        | [DrizzleFractionalIndex<T> | null, DrizzleFractionalIndex<T>]
-        | undefined;
-      (cursor: null, group: DrizzleFraciGroup<T>): [
-        DrizzleFractionalIndex<T> | null,
-        null
-      ];
-    };
-
-    /**
-     * Returns the indices to calculate the new index of the first item in the group.
-     * Identical to `indicesForAfter(null, group)`.
-     *
-     * @param group A record of the columns that uniquely identifies the group.
-     * @returns The indices to calculate the new index of the first item in the group.
-     */
-    readonly indicesForFirst: (
-      group: DrizzleFraciGroup<T>
-    ) => [null, DrizzleFractionalIndex<T> | null];
-
-    /**
-     * Returns the indices to calculate the new index of the last item in the group.
-     * Identical to `indicesForBefore(null, group)`.
-     *
-     * @param group A record of the columns that uniquely identifies the group.
-     * @returns The indices to calculate the new index of the last item in the group.
-     */
-    readonly indicesForLast: (
-      group: DrizzleFraciGroup<T>
-    ) => [DrizzleFractionalIndex<T> | null, null];
+export type FraciForDrizzleSync<T extends DrizzleFraciConfig> = T["fraci"] & {
+  /**
+   * Returns the indices to calculate the new index of the item to be inserted after the cursor.
+   *
+   * @param cursor A record of the cursor row columns that uniquely identifies the item within a group. If `null`, this function returns the indices to calculate the new index of the first item in the group.
+   * @param group A record of the columns that uniquely identifies the group.
+   * @returns The indices to calculate the new index of the item to be inserted after the cursor.
+   */
+  readonly indicesForAfter: {
+    (cursor: DrizzleFraciCursor<T>, group: DrizzleFraciGroup<T>):
+      | [DrizzleFractionalIndex<T>, DrizzleFractionalIndex<T> | null]
+      | undefined;
+    (cursor: null, group: DrizzleFraciGroup<T>): [
+      null,
+      DrizzleFractionalIndex<T> | null
+    ];
   };
+
+  /**
+   * Returns the indices to calculate the new index of the item to be inserted before the cursor.
+   *
+   * @param cursor A record of the cursor row columns that uniquely identifies the item within a group. If `null`, this function returns the indices to calculate the new index of the last item in the group.
+   * @param group A record of the columns that uniquely identifies the group.
+   * @returns The indices to calculate the new index of the item to be inserted before the cursor.
+   */
+  readonly indicesForBefore: {
+    (cursor: DrizzleFraciCursor<T>, group: DrizzleFraciGroup<T>):
+      | [DrizzleFractionalIndex<T> | null, DrizzleFractionalIndex<T>]
+      | undefined;
+    (cursor: null, group: DrizzleFraciGroup<T>): [
+      DrizzleFractionalIndex<T> | null,
+      null
+    ];
+  };
+
+  /**
+   * Returns the indices to calculate the new index of the first item in the group.
+   * Identical to `indicesForAfter(null, group)`.
+   *
+   * @param group A record of the columns that uniquely identifies the group.
+   * @returns The indices to calculate the new index of the first item in the group.
+   */
+  readonly indicesForFirst: (
+    group: DrizzleFraciGroup<T>
+  ) => [null, DrizzleFractionalIndex<T> | null];
+
+  /**
+   * Returns the indices to calculate the new index of the last item in the group.
+   * Identical to `indicesForBefore(null, group)`.
+   *
+   * @param group A record of the columns that uniquely identifies the group.
+   * @returns The indices to calculate the new index of the last item in the group.
+   */
+  readonly indicesForLast: (
+    group: DrizzleFraciGroup<T>
+  ) => [DrizzleFractionalIndex<T> | null, null];
+};
 
 export function drizzleFraciSync<Config extends DrizzleFraciConfig>(
   client: SupportedDrizzleDatabaseSync,
   config: Config
-): DrizzleFraciFetcherSync<Config> {
+): FraciForDrizzleSync<Config> {
   return {
     ...config.fraci,
     indicesForAfter: (
@@ -164,5 +163,5 @@ export function drizzleFraciSync<Config extends DrizzleFraciConfig>(
       indicesForAfter(client, config, null, group),
     indicesForLast: (group: DrizzleFraciGroup<Config>) =>
       indicesForBefore(client, config, null, group),
-  } as DrizzleFraciFetcherSync<Config>;
+  } as FraciForDrizzleSync<Config>;
 }
