@@ -38,11 +38,11 @@ export const tasks = sqliteTable(
 
 // Define the fractional index configuration
 export const fiTasks = defineDrizzleFraci(
-  tasksFraci,
-  tasks,
-  tasks.fi,
-  { id: tasks.id },
-  { userId: tasks.userId }
+  tasksFraci, // Fraci instance
+  tasks, // Table
+  tasks.fi, // Fractional index column
+  { id: tasks.id }, // Cursor (columns that uniquely identify the row within a group)
+  { userId: tasks.userId } // Cursor (grouped by column for safe operations)
 );
 
 // Define a helper function to check for index conflicts (may vary by database)
@@ -89,6 +89,7 @@ See the detailed examples below for more information.
 
 ### Preventing Cross-Group Operations
 
+- **IMPORTANT:** Never accept user input directly as a fractional index. Instead, use fraci's built-in ORM integrations which safely query fractional indices via cursors (record IDs).
 - **IMPORTANT:** Always filter by group columns (e.g., `userId`) when updating items to prevent cross-group operations
 - The examples in this README demonstrate this pattern with `where` clauses that include both ID and group columns
 
@@ -179,7 +180,7 @@ export const fiArticles = defineDrizzleFraci(
   fraciForArticles, // Fraci instance
   articles, // Table
   articles.fi, // Fractional index column
-  { id: articles.id }, // Cursor (columns that uniquely identify the row)
+  { id: articles.id }, // Cursor (columns that uniquely identify the row within a group)
   { userId: articles.userId } // Group (columns that uniquely identify the group)
 );
 ```
