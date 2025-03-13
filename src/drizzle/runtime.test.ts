@@ -30,8 +30,8 @@ describe("drizzleFraci with group columns", () => {
     fraci: testFraci,
     table: testItems,
     column: testItems.fi,
-    cursor: { id: testItems.id },
     group: { groupId: testItems.groupId },
+    cursor: { id: testItems.id },
   };
 
   // Setup in-memory database
@@ -109,8 +109,8 @@ describe("drizzleFraci with group columns", () => {
     expect(item).not.toBeUndefined();
 
     const indices = await fetcher.indicesForAfter(
-      { id: item!.id },
-      { groupId: 1 }
+      { groupId: 1 },
+      { id: item!.id }
     );
 
     expect(indices).toBeArrayOfSize(2);
@@ -131,8 +131,8 @@ describe("drizzleFraci with group columns", () => {
     expect(item).not.toBeUndefined();
 
     const indices = await fetcher.indicesForBefore(
-      { id: item!.id },
-      { groupId: 1 }
+      { groupId: 1 },
+      { id: item!.id }
     );
 
     expect(indices).toBeArrayOfSize(2);
@@ -142,10 +142,10 @@ describe("drizzleFraci with group columns", () => {
 
   test("should return undefined for non-existent cursor", async () => {
     expect(
-      await fetcher.indicesForAfter({ id: 999 }, { groupId: 1 })
+      await fetcher.indicesForAfter({ groupId: 1 }, { id: 999 })
     ).toBeUndefined();
     expect(
-      await fetcher.indicesForBefore({ id: 999 }, { groupId: 1 })
+      await fetcher.indicesForBefore({ groupId: 1 }, { id: 999 })
     ).toBeUndefined();
   });
 
@@ -162,10 +162,10 @@ describe("drizzleFraci with group columns", () => {
     expect(item).not.toBeUndefined();
 
     expect(
-      await fetcher.indicesForAfter({ id: item!.id }, { groupId: 1 })
+      await fetcher.indicesForAfter({ groupId: 1 }, { id: item!.id })
     ).toBeUndefined();
     expect(
-      await fetcher.indicesForBefore({ id: item!.id }, { groupId: 1 })
+      await fetcher.indicesForBefore({ groupId: 1 }, { id: item!.id })
     ).toBeUndefined();
   });
 
@@ -187,19 +187,19 @@ describe("drizzleFraci with group columns", () => {
 
     expect(
       // @ts-expect-error
-      await fetcher.indicesForAfter({ id: item!.id }, {})
+      await fetcher.indicesForAfter({}, { id: item!.id })
     ).toBeUndefined();
     expect(
       // @ts-expect-error
-      await fetcher.indicesForBefore({ id: item!.id }, {})
+      await fetcher.indicesForBefore({}, { id: item!.id })
     ).toBeUndefined();
   });
 
   test("should handle when cursor fields missing", async () => {
     // @ts-expect-error
-    expect(await fetcher.indicesForAfter({}, { groupId: 1 })).toBeUndefined();
+    expect(await fetcher.indicesForAfter({ groupId: 1 }, {})).toBeUndefined();
     // @ts-expect-error
-    expect(await fetcher.indicesForBefore({}, { groupId: 1 })).toBeUndefined();
+    expect(await fetcher.indicesForBefore({ groupId: 1 }, {})).toBeUndefined();
   });
 
   test("should handle empty groups", async () => {
@@ -232,8 +232,8 @@ describe("drizzleFraci without group columns", () => {
     fraci: noGroupFraci,
     table: noGroupItems,
     column: noGroupItems.fi,
-    cursor: { id: noGroupItems.id },
     group: {}, // Empty group configuration
+    cursor: { id: noGroupItems.id },
   };
 
   // Setup in-memory database
@@ -305,7 +305,7 @@ describe("drizzleFraci without group columns", () => {
       .get();
     expect(item).not.toBeUndefined();
 
-    const indices = await fetcher.indicesForAfter({ id: item!.id }, {});
+    const indices = await fetcher.indicesForAfter({}, { id: item!.id });
 
     expect(indices).toBeArrayOfSize(2);
     expect(indices![0]).toBe("a" as FI);
@@ -322,7 +322,7 @@ describe("drizzleFraci without group columns", () => {
       .get();
     expect(item).not.toBeUndefined();
 
-    const indices = await fetcher.indicesForBefore({ id: item!.id }, {});
+    const indices = await fetcher.indicesForBefore({}, { id: item!.id });
 
     expect(indices).toBeArrayOfSize(2);
     expect(indices![0]).toBe("m" as FI);
@@ -330,8 +330,8 @@ describe("drizzleFraci without group columns", () => {
   });
 
   test("should return undefined for non-existent cursor with empty group", async () => {
-    expect(await fetcher.indicesForAfter({ id: 999 }, {})).toBeUndefined();
-    expect(await fetcher.indicesForBefore({ id: 999 }, {})).toBeUndefined();
+    expect(await fetcher.indicesForAfter({}, { id: 999 })).toBeUndefined();
+    expect(await fetcher.indicesForBefore({}, { id: 999 })).toBeUndefined();
   });
 
   test("should handle when cursor fields missing with empty group", async () => {

@@ -263,8 +263,8 @@ async function list() {
  * Move article 3 to the position after article 4
  */
 async function move() {
-  const indices = await afi.indicesForAfter({ id: 4 }, { userId: 1 });
-  //                                          ^ Cursor   ^ Group
+  const indices = await afi.indicesForAfter({ userId: 1 }, { id: 4 });
+  //                                          ^ Group        ^ Cursor
   if (!indices) {
     throw new Error("Article 4 does not exist or does not belong to user 1.");
   }
@@ -413,8 +413,8 @@ async function list() {
  * Move article 3 to the position after article 4
  */
 async function move() {
-  const indices = await afi.indicesForAfter({ id: 4 }, { userId: 1 });
-  //                                          ^ Cursor  ^ Group
+  const indices = await afi.indicesForAfter({ userId: 1 }, { id: 4 });
+  //                                          ^ Group        ^ Cursor
   if (!indices) {
     throw new Error("Article 4 does not exist or does not belong to user 1.");
   }
@@ -505,7 +505,7 @@ To reduce conflicts, fraci provides a built-in `skip` parameter in both `generat
 
 ```typescript
 // Get indices for the position where we want to insert
-const indices = await afi.indicesForAfter({ id: 4 }, { userId: 1 });
+const indices = await afi.indicesForAfter({ userId: 1 }, { id: 4 });
 if (!indices) {
   throw new Error("Reference item not found");
 }

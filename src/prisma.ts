@@ -141,46 +141,46 @@ type FraciForPrisma<
   /**
    * Retrieves the existing indices to generate a new fractional index for the item after the specified item.
    *
-   * @param cursor The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the first item.
    * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param cursor The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the first item.
    * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the item after the specified item, or `undefined` if the item specified by the `cursor` does not exist.
    */
   indicesForAfter: {
     (
-      cursor: QueryArgs<M>["cursor"],
       where: W & QueryArgs<M>["where"],
+      cursor: QueryArgs<M>["cursor"],
       client?: AnyPrismaClient
     ): Promise<Indices<D, L, X> | undefined>;
     (
-      cursor: null,
       where: W & QueryArgs<M>["where"],
+      cursor: null,
       client?: AnyPrismaClient
     ): Promise<Indices<D, L, X>>;
   };
   /**
    * Retrieves the existing indices to generate a new fractional index for the item before the specified item.
    *
-   * @param cursor The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the last item.
    * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param cursor The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the last item.
    * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the item before the specified item, or `undefined` if the item specified by the `cursor` does not exist.
    */
   indicesForBefore: {
     (
-      cursor: QueryArgs<M>["cursor"],
       where: W & QueryArgs<M>["where"],
+      cursor: QueryArgs<M>["cursor"],
       client?: AnyPrismaClient
     ): Promise<Indices<D, L, X> | undefined>;
     (
-      cursor: null,
       where: W & QueryArgs<M>["where"],
+      cursor: null,
       client?: AnyPrismaClient
     ): Promise<Indices<D, L, X>>;
   };
   /**
    * Retrieves the existing indices to generate a new fractional index for the first item.
-   * Equivalent to `indicesForAfter(null, where, client)`.
+   * Equivalent to `indicesForAfter(where, null, client)`.
    *
    * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
    * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
@@ -192,7 +192,7 @@ type FraciForPrisma<
   ): Promise<Indices<D, L, X>>;
   /**
    * Retrieves the existing indices to generate a new fractional index for the last item.
-   * Equivalent to `indicesForBefore(null, where, client)`.
+   * Equivalent to `indicesForBefore(where, null, client)`.
    *
    * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
    * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
@@ -390,8 +390,8 @@ export function fraciExtension<Options extends FraciExtensionOptions>({
       );
 
       const indicesForAfter = async (
-        cursor: any,
         where: any,
+        cursor: any,
         pClient: AnyPrismaClient = client
       ): Promise<any> => {
         if (!cursor) {
@@ -417,8 +417,8 @@ export function fraciExtension<Options extends FraciExtensionOptions>({
       };
 
       const indicesForBefore = async (
-        cursor: any,
         where: any,
+        cursor: any,
         pClient: AnyPrismaClient = client
       ): Promise<any> => {
         if (!cursor) {
@@ -452,9 +452,9 @@ export function fraciExtension<Options extends FraciExtensionOptions>({
         indicesForAfter,
         indicesForBefore,
         indicesForFirst: (where: any, pClient?: AnyPrismaClient) =>
-          indicesForAfter(null, where, pClient),
+          indicesForAfter(where, null, pClient),
         indicesForLast: (where: any, pClient?: AnyPrismaClient) =>
-          indicesForBefore(null, where, pClient),
+          indicesForBefore(where, null, pClient),
       };
 
       helperMap.set(`${model}\0${field}`, helperEx);

@@ -121,8 +121,8 @@ const app = new Hono()
       const xfi = drizzleFraci(db, fiExampleItems);
       const indices =
         before != null
-          ? await xfi.indicesForBefore({ id: before }, { groupId })
-          : await xfi.indicesForAfter({ id: after }, { groupId });
+          ? await xfi.indicesForBefore({ groupId }, { id: before })
+          : await xfi.indicesForAfter({ groupId }, { id: after });
       if (!indices) {
         return c.json({ error: "Reference item not found" }, 400);
       }

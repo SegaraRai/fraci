@@ -293,38 +293,38 @@ describe("indicesForBefore and indicesForAfter", () => {
 
     const indicesForLast1 = await prisma.article
       .fraci("fi")
-      .indicesForBefore(null, { userId: 1 });
+      .indicesForBefore({ userId: 1 }, null);
     expect(indicesForLast1).toBeArrayOfSize(2);
     expect(indicesForLast1[0] as string).toBe(articles[1].fi);
     expect(indicesForLast1[1]).toBeNull();
 
     const indicesForLast2 = await prisma.article
       .fraci("fi")
-      .indicesForAfter({ id: articles[1].id }, { userId: 1 });
+      .indicesForAfter({ userId: 1 }, { id: articles[1].id });
     expect(indicesForLast2).toEqual(indicesForLast1);
 
     const indicesForFirst1 = await prisma.article
       .fraci("fi")
-      .indicesForAfter(null, { userId: 1 });
+      .indicesForAfter({ userId: 1 }, null);
     expect(indicesForFirst1).toBeArrayOfSize(2);
     expect(indicesForFirst1[0]).toBeNull();
     expect(indicesForFirst1[1] as string).toBe(articles[0].fi);
 
     const indicesForFirst2 = await prisma.article
       .fraci("fi")
-      .indicesForBefore({ id: articles[0].id }, { userId: 1 });
+      .indicesForBefore({ userId: 1 }, { id: articles[0].id });
     expect(indicesForFirst2).toEqual(indicesForFirst1);
 
     const indicesForMiddle1 = await prisma.article
       .fraci("fi")
-      .indicesForBefore({ id: articles[1].id }, { userId: 1 });
+      .indicesForBefore({ userId: 1 }, { id: articles[1].id });
     expect(indicesForMiddle1).toBeArrayOfSize(2);
     expect(indicesForMiddle1?.[0] as string).toBe(articles[0].fi);
     expect(indicesForMiddle1?.[1] as string).toBe(articles[1].fi);
 
     const indicesForMiddle2 = await prisma.article
       .fraci("fi")
-      .indicesForAfter({ id: articles[0].id }, { userId: 1 });
+      .indicesForAfter({ userId: 1 }, { id: articles[0].id });
     expect(indicesForMiddle2).toEqual(indicesForMiddle1!);
   });
 
@@ -339,26 +339,26 @@ describe("indicesForBefore and indicesForAfter", () => {
 
     const indicesForLast1 = await prisma.photo
       .fraci("fi")
-      .indicesForBefore(null, { articleId: 2, userId: 1 });
+      .indicesForBefore({ articleId: 2, userId: 1 }, null);
     expect(indicesForLast1).toBeArrayOfSize(2);
     expect(indicesForLast1[0] as string).toBe(photos[0].fi);
     expect(indicesForLast1[1]).toBeNull();
 
     const indicesForLast2 = await prisma.photo
       .fraci("fi")
-      .indicesForAfter({ id: photos[0].id }, { articleId: 2, userId: 1 });
+      .indicesForAfter({ articleId: 2, userId: 1 }, { id: photos[0].id });
     expect(indicesForLast2).toEqual(indicesForLast1);
 
     const indicesForFirst1 = await prisma.photo
       .fraci("fi")
-      .indicesForAfter(null, { articleId: 2, userId: 1 });
+      .indicesForAfter({ articleId: 2, userId: 1 }, null);
     expect(indicesForFirst1).toBeArrayOfSize(2);
     expect(indicesForFirst1[0]).toBeNull();
     expect(indicesForFirst1[1] as string).toBe(photos[0].fi);
 
     const indicesForFirst2 = await prisma.photo
       .fraci("fi")
-      .indicesForBefore({ id: photos[0].id }, { articleId: 2, userId: 1 });
+      .indicesForBefore({ articleId: 2, userId: 1 }, { id: photos[0].id });
     expect(indicesForFirst2).toEqual(indicesForFirst1);
   });
 
@@ -372,14 +372,14 @@ describe("indicesForBefore and indicesForAfter", () => {
 
     const indicesForLast = await prisma.photo
       .fraci("fi")
-      .indicesForBefore(null, { articleId: 999, userId: 1 });
+      .indicesForBefore({ articleId: 999, userId: 1 }, null);
     expect(indicesForLast).toBeArrayOfSize(2);
     expect(indicesForLast[0]).toBeNull();
     expect(indicesForLast[1]).toBeNull();
 
     const indicesForFirst = await prisma.photo
       .fraci("fi")
-      .indicesForAfter(null, { articleId: 999, userId: 1 });
+      .indicesForAfter({ articleId: 999, userId: 1 }, null);
     expect(indicesForFirst).toBeArrayOfSize(2);
     expect(indicesForFirst[0]).toBeNull();
     expect(indicesForFirst[1]).toBeNull();
@@ -397,12 +397,12 @@ describe("indicesForBefore and indicesForAfter", () => {
 
     const indices1 = await prisma.article
       .fraci("fi")
-      .indicesForAfter({ id: articlesByUser2[0].id }, { userId: 1 });
+      .indicesForAfter({ userId: 1 }, { id: articlesByUser2[0].id });
     expect(indices1).toBeUndefined();
 
     const indices2 = await prisma.article
       .fraci("fi")
-      .indicesForBefore({ id: articlesByUser1[0].id }, { userId: 2 });
+      .indicesForBefore({ userId: 2 }, { id: articlesByUser1[0].id });
     expect(indices2).toBeUndefined();
   });
 
@@ -414,12 +414,12 @@ describe("indicesForBefore and indicesForAfter", () => {
 
     const indicesForLast = await prisma.photo
       .fraci("fi")
-      .indicesForBefore({ id: 999 }, { articleId: 999, userId: 1 });
+      .indicesForBefore({ articleId: 999, userId: 1 }, { id: 999 });
     expect(indicesForLast).toBeUndefined();
 
     const indicesForFirst = await prisma.photo
       .fraci("fi")
-      .indicesForAfter({ id: 999 }, { articleId: 999, userId: 1 });
+      .indicesForAfter({ articleId: 999, userId: 1 }, { id: 999 });
     expect(indicesForFirst).toBeUndefined();
   });
 
@@ -429,35 +429,35 @@ describe("indicesForBefore and indicesForAfter", () => {
 
       // Test `where` argument
 
-      await pfi.indicesForBefore(null, { articleId: 2, userId: 1 });
+      await pfi.indicesForBefore({ articleId: 2, userId: 1 }, null);
 
       // @ts-expect-error missing field
-      await pfi.indicesForBefore(null, {});
+      await pfi.indicesForBefore({}, null);
 
       // @ts-expect-error missing field
-      await pfi.indicesForBefore(null, { articleId: 2 });
+      await pfi.indicesForBefore({ articleId: 2 }, null);
 
       // @ts-expect-error missing field
-      await pfi.indicesForBefore(null, { userId: 1 });
+      await pfi.indicesForBefore({ userId: 1 }, null);
 
       // Test `cursor` argument
 
-      await pfi.indicesForBefore({ id: 1 }, { articleId: 2, userId: 1 });
+      await pfi.indicesForBefore({ articleId: 2, userId: 1 }, { id: 1 });
 
       // @ts-expect-error missing field
-      await pfi.indicesForBefore({}, { articleId: 2, userId: 1 });
+      await pfi.indicesForBefore({ articleId: 2, userId: 1 }, {});
 
       await pfi.indicesForBefore(
-        // @ts-expect-error missing field
         { articleId: 2, userId: 1 },
+        // @ts-expect-error missing field
         { articleId: 2, userId: 1 }
       );
 
       // @ts-expect-error scalar
-      await pfi.indicesForBefore(1, { articleId: 2, userId: 1 });
+      await pfi.indicesForBefore({ articleId: 2, userId: 1 }, 1);
 
       // @ts-expect-error scalar
-      await pfi.indicesForBefore("1", { articleId: 2, userId: 1 });
+      await pfi.indicesForBefore({ articleId: 2, userId: 1 }, "1");
     } catch {
       // do nothing
     }
@@ -490,19 +490,15 @@ test("custom client", async () => {
   expect(calledCount).toBe(0);
 
   await afi.indicesForBefore(
+    { userId: article.userId },
     { id: article.id },
-    {
-      userId: article.userId,
-    },
     customClient
   );
   expect(calledCount).toBe(1);
 
   await afi.indicesForAfter(
+    { userId: article.userId },
     { id: article.id },
-    {
-      userId: article.userId,
-    },
     customClient
   );
   expect(calledCount).toBe(2);

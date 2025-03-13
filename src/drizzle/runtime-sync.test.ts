@@ -103,7 +103,7 @@ describe("drizzleFraciSync with group columns", () => {
       .get();
     expect(item).not.toBeUndefined();
 
-    const indices = fetcher.indicesForAfter({ id: item!.id }, { groupId: 1 });
+    const indices = fetcher.indicesForAfter({ groupId: 1 }, { id: item!.id });
 
     expect(indices).toBeArrayOfSize(2);
     expect(indices![0]).toBe("a" as FI);
@@ -122,7 +122,7 @@ describe("drizzleFraciSync with group columns", () => {
       .get();
     expect(item).not.toBeUndefined();
 
-    const indices = fetcher.indicesForBefore({ id: item!.id }, { groupId: 1 });
+    const indices = fetcher.indicesForBefore({ groupId: 1 }, { id: item!.id });
 
     expect(indices).toBeArrayOfSize(2);
     expect(indices![0]).toBe("m" as FI);
@@ -131,10 +131,10 @@ describe("drizzleFraciSync with group columns", () => {
 
   test("should return undefined for non-existent cursor", () => {
     expect(
-      fetcher.indicesForAfter({ id: 999 }, { groupId: 1 })
+      fetcher.indicesForAfter({ groupId: 1 }, { id: 999 })
     ).toBeUndefined();
     expect(
-      fetcher.indicesForBefore({ id: 999 }, { groupId: 1 })
+      fetcher.indicesForBefore({ groupId: 1 }, { id: 999 })
     ).toBeUndefined();
   });
 
@@ -151,10 +151,10 @@ describe("drizzleFraciSync with group columns", () => {
     expect(item).not.toBeUndefined();
 
     expect(
-      fetcher.indicesForAfter({ id: item!.id }, { groupId: 1 })
+      fetcher.indicesForAfter({ groupId: 1 }, { id: item!.id })
     ).toBeUndefined();
     expect(
-      fetcher.indicesForBefore({ id: item!.id }, { groupId: 1 })
+      fetcher.indicesForBefore({ groupId: 1 }, { id: item!.id })
     ).toBeUndefined();
   });
 
@@ -176,19 +176,19 @@ describe("drizzleFraciSync with group columns", () => {
 
     expect(
       // @ts-expect-error
-      fetcher.indicesForAfter({ id: item!.id }, {})
+      fetcher.indicesForAfter({}, { id: item!.id })
     ).toBeUndefined();
     expect(
       // @ts-expect-error
-      fetcher.indicesForBefore({ id: item!.id }, {})
+      fetcher.indicesForBefore({}, { id: item!.id })
     ).toBeUndefined();
   });
 
   test("should handle when cursor fields missing", () => {
     // @ts-expect-error
-    expect(fetcher.indicesForAfter({}, { groupId: 1 })).toBeUndefined();
+    expect(fetcher.indicesForAfter({ groupId: 1 }, {})).toBeUndefined();
     // @ts-expect-error
-    expect(fetcher.indicesForBefore({}, { groupId: 1 })).toBeUndefined();
+    expect(fetcher.indicesForBefore({ groupId: 1 }, {})).toBeUndefined();
   });
 
   test("should handle empty groups", () => {
@@ -289,7 +289,7 @@ describe("drizzleFraciSync without group columns", () => {
       .get();
     expect(item).not.toBeUndefined();
 
-    const indices = fetcher.indicesForAfter({ id: item!.id }, {});
+    const indices = fetcher.indicesForAfter({}, { id: item!.id });
 
     expect(indices).toBeArrayOfSize(2);
     expect(indices![0]).toBe("a" as FI);
@@ -306,7 +306,7 @@ describe("drizzleFraciSync without group columns", () => {
       .get();
     expect(item).not.toBeUndefined();
 
-    const indices = fetcher.indicesForBefore({ id: item!.id }, {});
+    const indices = fetcher.indicesForBefore({}, { id: item!.id });
 
     expect(indices).toBeArrayOfSize(2);
     expect(indices![0]).toBe("m" as FI);
@@ -314,8 +314,8 @@ describe("drizzleFraciSync without group columns", () => {
   });
 
   test("should return undefined for non-existent cursor with empty group", () => {
-    expect(fetcher.indicesForAfter({ id: 999 }, {})).toBeUndefined();
-    expect(fetcher.indicesForBefore({ id: 999 }, {})).toBeUndefined();
+    expect(fetcher.indicesForAfter({}, { id: 999 })).toBeUndefined();
+    expect(fetcher.indicesForBefore({}, { id: 999 })).toBeUndefined();
   });
 
   test("should handle when cursor fields missing with empty group", () => {
