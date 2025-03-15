@@ -329,6 +329,9 @@ type Extension<O extends FraciExtensionOptions> = {
 /**
  * Checks if the error is a conflict error for the fractional index.
  *
+ * This is important for handling unique constraint violations when inserting items
+ * with the same fractional index, which can happen in concurrent environments.
+ *
  * @param error The error object to check.
  * @param modelName The model name.
  * @param field The field name of the fractional index.
@@ -342,10 +345,10 @@ function isIndexConflictError(
   return (
     error instanceof Error &&
     error.name === "PrismaClientKnownRequestError" &&
-    (error as PrismaClientKnownRequestError).code === PRISMA_CONFLICT_CODE &&
-    (error as any).meta?.modelName === modelName &&
-    Array.isArray((error as any).meta?.target) &&
-    (error as any).meta.target.includes(field)
+    (error as PrismaClientKnownRequestError).code === PRISMA_CONFLICT_CODE && // P2002 is the Prisma code for unique constraint violations
+    (error as any).meta?.modelName === modelName && // Check if the error is for the correct model
+    Array.isArray((error as any).meta?.target) && // Check if the target field is specified
+    (error as any).meta.target.includes(field) // Check if the target includes our fractional index field
   );
 }
 
@@ -361,17 +364,22 @@ export function fraciExtension<Options extends FraciExtensionOptions>({
   maxRetries = DEFAULT_MAX_RETRIES,
 }: Options) {
   return Prisma.defineExtension((client) => {
+    // Create a shared cache for better performance across multiple fields
     const cache = createFraciCache();
 
     type HelperValue = FraciForPrisma<any, any, any, any, any>;
 
+    // Map to store helper instances for each model.field combination
     const helperMap = new Map<string, HelperValue>();
 
+    // Process each field configuration from the options
     for (const [modelAndField, { lengthBase, digitBase }] of Object.entries(
       fields
     ) as [string, FieldOptions][]) {
+      // Split the "model.field" string into separate parts
       const [model, field] = modelAndField.split(".", 2) as [ModelKey, string];
 
+      // Get the actual model name from Prisma metadata
       const { modelName } = (client as any)[model]?.fields?.[field] ?? {};
       if (!modelName) {
         throw new Error(
@@ -379,6 +387,7 @@ export function fraciExtension<Options extends FraciExtensionOptions>({
         );
       }
 
+      // Create the base fractional indexing helper
       const helper = fraci(
         {
           digitBase,
@@ -386,65 +395,78 @@ export function fraciExtension<Options extends FraciExtensionOptions>({
           maxLength,
           maxRetries,
         },
-        cache
+        cache // Share the cache for better performance
       );
 
+      // Function to find indices for inserting an item after a specified cursor
       const indicesForAfter = async (
         where: any,
         cursor: any,
         pClient: AnyPrismaClient = client
       ): Promise<any> => {
+        // Case 1: No cursor provided - get the first item in the group
         if (!cursor) {
           const firstItem = await pClient[model].findFirst({
-            where,
-            select: { [field]: true },
-            orderBy: { [field]: "asc" },
+            where, // Filter by group conditions
+            select: { [field]: true }, // Only select the fractional index field
+            orderBy: { [field]: "asc" }, // Order by the fractional index ascending
           });
+
           // We should always return a tuple of two indices if `cursor` is `null`.
           return [null, firstItem?.[field] ?? null];
         }
 
+        // Case 2: Cursor provided - find items adjacent to the cursor
         const items = await pClient[model].findMany({
-          cursor,
-          where,
-          select: { [field]: true },
-          orderBy: { [field]: "asc" },
-          take: 2,
+          cursor, // Start from the cursor position
+          where, // Filter by group conditions
+          select: { [field]: true }, // Only select the fractional index field
+          orderBy: { [field]: "asc" }, // Order by the fractional index ascending
+          take: 2, // Get the cursor item and the next item
         });
+
+        // Return undefined if cursor not found, otherwise return the indices
         return items.length < 1
           ? undefined
           : [items[0][field], items[1]?.[field] ?? null];
       };
 
+      // Function to find indices for inserting an item before a specified cursor
       const indicesForBefore = async (
         where: any,
         cursor: any,
         pClient: AnyPrismaClient = client
       ): Promise<any> => {
+        // Case 1: No cursor provided - get the last item in the group
         if (!cursor) {
           const lastItem = await pClient[model].findFirst({
-            where,
-            select: { [field]: true },
-            orderBy: { [field]: "desc" },
+            where, // Filter by group conditions
+            select: { [field]: true }, // Only select the fractional index field
+            orderBy: { [field]: "desc" }, // Order by the fractional index descending
           });
+
           // We should always return a tuple of two indices if `cursor` is `null`.
           return [lastItem?.[field] ?? null, null];
         }
 
+        // Case 2: Cursor provided - find items adjacent to the cursor
         const items = await pClient[model].findMany({
-          cursor,
-          where,
-          select: { [field]: true },
-          orderBy: { [field]: "desc" },
-          take: 2,
+          cursor, // Start from the cursor position
+          where, // Filter by group conditions
+          select: { [field]: true }, // Only select the fractional index field
+          orderBy: { [field]: "desc" }, // Order by the fractional index descending
+          take: 2, // Get the cursor item and the previous item
         });
+
+        // Return undefined if cursor not found, otherwise return the indices in correct order
         return items.length < 1
           ? undefined
           : [items[1]?.[field] ?? null, items[0][field]];
       };
 
+      // Create an enhanced helper with Prisma-specific methods
       const helperEx: HelperValue = {
-        ...helper,
+        ...helper, // Include all methods from the base fraci helper
         isIndexConflictError: (
           error: unknown
         ): error is PrismaClientConflictError =>
@@ -457,22 +479,30 @@ export function fraciExtension<Options extends FraciExtensionOptions>({
           indicesForBefore(where, null, pClient),
       };
 
+      // Store the helper in the map with a unique key combining model and field
       helperMap.set(`${model}\0${field}`, helperEx);
     }
 
+    // Create the extension model object that will be attached to each Prisma model
     const extensionModel = Object.create(null) as Record<ModelKey, unknown>;
+
+    // Iterate through all models in the Prisma client
     for (const model of Object.keys(client) as ModelKey[]) {
+      // Skip internal Prisma properties that start with $ or _
       if (model.startsWith("$") || model.startsWith("_")) {
         continue;
       }
 
+      // Add the fraci method to each model
       extensionModel[model] = {
+        // This method retrieves the appropriate helper for the specified field
         fraci(field: string) {
           return helperMap.get(`${model}\0${field}`)!;
         },
       };
     }
 
+    // Register the extension with Prisma
     return client.$extends({
       name: EXTENSION_NAME,
       model: extensionModel,

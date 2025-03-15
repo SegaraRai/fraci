@@ -127,13 +127,17 @@ function withCache<T>(
   key: string,
   fn: () => T
 ): T {
+  // If no cache is provided, just compute the value directly
   if (!cache) {
     return fn();
   }
 
+  // Try to get the value from the cache
   let value = cache.get(key) as T | undefined;
   if (value === undefined) {
+    // Value not found in cache, compute it
     value = fn();
+    // Store in cache for future use
     cache.set(key, value);
   }
 
@@ -175,6 +179,8 @@ export function fraci<D extends string, L extends string, X>(
 ): Fraci<D, L, X> {
   type F = FractionalIndex<D, L, X>;
 
+  // Create and potentially cache the digit and length base maps
+  // This optimization avoids recreating these maps when using the same bases multiple times
   const [digBaseForward, digBaseReverse] = withCache(
     cache,
     `D${digitBase}`,
@@ -191,6 +197,7 @@ export function fraci<D extends string, L extends string, X>(
     digitBase,
     lengthBase,
     *generateKeyBetween(a: F | null, b: F | null, skip = 0) {
+      // Generate the base key between a and b (without conflict avoidance)
       const base = generateKeyBetween(
         a,
         b,
@@ -205,6 +212,8 @@ export function fraci<D extends string, L extends string, X>(
         throw new Error("Failed to generate index");
       }
 
+      // Generate multiple possible keys with conflict avoidance suffixes
+      // This allows the caller to try multiple keys if earlier ones conflict
       for (let i = 0; i < maxRetries; i++) {
         const value = `${base}${avoidConflictSuffix(i + skip, digBaseForward)}`;
         if (value.length > maxLength) {
@@ -214,6 +223,7 @@ export function fraci<D extends string, L extends string, X>(
       }
     },
     *generateNKeysBetween(a: F | null, b: F | null, n: number, skip = 0) {
+      // Generate n base keys between a and b (without conflict avoidance)
       const base = generateNKeysBetween(
         a,
         b,
@@ -229,7 +239,11 @@ export function fraci<D extends string, L extends string, X>(
         throw new Error("Failed to generate index");
       }
 
+      // Find the longest key to ensure we don't exceed maxLength when adding suffixes
       const longest = base.reduce((acc, v) => Math.max(acc, v.length), 0);
+
+      // Generate multiple sets of keys with conflict avoidance suffixes
+      // Each set has the same suffix applied to all keys to maintain relative ordering
       for (let i = 0; i < maxRetries; i++) {
         const suffix = avoidConflictSuffix(i + skip, digBaseForward);
         if (longest + suffix.length > maxLength) {

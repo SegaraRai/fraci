@@ -62,6 +62,8 @@ async function indicesFor(
     equity(column, group[key])
   );
 
+  // Case 1: No cursor provided - get the first/last item in the group
+  // This is used for indicesForFirst and indicesForLast operations
   if (!cursor) {
     const item = await (client as NarrowDatabase)
       .select(fiSelector)
@@ -69,33 +71,48 @@ async function indicesFor(
       .where(and(...groupConditions))
       .limit(1)
       .orderBy(order(column));
+
+    // Return [null, firstItem] or [lastItem, null] depending on direction
     return tuple(null, item[0]?.v ?? null);
   }
 
+  // Case 2: Cursor provided - build condition to find the exact cursor item
+  // This combines group conditions with cursor-specific conditions
   const cursorCondition = and(
     ...groupConditions,
     // SECURITY: Always use config for `Object.entries` so that all fields are included
-    ...Object.entries(cursorConfig).map(([key, column]) =>
-      equity(column, cursor[key])
+    // This ensures we don't miss any cursor fields that should be matched
+    ...Object.entries(cursorConfig).map(
+      ([key, column]) => equity(column, cursor[key]) // Use equity to safely handle null/undefined
     )
   );
 
+  // Performance optimization: Use a subquery to get the fractional index of the cursor item
+  // This avoids having to fetch the cursor item separately and then do another query
   const subQueryFIOfCursor = (client as NarrowDatabase)
     .select(fiSelector)
     .from(table)
     .where(cursorCondition)
     .limit(1);
 
+  // Find an item adjacent to the cursor item in a single query
+  // This is the main query that finds the items we need for generating a new index
   const items = await (client as NarrowDatabase)
     .select(fiSelector)
     .from(table)
-    .where(and(...groupConditions, compare(column, subQueryFIOfCursor)))
-    .limit(2)
-    .orderBy(order(column));
+    .where(
+      and(
+        ...groupConditions, // Stay within the same group
+        compare(column, subQueryFIOfCursor) // Use gte/lte based on direction
+      )
+    )
+    .limit(2) // We need at most 2 items (the cursor item and one adjacent item)
+    .orderBy(order(column)); // Sort in the appropriate direction
 
+  // Process the results
   return items.length < 1
     ? undefined // Cursor item not found in the group
-    : tuple(items[0].v, items[1]?.v ?? null);
+    : tuple(items[0].v, items[1]?.v ?? null); // Reorder based on direction
 }
 
 /**

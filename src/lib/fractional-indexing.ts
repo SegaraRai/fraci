@@ -106,30 +106,31 @@ function generateKeyBetweenUnsafe(
   lenBaseReverse: ReadonlyMap<string, number>,
   smallestInteger: string
 ): string {
+  // Strategy: Handle different cases based on bounds
   if (!a) {
     if (!b) {
-      // a == null, b == null
+      // Case: First key (no bounds)
       return getIntegerZero(digBaseForward, lenBaseForward);
     }
 
-    // a == null, b != null
+    // Case: Key before first key
     const [bInt, bFrac] = ensureNotUndefined(splitParts(b, lenBaseReverse));
     if (bInt === smallestInteger) {
-      // As bInt is the smallest integer, we have to decrease fractional part.
-      // At this time, although it is more space efficient to treat the decimal part as a fixed length, it is not adopted for the following reasons.
-      // - There is a limit when treating the decimal part as a fixed length.
-      // - In the first place, the algorithm for the integer part is in charge of the space-efficient method.
-      // This is a handling for edge cases that is extremely impractical in a correctly created application.
+      // Edge case: b is already at the smallest possible integer
+      // We can't decrement the integer part further, so we need to use a fractional part
+      // that sorts before b's fractional part
       return `${bInt}${ensureNotUndefined(
         getMidpointFractional("", bFrac, digBaseForward, digBaseReverse)
       )}`;
     }
 
     if (bFrac) {
-      // If b has a fractional part, just remove it.
+      // Optimization: If b has a fractional part, we can use just its integer part
+      // This creates a shorter key that still sorts correctly before b
       return bInt;
     }
 
+    // Standard case: Decrement the integer part of b
     const decremented = ensureNotUndefined(
       decrementInteger(
         bInt,
@@ -139,15 +140,20 @@ function generateKeyBetweenUnsafe(
         lenBaseReverse
       )
     ) as string;
+
+    // Edge case: If we hit the smallest integer, add the largest digit as fractional part
+    // This ensures we still have a valid key that sorts before b
     return decremented === smallestInteger
       ? `${decremented}${digBaseForward[digBaseForward.length - 1]}`
       : decremented;
   }
 
   if (!b) {
-    // a != null, b == null
+    // Case: Key after last key
     const aParts = ensureNotUndefined(splitParts(a, lenBaseReverse));
     const [aInt, aFrac] = aParts;
+
+    // Try to increment the integer part first (most efficient)
     const incremented = ensureNotUndefined(
       incrementInteger(
         aInt,
@@ -157,32 +163,36 @@ function generateKeyBetweenUnsafe(
         lenBaseReverse
       )
     );
+
     if (incremented !== null) {
-      // aInt is invalid (if incremented === undefined), or aInt is not the largest integer.
+      // If we can increment the integer part, use that result
+      // This creates a shorter key than using fractional parts
       return incremented;
     }
 
-    // As aInt is the largest integer, we have to increase fractional part.
-    // At this time, although it is more space efficient to treat the decimal part as a fixed length, it is not adopted for the following reasons.
-    // - There is a limit when treating the decimal part as a fixed length.
-    // - In the first place, the algorithm for the integer part is in charge of the space-efficient method.
-    // This is a handling for edge cases that is extremely impractical in a correctly created application.
+    // Edge case: We've reached the largest possible integer representation
+    // We need to use the fractional part method instead
+    // Calculate a fractional part that sorts after a's fractional part
     return `${aInt}${ensureNotUndefined(
       getMidpointFractional(aFrac, null, digBaseForward, digBaseReverse)
     )}`;
   }
 
-  // a != null, b != null
+  // Case: Key between two existing keys
   const aParts = ensureNotUndefined(splitParts(a, lenBaseReverse));
   const bParts = ensureNotUndefined(splitParts(b, lenBaseReverse));
   const [aInt, aFrac] = aParts;
   const [bInt, bFrac] = bParts;
+
+  // If both keys have the same integer part, we need to find a fractional part between them
   if (aInt === bInt) {
+    // Calculate the midpoint between the two fractional parts
     return `${aInt}${ensureNotUndefined(
       getMidpointFractional(aFrac, bFrac, digBaseForward, digBaseReverse)
     )}`;
   }
 
+  // Try to increment a's integer part
   const cInt = ensureNotUndefined(
     incrementInteger(
       aInt,
@@ -193,10 +203,13 @@ function generateKeyBetweenUnsafe(
     )
   );
 
+  // Two possible outcomes:
   return cInt !== null && cInt !== bInt
-    ? // aInt is invalid (if cInt is undefined), or $ cInt = aInt + 1 (< bInt) $.
+    ? // 1. If incrementing a's integer doesn't reach b's integer,
+      // we can use the incremented value (shorter key)
       cInt
-    : // $ cInt = aInt + 1 = bInt $. Return $ aInt + (.0 + aFrac) / 2 $.
+    : // 2. If incrementing a's integer equals b's integer or we can't increment,
+      // we need to use a's integer with a fractional part that sorts after a's fractional part
       `${aInt}${ensureNotUndefined(
         getMidpointFractional(aFrac, null, digBaseForward, digBaseReverse)
       )}`;
@@ -292,24 +305,35 @@ function generateNKeysBetweenUnsafe(
     return [generateKeyBetweenUnsafe(a, b, ...args)];
   }
 
+  // Special case: Generate n keys after a (no upper bound)
   if (b == null) {
     let c = a;
+    // Sequential generation - each new key is after the previous one
     return Array.from(
       { length: n },
       () => (c = generateKeyBetweenUnsafe(c, b, ...args))
     );
   }
 
+  // Special case: Generate n keys before b (no lower bound)
   if (a == null) {
     let c = b;
+    // Sequential generation in reverse - each new key is before the previous one
+    // Then reverse the array to get ascending order
     return Array.from(
       { length: n },
       () => (c = generateKeyBetweenUnsafe(a, c, ...args))
     ).reverse();
   }
 
-  const mid = n >> 1;
+  // Divide-and-conquer approach for better distribution of keys
+  const mid = n >> 1; // Fast integer division by 2
+
+  // Find a midpoint key between a and b
   const c = generateKeyBetweenUnsafe(a, b, ...args);
+
+  // Recursively generate keys in both halves and combine them
+  // This creates a more balanced distribution than sequential generation
   return [
     ...generateNKeysBetweenUnsafe(a, c, mid, ...args),
     c,
@@ -387,11 +411,26 @@ export function avoidConflictSuffix(
   count: number,
   digBaseForward: readonly string[]
 ): string {
+  // Use the digit base length as the radix for conversion
   const radix = digBaseForward.length;
   let additionalFrac = "";
+
+  // Convert a number to a string representation using our custom digit base
+  // This works like converting to a different number base (like base-10 or base-16),
+  // but we write the digits in reverse order.
+  //
+  // For example, with digit base "0123456789":
+  // - The number 1234 would become "4321"
+  //
+  // We do this reversed ordering to ensure the string doesn't end with zeros,
+  // which we need to avoid in fractional indices.
   while (count > 0) {
+    // Add the digit for the current remainder
     additionalFrac += digBaseForward[count % radix];
+    // Integer division to get the next digit
     count = Math.floor(count / radix);
   }
+
+  // The result is a unique suffix for each count value
   return additionalFrac;
 }
