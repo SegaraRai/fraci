@@ -11,15 +11,37 @@ import type {
   DrizzleFractionalIndex,
 } from "./types.js";
 
+/**
+ * Union type of supported asynchronous Drizzle database clients.
+ * This type includes SQLite (in async API), PostgreSQL, and MySQL database clients
+ * that can be used with the fractional indexing functionality.
+ */
 export type SupportedDrizzleDatabase =
   | BaseSQLiteDatabase<"async", any, any>
   | PgDatabase<any, any, any>
   | MySqlDatabase<any, any, any, any>;
 
+/**
+ * Internal type that combines all database types for implementation purposes.
+ * This type is used to access common methods across different database clients
+ * without having to handle each database type separately.
+ */
 type NarrowDatabase = BaseSQLiteDatabase<"async", any, any> &
   PgDatabase<any, any, any> &
   MySqlDatabase<any, any, any, any>;
 
+/**
+ * Internal function to retrieve indices for positioning items.
+ * This function queries the database to find the appropriate indices
+ * for inserting an item before or after a specified cursor position.
+ *
+ * @param client - The Drizzle database client
+ * @param config - The fractional indexing configuration
+ * @param group - The group context for the indices
+ * @param cursor - The cursor position, or null for first/last position
+ * @param reverse - Whether to retrieve indices in reverse order
+ * @returns A tuple of indices, or undefined if the cursor doesn't exist
+ */
 async function indicesFor(
   client: SupportedDrizzleDatabase,
   {
@@ -76,6 +98,16 @@ async function indicesFor(
     : tuple(items[0].v, items[1]?.v ?? null);
 }
 
+/**
+ * Retrieves indices for positioning an item after a specified cursor.
+ * This is a wrapper around the `indicesFor` function with `reverse` set to false.
+ *
+ * @param client - The Drizzle database client
+ * @param config - The fractional indexing configuration
+ * @param group - The group context for the indices
+ * @param cursor - The cursor position, or null for the first position
+ * @returns A tuple of indices, or undefined if the cursor doesn't exist
+ */
 function indicesForAfter(
   client: SupportedDrizzleDatabase,
   config: DrizzleFraciConfig,
@@ -85,6 +117,16 @@ function indicesForAfter(
   return indicesFor(client, config, group, cursor, false);
 }
 
+/**
+ * Retrieves indices for positioning an item before a specified cursor.
+ * This is a wrapper around the `indicesFor` function with `reverse` set to true.
+ *
+ * @param client - The Drizzle database client
+ * @param config - The fractional indexing configuration
+ * @param group - The group context for the indices
+ * @param cursor - The cursor position, or null for the last position
+ * @returns A tuple of indices, or undefined if the cursor doesn't exist
+ */
 function indicesForBefore(
   client: SupportedDrizzleDatabase,
   config: DrizzleFraciConfig,
@@ -150,6 +192,36 @@ export type FraciForDrizzle<T extends DrizzleFraciConfig> = T["fraci"] & {
   ) => Promise<[DrizzleFractionalIndex<T> | null, null]>;
 };
 
+/**
+ * Creates an asynchronous fractional indexing utility for Drizzle ORM.
+ * This function enhances a fractional indexing instance with Drizzle-specific
+ * methods for retrieving indices based on asynchronous database queries.
+ *
+ * This is the asynchronous version that works with all supported database engines.
+ * For Bun SQLite, use the `drizzleFraciSync` function.
+ * The API is identical except that methods return Promises instead of direct values.
+ *
+ * @template Config - The type of the fractional indexing configuration
+ * @param client - The asynchronous Drizzle database client to use for queries
+ * @param config - The configuration for fractional indexing
+ * @returns An enhanced fractional indexing utility with Drizzle-specific asynchronous methods
+ * @example
+ * ```ts
+ * const db = drizzle(connection);
+ * const todoFraci = drizzleFraciSync(db, defineDrizzleFraci({
+ *   fraci({ digitBase: BASE64, lengthBase: BASE64 }),
+ *   todos,
+ *   todos.position,
+ *   { userId: todos.userId },
+ *   { id: todos.id }
+ * }));
+ *
+ * // Get indices for inserting at the beginning of a user's todo list
+ * // Note: await is needed since this is asynchronous
+ * const [a, b] = await todoFraci.indicesForFirst({ userId: 123 });
+ * const [newPosition] = todoFraci.generateKeyBetween(a, b);
+ * ```
+ */
 export function drizzleFraci<Config extends DrizzleFraciConfig>(
   client: SupportedDrizzleDatabase,
   config: Config

@@ -6,6 +6,21 @@ import {
   splitParts,
 } from "./decimal.js";
 
+/**
+ * Validates if a string is a valid fractional index.
+ * A valid fractional index must:
+ * - Not be empty or equal to the smallest integer
+ * - Have a valid integer part with valid digits
+ * - Not have trailing zeros in the fractional part
+ * - Contain only valid digits in both integer and fractional parts
+ *
+ * @param index - The string to validate as a fractional index
+ * @param digBaseForward - Array mapping digit positions to characters
+ * @param digBaseReverse - Map of digit characters to their numeric values
+ * @param lenBaseReverse - Map of length encoding characters to their numeric values
+ * @param smallestInteger - The smallest possible integer representation
+ * @returns True if the string is a valid fractional index, false otherwise
+ */
 export function isValidFractionalIndex(
   index: string,
   digBaseForward: readonly string[],
@@ -45,6 +60,15 @@ export function isValidFractionalIndex(
   return true;
 }
 
+/**
+ * Ensures a value is not undefined, throwing an error if it is.
+ * This is a utility function used to handle unexpected undefined values
+ * that should have been validated earlier in the code.
+ *
+ * @param value - The value to check
+ * @returns The original value if it's not undefined
+ * @throws Error if the value is undefined
+ */
 function ensureNotUndefined<T>(value: T | undefined): T {
   if (value === undefined) {
     // This should not happen as we should have validated the value before.
@@ -53,6 +77,26 @@ function ensureNotUndefined<T>(value: T | undefined): T {
   return value;
 }
 
+/**
+ * Generates a key between two existing keys without validation.
+ * This internal function handles the core algorithm for creating a fractional index
+ * between two existing indices. It assumes inputs are valid and doesn't perform validation.
+ *
+ * The function handles several cases:
+ * - When both a and b are null (first key)
+ * - When only a is null (key before b)
+ * - When only b is null (key after a)
+ * - When both a and b are provided (key between a and b)
+ *
+ * @param a - The lower bound key, or null if there is no lower bound
+ * @param b - The upper bound key, or null if there is no upper bound
+ * @param digBaseForward - Array mapping digit positions to characters
+ * @param digBaseReverse - Map of digit characters to their numeric values
+ * @param lenBaseForward - Map of length values to their encoding characters
+ * @param lenBaseReverse - Map of length encoding characters to their numeric values
+ * @param smallestInteger - The smallest possible integer representation
+ * @returns A new key that sorts between a and b
+ */
 function generateKeyBetweenUnsafe(
   a: string | null,
   b: string | null,
@@ -158,6 +202,20 @@ function generateKeyBetweenUnsafe(
       )}`;
 }
 
+/**
+ * Generates a key between two existing keys with validation.
+ * This function validates the input keys before generating a new key between them.
+ * It returns undefined if either key is invalid or if b is less than or equal to a.
+ *
+ * @param a - The lower bound key, or null if there is no lower bound
+ * @param b - The upper bound key, or null if there is no upper bound
+ * @param digBaseForward - Array mapping digit positions to characters
+ * @param digBaseReverse - Map of digit characters to their numeric values
+ * @param lenBaseForward - Map of length values to their encoding characters
+ * @param lenBaseReverse - Map of length encoding characters to their numeric values
+ * @param smallestInteger - The smallest possible integer representation
+ * @returns A new key that sorts between a and b, or undefined if inputs are invalid
+ */
 export function generateKeyBetween(
   a: string | null,
   b: string | null,
@@ -196,6 +254,24 @@ export function generateKeyBetween(
       );
 }
 
+/**
+ * Generates multiple keys between two existing keys without validation.
+ * This internal function creates n evenly distributed keys between a and b.
+ * It uses a recursive divide-and-conquer approach for more even distribution.
+ *
+ * The function handles several cases:
+ * - When n < 1 (returns empty array)
+ * - When n = 1 (returns a single key between a and b)
+ * - When b is null (generates n keys after a)
+ * - When a is null (generates n keys before b)
+ * - When both a and b are provided (generates n keys between a and b)
+ *
+ * @param a - The lower bound key, or null if there is no lower bound
+ * @param b - The upper bound key, or null if there is no upper bound
+ * @param n - Number of keys to generate
+ * @param args - Array containing the base maps and smallest integer value
+ * @returns An array of n new keys that sort between a and b
+ */
 function generateNKeysBetweenUnsafe(
   a: string | null,
   b: string | null,
@@ -241,6 +317,21 @@ function generateNKeysBetweenUnsafe(
   ];
 }
 
+/**
+ * Generates multiple keys between two existing keys with validation.
+ * This function validates the input keys before generating new keys between them.
+ * It returns undefined if either key is invalid or if b is less than or equal to a.
+ *
+ * @param a - The lower bound key, or null if there is no lower bound
+ * @param b - The upper bound key, or null if there is no upper bound
+ * @param n - Number of keys to generate
+ * @param digBaseForward - Array mapping digit positions to characters
+ * @param digBaseReverse - Map of digit characters to their numeric values
+ * @param lenBaseForward - Map of length values to their encoding characters
+ * @param lenBaseReverse - Map of length encoding characters to their numeric values
+ * @param smallestInteger - The smallest possible integer representation
+ * @returns An array of n new keys that sort between a and b, or undefined if inputs are invalid
+ */
 export function generateNKeysBetween(
   a: string | null,
   b: string | null,
@@ -281,6 +372,17 @@ export function generateNKeysBetween(
       );
 }
 
+/**
+ * Generates a suffix to avoid conflicts between fractional indices.
+ * This function creates a unique suffix based on the count value,
+ * converting it to the specified digit base. The suffix is used to
+ * ensure uniqueness when multiple indices need to be generated between
+ * the same bounds.
+ *
+ * @param count - The count value to convert to a suffix
+ * @param digBaseForward - Array mapping digit positions to characters
+ * @returns A string suffix in the specified digit base
+ */
 export function avoidConflictSuffix(
   count: number,
   digBaseForward: readonly string[]

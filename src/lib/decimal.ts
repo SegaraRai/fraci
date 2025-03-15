@@ -1,3 +1,12 @@
+/**
+ * Gets the signed length of the integer part from a fractional index.
+ * This function extracts the length information encoded in the first character
+ * of the index string.
+ *
+ * @param index - The fractional index string
+ * @param lenBaseReverse - Map of length encoding characters to their numeric values
+ * @returns The signed length of the integer part, or undefined if the first character is invalid
+ */
 export function getIntegerLengthSigned(
   index: string,
   lenBaseReverse: ReadonlyMap<string, number>
@@ -5,6 +14,15 @@ export function getIntegerLengthSigned(
   return lenBaseReverse.get(index[0]);
 }
 
+/**
+ * Splits a fractional index string into its integer and fractional parts.
+ * This function uses the length information encoded in the first character
+ * to determine where to split the string.
+ *
+ * @param index - The fractional index string to split
+ * @param lenBaseReverse - Map of length encoding characters to their numeric values
+ * @returns A tuple containing the integer and fractional parts, or undefined if the index is invalid
+ */
 export function splitParts(
   index: string,
   lenBaseReverse: ReadonlyMap<string, number>
@@ -17,6 +35,15 @@ export function splitParts(
   return [index.slice(0, intLength), index.slice(intLength)];
 }
 
+/**
+ * Generates a string representation of the integer zero.
+ * This function creates a string that represents the integer zero
+ * in the specified digit base and length encoding.
+ *
+ * @param digBaseForward - Array mapping digit positions to characters
+ * @param lenBaseForward - Map of length values to their encoding characters
+ * @returns A string representation of the integer zero
+ */
 export function getIntegerZero(
   digBaseForward: readonly string[],
   lenBaseForward: ReadonlyMap<number, string>
@@ -24,6 +51,15 @@ export function getIntegerZero(
   return lenBaseForward.get(1)! + digBaseForward[0];
 }
 
+/**
+ * Generates a string representation of the smallest possible integer.
+ * This function finds the smallest length value in the length encoding map
+ * and creates a string representing the smallest possible integer.
+ *
+ * @param digBaseForward - Array mapping digit positions to characters
+ * @param lenBaseForward - Map of length values to their encoding characters
+ * @returns A string representation of the smallest possible integer
+ */
 export function getSmallestInteger(
   digBaseForward: readonly string[],
   lenBaseForward: ReadonlyMap<number, string>
@@ -33,6 +69,20 @@ export function getSmallestInteger(
   return `${minLenChar}${digBaseForward[0].repeat(Math.abs(minKey))}`;
 }
 
+/**
+ * Increments the integer part of a fractional index.
+ * This function handles carrying and length changes when incrementing the integer.
+ *
+ * @param index - The fractional index string whose integer part should be incremented
+ * @param digBaseForward - Array mapping digit positions to characters
+ * @param digBaseReverse - Map of digit characters to their numeric values
+ * @param lenBaseForward - Map of length values to their encoding characters
+ * @param lenBaseReverse - Map of length encoding characters to their numeric values
+ * @returns
+ *   - A new string with the incremented integer part
+ *   - null if the integer cannot be incremented (reached maximum value)
+ *   - undefined if the input is invalid
+ */
 export function incrementInteger(
   index: string,
   digBaseForward: readonly string[],
@@ -79,6 +129,20 @@ export function incrementInteger(
   return `${newLenChar}${smallestDigit.repeat(Math.abs(newLenSigned))}`;
 }
 
+/**
+ * Decrements the integer part of a fractional index.
+ * This function handles borrowing and length changes when decrementing the integer.
+ *
+ * @param index - The fractional index string whose integer part should be decremented
+ * @param digBaseForward - Array mapping digit positions to characters
+ * @param digBaseReverse - Map of digit characters to their numeric values
+ * @param lenBaseForward - Map of length values to their encoding characters
+ * @param lenBaseReverse - Map of length encoding characters to their numeric values
+ * @returns
+ *   - A new string with the decremented integer part
+ *   - null if the integer cannot be decremented (reached minimum value)
+ *   - undefined if the input is invalid
+ */
 export function decrementInteger(
   index: string,
   digBaseForward: readonly string[],
@@ -125,6 +189,17 @@ export function decrementInteger(
   return `${newLenChar}${largestDigit.repeat(Math.abs(newLenSigned))}`;
 }
 
+/**
+ * Calculates the midpoint between two fractional parts.
+ * This function recursively finds a string that sorts between two fractional parts.
+ * It handles various cases including when one of the inputs is null.
+ *
+ * @param a - The lower bound fractional part, or empty string if there is no lower bound
+ * @param b - The upper bound fractional part, or null if there is no upper bound
+ * @param digBaseForward - Array mapping digit positions to characters
+ * @param digBaseReverse - Map of digit characters to their numeric values
+ * @returns A string that sorts between a and b, or undefined if inputs are invalid
+ */
 export function getMidpointFractional(
   a: string,
   b: string | null,

@@ -9,8 +9,24 @@ import type {
   DrizzleFractionalIndex,
 } from "./types.js";
 
+/**
+ * Type representing supported synchronous Drizzle database clients.
+ * This is specifically for Bun SQLite, which is the only synchronous database engine currently available.
+ */
 export type SupportedDrizzleDatabaseSync = BaseSQLiteDatabase<"sync", any, any>;
 
+/**
+ * Internal function to retrieve indices for positioning items.
+ * This function queries the database synchronously to find the appropriate indices
+ * for inserting an item before or after a specified cursor position.
+ *
+ * @param client - The synchronous Drizzle database client
+ * @param config - The fractional indexing configuration
+ * @param group - The group context for the indices
+ * @param cursor - The cursor position, or null for first/last position
+ * @param reverse - Whether to retrieve indices in reverse order
+ * @returns A tuple of indices, or undefined if the cursor doesn't exist
+ */
 function indicesFor(
   client: SupportedDrizzleDatabaseSync,
   {
@@ -69,6 +85,16 @@ function indicesFor(
     : tuple(items[0].v, items[1]?.v ?? null);
 }
 
+/**
+ * Retrieves indices for positioning an item after a specified cursor.
+ * This is a wrapper around the `indicesFor` function with `reverse` set to false.
+ *
+ * @param client - The synchronous Drizzle database client
+ * @param config - The fractional indexing configuration
+ * @param group - The group context for the indices
+ * @param cursor - The cursor position, or null for the first position
+ * @returns A tuple of indices, or undefined if the cursor doesn't exist
+ */
 function indicesForAfter(
   client: SupportedDrizzleDatabaseSync,
   config: DrizzleFraciConfig,
@@ -78,6 +104,16 @@ function indicesForAfter(
   return indicesFor(client, config, group, cursor, false);
 }
 
+/**
+ * Retrieves indices for positioning an item before a specified cursor.
+ * This is a wrapper around the `indicesFor` function with `reverse` set to true.
+ *
+ * @param client - The synchronous Drizzle database client
+ * @param config - The fractional indexing configuration
+ * @param group - The group context for the indices
+ * @param cursor - The cursor position, or null for the last position
+ * @returns A tuple of indices, or undefined if the cursor doesn't exist
+ */
 function indicesForBefore(
   client: SupportedDrizzleDatabaseSync,
   config: DrizzleFraciConfig,
@@ -145,6 +181,36 @@ export type FraciForDrizzleSync<T extends DrizzleFraciConfig> = T["fraci"] & {
   ) => [DrizzleFractionalIndex<T> | null, null];
 };
 
+/**
+ * Creates a synchronous fractional indexing utility for Drizzle ORM.
+ * This function enhances a fractional indexing instance with Drizzle-specific
+ * methods for retrieving indices based on synchronous database queries.
+ *
+ * This is the synchronous counterpart to the `drizzleFraci` function.
+ * Use this function when working with Bun SQLite.
+ * The API is identical except that methods return values directly instead of Promises.
+ *
+ * @template Config - The type of the fractional indexing configuration
+ * @param client - The synchronous Drizzle database client to use for queries (SQLite in sync mode)
+ * @param config - The configuration for fractional indexing
+ * @returns An enhanced fractional indexing utility with Drizzle-specific synchronous methods
+ * @example
+ * ```ts
+ * const db = drizzle(connection);
+ * const todoFraci = drizzleFraciSync(db, defineDrizzleFraci({
+ *   fraci({ digitBase: BASE64, lengthBase: BASE64 }),
+ *   todos,
+ *   todos.position,
+ *   { userId: todos.userId },
+ *   { id: todos.id }
+ * }));
+ *
+ * // Get indices for inserting at the beginning of a user's todo list
+ * // Note: No await needed since this is synchronous
+ * const [a, b] = todoFraci.indicesForFirst({ userId: 123 });
+ * const [newPosition] = todoFraci.generateKeyBetween(a, b);
+ * ```
+ */
 export function drizzleFraciSync<Config extends DrizzleFraciConfig>(
   client: SupportedDrizzleDatabaseSync,
   config: Config
