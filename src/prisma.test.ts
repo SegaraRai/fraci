@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { beforeAll, describe, expect, test } from "bun:test";
 import { fraciExtension } from "fraci/prisma";
 import { setupPrisma } from "../test/prisma.js";
-import { BASE26, BASE36, BASE95 } from "./bases.js";
+import { BASE26L, BASE36L, BASE95 } from "./bases.js";
 
 const basePrisma = await setupPrisma();
 
@@ -12,14 +12,14 @@ const prisma = basePrisma.$extends(
     fields: {
       "article.fi": {
         group: ["userId"],
-        digitBase: BASE36,
-        lengthBase: BASE26,
+        digitBase: BASE36L,
+        lengthBase: BASE26L,
       },
       "photo.fi": {
         // `userId` is not necessary in practice; it's just for demonstration.
         group: ["articleId", "userId"],
-        digitBase: BASE36,
-        lengthBase: BASE26,
+        digitBase: BASE36L,
+        lengthBase: BASE26L,
       },
       "tagsOnPhotos.tagFI": {
         group: ["photoId"],
@@ -187,13 +187,13 @@ test("instantiation type check", () => {
     fields: {
       "article.fi": {
         group: [],
-        digitBase: BASE36,
-        lengthBase: BASE26,
+        digitBase: BASE36L,
+        lengthBase: BASE26L,
       },
       "photo.fi": {
         group: [],
-        digitBase: BASE36,
-        lengthBase: BASE26,
+        digitBase: BASE36L,
+        lengthBase: BASE26L,
       },
     } as const,
   });
@@ -205,8 +205,8 @@ test("instantiation type check", () => {
           // @ts-expect-error Only existing fields can be specified.
           "notExist.fi": {
             group: [],
-            digitBase: BASE36,
-            lengthBase: BASE26,
+            digitBase: BASE36L,
+            lengthBase: BASE26L,
           },
         } as const,
       })
@@ -220,8 +220,8 @@ test("instantiation type check", () => {
           // @ts-expect-error Only existing fields can be specified.
           "article.notExist": {
             group: [],
-            digitBase: BASE36,
-            lengthBase: BASE26,
+            digitBase: BASE36L,
+            lengthBase: BASE26L,
           },
         } as const,
       })
@@ -233,8 +233,8 @@ test("instantiation type check", () => {
       "article.fi": {
         // @ts-expect-error Only existing fields can be specified.
         group: ["altText"],
-        digitBase: BASE36,
-        lengthBase: BASE26,
+        digitBase: BASE36L,
+        lengthBase: BASE26L,
       },
     } as const,
   });
@@ -244,8 +244,8 @@ test("instantiation type check", () => {
       "article.fi": {
         // @ts-expect-error Only serializable fields can be specified.
         group: ["createdAt"],
-        digitBase: BASE36,
-        lengthBase: BASE26,
+        digitBase: BASE36L,
+        lengthBase: BASE26L,
       },
     } as const,
   });
@@ -255,8 +255,8 @@ test("instantiation type check", () => {
       "article.fi": {
         // @ts-expect-error The fractional index field itself cannot be specified.
         group: ["fi"],
-        digitBase: BASE36,
-        lengthBase: BASE26,
+        digitBase: BASE36L,
+        lengthBase: BASE26L,
       },
     } as const,
   });

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { BASE36, BASE64 } from "../bases.js";
+import { BASE36L, BASE62 } from "../bases.js";
 import { fraci } from "../factory.js";
 import type { FractionalIndex } from "../types.js";
 import { defineDrizzleFraci } from "./schema.js";
@@ -13,13 +13,13 @@ describe("defineDrizzleFraci", () => {
       name: text("name").notNull(),
       fi: text("fi")
         .notNull()
-        .$type<FractionalIndex<typeof BASE36, typeof BASE36, "_">>(),
+        .$type<FractionalIndex<typeof BASE36L, typeof BASE36L, "_">>(),
     });
 
     // Create a fraci instance
     const testFraci = fraci({
-      digitBase: BASE36,
-      lengthBase: BASE36,
+      digitBase: BASE36L,
+      lengthBase: BASE36L,
     });
 
     // Define cursor and group
@@ -63,9 +63,9 @@ describe("defineDrizzleFraci", () => {
 
     // Type check - should error if the fractional index is not the same as the fraci instance
     defineDrizzleFraci(
-      fraci<typeof BASE64, typeof BASE64, "">({
-        digitBase: BASE64,
-        lengthBase: BASE64,
+      fraci<typeof BASE62, typeof BASE62, "">({
+        digitBase: BASE62,
+        lengthBase: BASE62,
       }),
       testTable,
       // @ts-expect-error

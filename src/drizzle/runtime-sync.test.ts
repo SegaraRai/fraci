@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, test } from "bun:test";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/bun-sqlite";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { BASE36 } from "../bases.js";
+import { BASE36L } from "../bases.js";
 import { fraci } from "../factory.js";
 import type { FractionalIndexOf } from "../types.js";
 import { drizzleFraciSync } from "./runtime-sync.js";
@@ -21,8 +21,8 @@ describe("drizzleFraciSync with group columns", () => {
 
   // Create fraci instance
   const testFraci = fraci({
-    digitBase: BASE36,
-    lengthBase: BASE36,
+    digitBase: BASE36L,
+    lengthBase: BASE36L,
   });
 
   // Define fraci config
@@ -212,8 +212,8 @@ describe("drizzleFraciSync without group columns", () => {
 
   // Create fraci instance
   const noGroupFraci = fraci({
-    digitBase: BASE36,
-    lengthBase: BASE36,
+    digitBase: BASE36L,
+    lengthBase: BASE36L,
   });
 
   // Define fraci config with empty group

@@ -227,7 +227,7 @@ export type FraciForDrizzle<T extends DrizzleFraciConfig> = T["fraci"] & {
  * ```typescript
  * const db = drizzle(connection);
  * const todoFraci = drizzleFraciSync(db, defineDrizzleFraci({
- *   fraci({ digitBase: BASE64, lengthBase: BASE64 }),
+ *   fraci({ digitBase: BASE62, lengthBase: BASE62 }),
  *   todos,
  *   todos.position,
  *   { userId: todos.userId },

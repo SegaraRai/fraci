@@ -7,9 +7,9 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import {
-  BASE26,
-  BASE36,
-  BASE64,
+  BASE26L,
+  BASE36L,
+  BASE62,
   BASE95,
   fraci,
   type AnyFractionalIndex,
@@ -63,12 +63,12 @@ export const articles = sqliteTable(
 
 // Here, we create a fraci instance for the articles table.
 const fraciForArticles = fraci<
-  typeof BASE36, // Digit base
-  typeof BASE26, // Length base
+  typeof BASE36L, // Digit base
+  typeof BASE26L, // Length base
   "drizzle.article.fi" // Branding string. Any string is fine.
 >({
-  digitBase: BASE36,
-  lengthBase: BASE26,
+  digitBase: BASE36L,
+  lengthBase: BASE26L,
 });
 
 export const fiArticles = defineDrizzleFraci(
@@ -101,9 +101,13 @@ export const photos = sqliteTable(
   ]
 );
 
-const fraciForPhotos = fraci<typeof BASE36, typeof BASE26, "drizzle.photo.fi">({
-  digitBase: BASE36,
-  lengthBase: BASE26,
+const fraciForPhotos = fraci<
+  typeof BASE36L,
+  typeof BASE26L,
+  "drizzle.photo.fi"
+>({
+  digitBase: BASE36L,
+  lengthBase: BASE26L,
 });
 
 export const fiPhotos = defineDrizzleFraci(
@@ -199,12 +203,12 @@ export const exampleItems = sqliteTable(
 );
 
 const fraciForExampleItem = fraci<
-  typeof BASE64,
-  typeof BASE64,
+  typeof BASE62,
+  typeof BASE62,
   "drizzle.exampleItem.fi"
 >({
-  digitBase: BASE64,
-  lengthBase: BASE64,
+  digitBase: BASE62,
+  lengthBase: BASE62,
 });
 
 export const fiExampleItems = defineDrizzleFraci(

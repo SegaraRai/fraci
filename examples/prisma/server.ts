@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Prisma } from "@prisma/client";
-import { BASE64 } from "fraci";
+import { BASE62 } from "fraci";
 import { fraciExtension } from "fraci/prisma";
 import { Hono } from "hono";
 import * as z from "zod";
@@ -12,8 +12,8 @@ const prisma = basePrisma.$extends(
     fields: {
       "exampleItem.fi": {
         group: ["groupId"],
-        digitBase: BASE64,
-        lengthBase: BASE64,
+        digitBase: BASE62,
+        lengthBase: BASE62,
       },
     } as const,
   })

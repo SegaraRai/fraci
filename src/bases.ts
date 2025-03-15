@@ -4,16 +4,19 @@
 export const BASE10 = "0123456789";
 
 /** Lowercase hex */
-export const BASE16 = "0123456789abcdef";
+export const BASE16L = "0123456789abcdef";
+
+/** Uppercase hex */
+export const BASE16U = "0123456789ABCDEF";
 
 /** Lowercase alphabets */
-export const BASE26 = "abcdefghijklmnopqrstuvwxyz";
+export const BASE26L = "abcdefghijklmnopqrstuvwxyz";
 
 /** Uppercase alphabets */
 export const BASE26U = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /** Lowercase alphanumeric characters */
-export const BASE36 = "0123456789abcdefghijklmnopqrstuvwxyz";
+export const BASE36L = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 /** Uppercase alphanumeric characters */
 export const BASE36U = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -26,7 +29,7 @@ export const BASE62 =
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /** Characters used in Base64 URL */
-export const BASE64 =
+export const BASE64URL =
   "-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
 
 /** HTML safe chars */
