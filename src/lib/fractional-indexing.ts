@@ -420,6 +420,8 @@ export function avoidConflictSuffix(
   // but we write the digits in reverse order.
   //
   // For example, with digit base "0123456789":
+  // - The number 3 would become "3"
+  // - The number 10 would become "01"
   // - The number 1234 would become "4321"
   //
   // We do this reversed ordering to ensure the string doesn't end with zeros,
