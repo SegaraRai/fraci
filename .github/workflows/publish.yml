@@ -58,12 +58,12 @@ jobs:
           NPM_CONFIG_PROVENANCE: "true"
 
       - name: Create Pages Artifact
-        if: steps.changesets.outputs.published
+        if: steps.changesets.outputs.published == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: typedoc/
 
       - name: Deploy to GitHub Pages
-        if: steps.changesets.outputs.published
+        if: steps.changesets.outputs.published == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
