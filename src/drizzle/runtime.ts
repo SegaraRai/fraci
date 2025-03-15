@@ -227,18 +227,18 @@ export type FraciForDrizzle<T extends DrizzleFraciConfig> = T["fraci"] & {
  * @example
  * ```typescript
  * const db = drizzle(connection);
- * const todoFraci = drizzleFraciSync(db, defineDrizzleFraci({
+ * const taskFraci = drizzleFraciSync(db, defineDrizzleFraci({
  *   fraci({ digitBase: BASE62, lengthBase: BASE62 }),
- *   todos,
- *   todos.position,
- *   { userId: todos.userId },
- *   { id: todos.id }
+ *   tasks,
+ *   tasks.position,
+ *   { userId: tasks.userId },
+ *   { id: tasks.id }
  * }));
  *
- * // Get indices for inserting at the beginning of a user's todo list
+ * // Get indices for inserting at the beginning of a user's task list
  * // Note: await is needed since this is asynchronous
- * const [a, b] = await todoFraci.indicesForFirst({ userId: 123 });
- * const [newPosition] = todoFraci.generateKeyBetween(a, b);
+ * const [a, b] = await taskFraci.indicesForFirst({ userId: 123 });
+ * const [newPosition] = taskFraci.generateKeyBetween(a, b);
  * ```
  */
 export function drizzleFraci<Config extends DrizzleFraciConfig>(
