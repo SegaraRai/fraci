@@ -26,8 +26,8 @@ export type PrismaClientConflictError = PrismaClientKnownRequestError & {
 /**
  * A brand for Prisma models and fields.
  *
- * @template M The model name
- * @template F The field name
+ * @template M - The model name
+ * @template F - The field name
  */
 type PrismaBrand<M extends string, F extends string> = {
   readonly __prisma__: { model: M; field: F };
@@ -43,7 +43,7 @@ type ModelKey = Extract<Exclude<keyof PrismaClient, `$${string}`>, string>;
 /**
  * The payload of a model containing only scalar fields.
  *
- * @template M The model name
+ * @template M - The model name
  *
  * @example { id: number; title: string; content: string; fi: string; userId: number; createdAt: Date; updatedAt: Date }, where M = "article"
  */
@@ -53,7 +53,7 @@ type ModelScalarPayload<M extends ModelKey> =
 /**
  * A union of the field names of a model.
  *
- * @template M The model name
+ * @template M - The model name
  *
  * @example "id" | "title" | "content" | "fi" | "userId" | "createdAt" | "updatedAt", where M = "article"
  */
@@ -65,8 +65,8 @@ type AllModelFieldName<M extends ModelKey> = Extract<
 /**
  * A union of the field names of a model that are of type `T`.
  *
- * @template M The model name
- * @template T The type of the field
+ * @template M - The model name
+ * @template T - The type of the field
  *
  * @example "title" | "content" | "fi", where M = "article" and T = string
  */
@@ -122,12 +122,18 @@ type AnyPrismaClient = PrismaClient | Prisma.TransactionClient;
 /**
  * The arguments for the `findMany` method of a Prisma model.
  *
- * @template M The model name
+ * @template M - The model name
  */
 type QueryArgs<M extends ModelKey> = Prisma.Args<PrismaClient[M], "findMany">;
 
 /**
  * `Fraci` with the some additional methods for Prisma.
+ *
+ * @template D - The type of the digit base characters
+ * @template L - The type of the length base characters
+ * @template M - The model name
+ * @template W - The type of the required fields for the `where` argument of the `findMany` method
+ * @template X - The brand type for the fractional index
  */
 type FraciForPrisma<
   D extends string,
@@ -139,16 +145,16 @@ type FraciForPrisma<
   /**
    * Checks if the error is a conflict error for the fractional index.
    *
-   * @param error The error to check.
+   * @param error - The error to check.
    * @returns `true` if the error is a conflict error for the fractional index, or `false` otherwise.
    */
   isIndexConflictError(error: unknown): error is PrismaClientConflictError;
   /**
    * Retrieves the existing indices to generate a new fractional index for the item after the specified item.
    *
-   * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
-   * @param cursor The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the first item.
-   * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
+   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param cursor - The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the first item.
+   * @param client - The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the item after the specified item, or `undefined` if the item specified by the `cursor` does not exist.
    */
   indicesForAfter: {
@@ -166,9 +172,9 @@ type FraciForPrisma<
   /**
    * Retrieves the existing indices to generate a new fractional index for the item before the specified item.
    *
-   * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
-   * @param cursor The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the last item.
-   * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
+   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param cursor - The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the last item.
+   * @param client - The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the item before the specified item, or `undefined` if the item specified by the `cursor` does not exist.
    */
   indicesForBefore: {
@@ -187,8 +193,8 @@ type FraciForPrisma<
    * Retrieves the existing indices to generate a new fractional index for the first item.
    * Equivalent to `indicesForAfter(where, null, client)`.
    *
-   * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
-   * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
+   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param client - The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the first item.
    */
   indicesForFirst(
@@ -199,8 +205,8 @@ type FraciForPrisma<
    * Retrieves the existing indices to generate a new fractional index for the last item.
    * Equivalent to `indicesForBefore(where, null, client)`.
    *
-   * @param where The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
-   * @param client The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
+   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param client - The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the last item.
    */
   indicesForLast(
@@ -212,7 +218,7 @@ type FraciForPrisma<
 /**
  * The options for the fractional index fields.
  *
- * @template T The type of the name of the group fields
+ * @template T - The type of the name of the group fields
  *
  * @example { group: ["userId", "title"], digitBase: "0123456789", lengthBase: "0123456789" }, where T = "userId" | "title"
  */
@@ -263,7 +269,7 @@ export interface PrismaFraciOptions {
 /**
  * A union of the pairs of the key and value of the `fields` property of the options.
  *
- * @template O The options type
+ * @template O - The options type
  *
  * @example ["article.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ["photo.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ...
  */
@@ -274,10 +280,10 @@ type FieldsUnion<O extends PrismaFraciOptions> = {
 /**
  * The field information for the Prisma extension.
  *
- * @template I The field options type
- * @template M The model name
- * @template W The type of the required fields for the `where` argument of the `findMany` method
- * @template X The brand type for the fractional index
+ * @template I - The field options type
+ * @template M - The model name
+ * @template W - The type of the required fields for the `where` argument of the `findMany` method
+ * @template X - The brand type for the fractional index
  */
 type FieldInfo<I extends FieldOptions, M extends ModelKey, W, X> = {
   readonly I: I;
@@ -288,7 +294,7 @@ type FieldInfo<I extends FieldOptions, M extends ModelKey, W, X> = {
 /**
  * The field information for each model.
  *
- * @template O The options type
+ * @template O - The options type
  */
 type PerModelFieldInfo<O extends PrismaFraciOptions> = {
   [M in ModelKey]: {
@@ -314,6 +320,8 @@ type PerModelFieldInfo<O extends PrismaFraciOptions> = {
 
 /**
  * [model component](https://www.prisma.io/docs/orm/prisma-client/client-extensions/model) of the Prisma extension.
+ *
+ * @template O - The options type
  */
 type ExtensionModel<O extends PrismaFraciOptions> = {
   [M in keyof PerModelFieldInfo<O>]: {
@@ -326,7 +334,7 @@ type ExtensionModel<O extends PrismaFraciOptions> = {
 /**
  * The type of our Prisma extension.
  *
- * @template O The options type
+ * @template O - The options type
  */
 type Extension<O extends PrismaFraciOptions> = {
   name: typeof EXTENSION_NAME;
@@ -339,9 +347,9 @@ type Extension<O extends PrismaFraciOptions> = {
  * This is important for handling unique constraint violations when inserting items
  * with the same fractional index, which can happen in concurrent environments.
  *
- * @param error The error object to check.
- * @param modelName The model name.
- * @param field The field name of the fractional index.
+ * @param error - The error object to check.
+ * @param modelName - The model name.
+ * @param field - The field name of the fractional index.
  * @returns `true` if the error is a conflict error for the fractional index, or `false` otherwise.
  */
 function isIndexConflictError(
@@ -362,7 +370,9 @@ function isIndexConflictError(
 /**
  * Creates a Prisma extension for fractional indexing.
  *
- * @param param0 The options for the fractional indexing extension.
+ * @template Options - The options type
+ *
+ * @param options - The options for the fractional indexing extension
  * @returns The Prisma extension.
  */
 export function prismaFraci<Options extends PrismaFraciOptions>({
