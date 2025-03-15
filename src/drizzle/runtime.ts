@@ -222,6 +222,7 @@ export type FraciForDrizzle<T extends DrizzleFraciConfig> = T["fraci"] & {
  * @param client - The asynchronous Drizzle database client to use for queries
  * @param config - The configuration for fractional indexing
  * @returns An enhanced fractional indexing utility with Drizzle-specific asynchronous methods
+ *
  * @example
  * ```ts
  * const db = drizzle(connection);

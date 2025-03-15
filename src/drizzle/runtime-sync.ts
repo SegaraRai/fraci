@@ -211,6 +211,7 @@ export type FraciForDrizzleSync<T extends DrizzleFraciConfig> = T["fraci"] & {
  * @param client - The synchronous Drizzle database client to use for queries (SQLite in sync mode)
  * @param config - The configuration for fractional indexing
  * @returns An enhanced fractional indexing utility with Drizzle-specific synchronous methods
+ *
  * @example
  * ```ts
  * const db = drizzle(connection);

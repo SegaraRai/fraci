@@ -19,6 +19,10 @@ export const DEFAULT_MAX_RETRIES = 5;
 
 /**
  * Fractional indexing utility that provides methods for generating ordered keys.
+ *
+ * @template D - The type of the digit base characters
+ * @template L - The type of the length base characters
+ * @template X - The brand type for the fractional index
  */
 export interface Fraci<D extends string, L extends string, X> {
   /**
@@ -66,6 +70,9 @@ export interface Fraci<D extends string, L extends string, X> {
 
 /**
  * Configuration options for creating a fractional indexing utility.
+ *
+ * @template D - The type of the digit base characters
+ * @template L - The type of the length base characters
  */
 export interface FraciOptions<D extends string, L extends string> {
   /**
@@ -102,6 +109,7 @@ export type FraciCache = Map<string, unknown> & { __fraci__: never };
  * Using a cache can improve initialization performance when repeatedly using the same base configurations.
  *
  * @returns A new empty FraciCache instance
+ *
  * @example
  * ```ts
  * const cache = createFraciCache();
@@ -152,6 +160,7 @@ function withCache<T>(
  * @param options - Configuration options for the fractional indexing utility
  * @param cache - Optional cache to improve performance by reusing computed values
  * @returns A fractional indexing utility instance
+ *
  * @example
  * ```ts
  * // Create a decimal-based fractional indexing utility

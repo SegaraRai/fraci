@@ -26,8 +26,8 @@ export type PrismaClientConflictError = PrismaClientKnownRequestError & {
 /**
  * A brand for Prisma models and fields.
  *
- * @template M The model name.
- * @template F The field name.
+ * @template M The model name
+ * @template F The field name
  */
 type PrismaBrand<M extends string, F extends string> = {
   readonly __prisma__: { model: M; field: F };
@@ -43,7 +43,8 @@ type ModelKey = Extract<Exclude<keyof PrismaClient, `$${string}`>, string>;
 /**
  * The payload of a model containing only scalar fields.
  *
- * @template M The model name.
+ * @template M The model name
+ *
  * @example { id: number; title: string; content: string; fi: string; userId: number; createdAt: Date; updatedAt: Date }, where M = "article"
  */
 type ModelScalarPayload<M extends ModelKey> =
@@ -52,7 +53,8 @@ type ModelScalarPayload<M extends ModelKey> =
 /**
  * A union of the field names of a model.
  *
- * @template M The model name.
+ * @template M The model name
+ *
  * @example "id" | "title" | "content" | "fi" | "userId" | "createdAt" | "updatedAt", where M = "article"
  */
 type AllModelFieldName<M extends ModelKey> = Extract<
@@ -63,8 +65,9 @@ type AllModelFieldName<M extends ModelKey> = Extract<
 /**
  * A union of the field names of a model that are of type `T`.
  *
- * @template M The model name.
- * @template T The type of the field.
+ * @template M The model name
+ * @template T The type of the field
+ *
  * @example "title" | "content" | "fi", where M = "article" and T = string
  */
 type ModelFieldNameByType<M extends ModelKey, T> = {
@@ -74,7 +77,8 @@ type ModelFieldNameByType<M extends ModelKey, T> = {
 /**
  * A union of the field names of a model that are serializable.
  *
- * @template M The model name.
+ * @template M The model name
+ *
  * @example "id" | "title" | "content" | "fi" | "userId", where M = "article"
  */
 type SerializableModelFieldName<M extends ModelKey> = ModelFieldNameByType<
@@ -85,7 +89,8 @@ type SerializableModelFieldName<M extends ModelKey> = ModelFieldNameByType<
 /**
  * A union of the field names of a model that are of type `string`.
  *
- * @template M The model name.
+ * @template M The model name
+ *
  * @example "title" | "content" | "fi", where M = "User"
  */
 type StringModelFieldName<M extends ModelKey> = ModelFieldNameByType<M, string>;
@@ -117,7 +122,7 @@ type AnyPrismaClient = PrismaClient | Prisma.TransactionClient;
 /**
  * The arguments for the `findMany` method of a Prisma model.
  *
- * @template M The model name.
+ * @template M The model name
  */
 type QueryArgs<M extends ModelKey> = Prisma.Args<PrismaClient[M], "findMany">;
 
@@ -207,7 +212,8 @@ type FraciForPrisma<
 /**
  * The options for the fractional index fields.
  *
- * @template T The type of the name of the group fields.
+ * @template T The type of the name of the group fields
+ *
  * @example { group: ["userId", "title"], digitBase: "0123456789", lengthBase: "0123456789" }, where T = "userId" | "title"
  */
 type FieldOptions<T extends string = string> = {
@@ -257,7 +263,8 @@ export interface FraciExtensionOptions {
 /**
  * A union of the pairs of the key and value of the `fields` property of the options.
  *
- * @template O The options type.
+ * @template O The options type
+ *
  * @example ["article.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ["photo.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ...
  */
 type FieldsUnion<O extends FraciExtensionOptions> = {
@@ -267,10 +274,10 @@ type FieldsUnion<O extends FraciExtensionOptions> = {
 /**
  * The field information for the Prisma extension.
  *
- * @template I The field options type.
- * @template M The model name.
- * @template W The type of the required fields for the `where` argument of the `findMany` method.
- * @template X The type of the fractional index brand.
+ * @template I The field options type
+ * @template M The model name
+ * @template W The type of the required fields for the `where` argument of the `findMany` method
+ * @template X The brand type for the fractional index
  */
 type FieldInfo<I extends FieldOptions, M extends ModelKey, W, X> = {
   readonly I: I;
@@ -281,7 +288,7 @@ type FieldInfo<I extends FieldOptions, M extends ModelKey, W, X> = {
 /**
  * The field information for each model.
  *
- * @template O The options type.
+ * @template O The options type
  */
 type PerModelFieldInfo<O extends FraciExtensionOptions> = {
   [M in ModelKey]: {
@@ -319,7 +326,7 @@ type ExtensionModel<O extends FraciExtensionOptions> = {
 /**
  * The type of our Prisma extension.
  *
- * @template O The options type.
+ * @template O The options type
  */
 type Extension<O extends FraciExtensionOptions> = {
   name: typeof EXTENSION_NAME;
