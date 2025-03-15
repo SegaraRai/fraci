@@ -1,5 +1,29 @@
 # fraci
 
+## 0.12.0
+
+### Minor Changes
+
+- 6451d6a: **BREAKING CHANGE**: Renamed base constants for better consistency and clarity:
+
+  - `BASE16` -> `BASE16L` (lowercase hex digits)
+  - `BASE26` -> `BASE26L` (lowercase alphabets)
+  - `BASE36` -> `BASE36L` (lowercase alphanumeric)
+  - `BASE64` -> `BASE64URL` (URL-safe Base64 characters)
+
+  Added new complementary constants:
+
+  - `BASE16U` (uppercase hex digits)
+
+  The naming convention now uses `L` suffix for lowercase and `U` suffix for uppercase variants.
+
+- 1ba4bab: **BREAKING CHANGE**: Renamed Prisma integration function and type for better consistency with other database integrations:
+
+  - `fraciExtension` -> `prismaFraci` - The main function for creating Prisma extensions
+  - `FraciExtensionOptions` ->`PrismaFraciOptions` - The options interface for configuration
+
+  Migration: Replace all instances of `fraciExtension` with `prismaFraci` and update type references from `FraciExtensionOptions` to `PrismaFraciOptions`.
+
 ## 0.11.0
 
 ### Minor Changes
