@@ -1,0 +1,9 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/drizzle.ts",
+    "./src/prisma.ts"
+  ],
+  "out": "typedoc"
+}

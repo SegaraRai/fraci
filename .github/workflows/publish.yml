@@ -9,12 +9,17 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  pages: write
   id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +43,9 @@ jobs:
       - name: Package type check
         run: bun run attw
 
+      - name: Build Docs
+        run: bun run build-docs
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
@@ -48,3 +56,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
+
+      - name: Create Pages Artifact
+        if: steps.changesets.outputs.published
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: typedoc/
+
+      - name: Deploy to GitHub Pages
+        if: steps.changesets.outputs.published
+        id: deployment
+        uses: actions/deploy-pages@v4
