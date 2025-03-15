@@ -224,7 +224,7 @@ export type FraciForDrizzle<T extends DrizzleFraciConfig> = T["fraci"] & {
  * @returns An enhanced fractional indexing utility with Drizzle-specific asynchronous methods
  *
  * @example
- * ```ts
+ * ```typescript
  * const db = drizzle(connection);
  * const todoFraci = drizzleFraciSync(db, defineDrizzleFraci({
  *   fraci({ digitBase: BASE64, lengthBase: BASE64 }),

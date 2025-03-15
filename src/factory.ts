@@ -111,7 +111,7 @@ export type FraciCache = Map<string, unknown> & { __fraci__: never };
  * @returns A new empty FraciCache instance
  *
  * @example
- * ```ts
+ * ```typescript
  * const cache = createFraciCache();
  * const fraci1 = fraci({ digitBase: "0123456789", lengthBase: "abcdefghij" }, cache);
  * const fraci2 = fraci({ digitBase: "0123456789", lengthBase: "abcdefghij" }, cache);
@@ -162,7 +162,7 @@ function withCache<T>(
  * @returns A fractional indexing utility instance
  *
  * @example
- * ```ts
+ * ```typescript
  * // Create a decimal-based fractional indexing utility
  * const decimalFraci = fraci({
  *   digitBase: "0123456789",

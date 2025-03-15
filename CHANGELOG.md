@@ -9,14 +9,14 @@
 
   Before:
 
-  ```ts
+  ```typescript
   indicesForAfter(cursor, where);
   indicesForBefore(cursor, where);
   ```
 
   After:
 
-  ```ts
+  ```typescript
   indicesForAfter(where, cursor);
   indicesForBefore(where, cursor);
   ```
