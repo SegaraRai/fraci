@@ -1,4 +1,4 @@
-// Import `@prisma/client/extension.js` instead of `@prisma/client` to prevent types in `PrismaClient` from being extracted in the return type of the `fraciExtension` function.
+// Import `@prisma/client/extension.js` instead of `@prisma/client` to prevent types in `PrismaClient` from being extracted in the return type of the `prismaFraci` function.
 // In `@prisma/client/extension.js`, `PrismaClient` is exported as `any`, which is not usable by users, so the import destination is modified to `@prisma/client` in post-processing.
 import { Prisma, PrismaClient } from "@prisma/client/extension.js";
 import type { PrismaClientKnownRequestError } from "@prisma/client/runtime/library.js";
@@ -236,7 +236,7 @@ type FieldOptionsRecord = {
 /**
  * The options for the fractional indexing extension.
  */
-export interface FraciExtensionOptions {
+export interface PrismaFraciOptions {
   /**
    * The maximum number of retries to generate a fractional index.
    *
@@ -267,7 +267,7 @@ export interface FraciExtensionOptions {
  *
  * @example ["article.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ["photo.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ...
  */
-type FieldsUnion<O extends FraciExtensionOptions> = {
+type FieldsUnion<O extends PrismaFraciOptions> = {
   [K in keyof O["fields"]]: [K, O["fields"][K]];
 }[keyof O["fields"]];
 
@@ -290,7 +290,7 @@ type FieldInfo<I extends FieldOptions, M extends ModelKey, W, X> = {
  *
  * @template O The options type
  */
-type PerModelFieldInfo<O extends FraciExtensionOptions> = {
+type PerModelFieldInfo<O extends PrismaFraciOptions> = {
   [M in ModelKey]: {
     [F in StringModelFieldName<M> as `${M}.${F}` extends FieldsUnion<O>[0]
       ? F
@@ -315,7 +315,7 @@ type PerModelFieldInfo<O extends FraciExtensionOptions> = {
 /**
  * [model component](https://www.prisma.io/docs/orm/prisma-client/client-extensions/model) of the Prisma extension.
  */
-type ExtensionModel<O extends FraciExtensionOptions> = {
+type ExtensionModel<O extends PrismaFraciOptions> = {
   [M in keyof PerModelFieldInfo<O>]: {
     fraci<F extends keyof PerModelFieldInfo<O>[M]>(
       field: F
@@ -328,7 +328,7 @@ type ExtensionModel<O extends FraciExtensionOptions> = {
  *
  * @template O The options type
  */
-type Extension<O extends FraciExtensionOptions> = {
+type Extension<O extends PrismaFraciOptions> = {
   name: typeof EXTENSION_NAME;
   model: ExtensionModel<O>;
 };
@@ -365,7 +365,7 @@ function isIndexConflictError(
  * @param param0 The options for the fractional indexing extension.
  * @returns The Prisma extension.
  */
-export function fraciExtension<Options extends FraciExtensionOptions>({
+export function prismaFraci<Options extends PrismaFraciOptions>({
   fields,
   maxLength = DEFAULT_MAX_LENGTH,
   maxRetries = DEFAULT_MAX_RETRIES,

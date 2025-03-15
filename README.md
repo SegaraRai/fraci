@@ -335,10 +335,10 @@ model Article {
 ```typescript
 import { PrismaClient } from "@prisma/client";
 import { BASE62 } from "fraci";
-import { fraciExtension } from "fraci/prisma";
+import { prismaFraci } from "fraci/prisma";
 
 const prisma = new PrismaClient().$extends(
-  fraciExtension({
+  prismaFraci({
     fields: {
       // Define the fractional index column (table.column)
       "article.fi": {

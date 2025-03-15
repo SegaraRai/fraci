@@ -1,14 +1,14 @@
 // Note that this test needs the package to be built before running and type checking.
 import { PrismaClient } from "@prisma/client";
 import { beforeAll, describe, expect, test } from "bun:test";
-import { fraciExtension } from "fraci/prisma";
+import { BASE26L, BASE36L, BASE95 } from "fraci";
+import { prismaFraci } from "fraci/prisma";
 import { setupPrisma } from "../test/prisma.js";
-import { BASE26L, BASE36L, BASE95 } from "./bases.js";
 
 const basePrisma = await setupPrisma();
 
 const prisma = basePrisma.$extends(
-  fraciExtension({
+  prismaFraci({
     fields: {
       "article.fi": {
         group: ["userId"],
@@ -183,7 +183,7 @@ beforeAll(async () => {
 });
 
 test("instantiation type check", () => {
-  fraciExtension({
+  prismaFraci({
     fields: {
       "article.fi": {
         group: [],
@@ -200,7 +200,7 @@ test("instantiation type check", () => {
 
   expect(() =>
     basePrisma.$extends(
-      fraciExtension({
+      prismaFraci({
         fields: {
           // @ts-expect-error Only existing fields can be specified.
           "notExist.fi": {
@@ -215,7 +215,7 @@ test("instantiation type check", () => {
 
   expect(() =>
     basePrisma.$extends(
-      fraciExtension({
+      prismaFraci({
         fields: {
           // @ts-expect-error Only existing fields can be specified.
           "article.notExist": {
@@ -228,7 +228,7 @@ test("instantiation type check", () => {
     )
   ).toThrowError("Could not get field information for article.notExist");
 
-  fraciExtension({
+  prismaFraci({
     fields: {
       "article.fi": {
         // @ts-expect-error Only existing fields can be specified.
@@ -239,7 +239,7 @@ test("instantiation type check", () => {
     } as const,
   });
 
-  fraciExtension({
+  prismaFraci({
     fields: {
       "article.fi": {
         // @ts-expect-error Only serializable fields can be specified.
@@ -250,7 +250,7 @@ test("instantiation type check", () => {
     } as const,
   });
 
-  fraciExtension({
+  prismaFraci({
     fields: {
       "article.fi": {
         // @ts-expect-error The fractional index field itself cannot be specified.

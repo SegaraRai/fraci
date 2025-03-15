@@ -1,14 +1,14 @@
 import { zValidator } from "@hono/zod-validator";
 import { Prisma } from "@prisma/client";
 import { BASE62 } from "fraci";
-import { fraciExtension } from "fraci/prisma";
+import { prismaFraci } from "fraci/prisma";
 import { Hono } from "hono";
 import * as z from "zod";
 import { setupPrisma } from "../../test/prisma.js";
 
 const basePrisma = await setupPrisma();
 const prisma = basePrisma.$extends(
-  fraciExtension({
+  prismaFraci({
     fields: {
       "exampleItem.fi": {
         group: ["groupId"],
