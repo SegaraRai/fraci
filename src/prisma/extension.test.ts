@@ -1,8 +1,12 @@
 // Note that this test needs the package to be built before running and type checking.
 import { PrismaClient } from "@prisma/client";
 import { beforeAll, describe, expect, test } from "bun:test";
-import { BASE26L, BASE36L, BASE95 } from "fraci";
-import { prismaFraci } from "fraci/prisma";
+import { BASE26L, BASE36L, BASE95, type FractionalIndexOf } from "fraci";
+import {
+  definePrismaFraci,
+  prismaFraci,
+  type FraciForPrisma,
+} from "fraci/prisma";
 import { setupPrisma } from "../../test/prisma.js";
 
 const basePrisma = await setupPrisma();
@@ -462,4 +466,48 @@ test("custom client", async () => {
 
   await afi.indicesForLast({ userId: article.userId }, customClient);
   expect(calledCount).toBe(4);
+});
+
+test("FraciForPrisma", () => {
+  const definition = definePrismaFraci({
+    fields: {
+      "article.fi": {
+        group: ["userId"],
+        digitBase: BASE36L,
+        lengthBase: BASE26L,
+      },
+      "photo.fi": {
+        group: ["articleId", "userId"],
+        digitBase: BASE36L,
+        lengthBase: BASE26L,
+      },
+      "tagsOnPhotos.tagFI": {
+        group: ["photoId"],
+        digitBase: BASE95,
+        lengthBase: BASE95,
+      },
+      "tagsOnPhotos.photoFI": {
+        group: ["tagId"],
+        digitBase: BASE95,
+        lengthBase: BASE95,
+      },
+    },
+  } as const);
+
+  type AFraci = FraciForPrisma<typeof definition, "article.fi">;
+  type AFI = FractionalIndexOf<AFraci>;
+  let afi: AFI | undefined;
+
+  type B = FraciForPrisma<typeof definition, "photo.fi">;
+  type BFI = FractionalIndexOf<B>;
+  let bfi: BFI | undefined;
+
+  // @ts-expect-error `article.content` is not defined in `fields`
+  type Error1 = FraciForPrisma<typeof definition, "article.content">;
+
+  // @ts-expect-error `article.inExistent` is not defined in `fields`
+  type Error2 = FraciForPrisma<typeof definition, "article.inExistent">;
+
+  // @ts-expect-error afi and bfi are not compatible
+  expect(afi).toBe(bfi);
 });

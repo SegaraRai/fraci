@@ -151,19 +151,15 @@ type FraciForPrismaByFieldOptions<
  * `Fraci` with some additional methods for Prisma.
  *
  * @template Options - The options type
- * @template Model - The model name
- * @template Field - The field name
+ * @template QualifiedField - The qualified field name
  */
 export type FraciForPrisma<
   Options extends PrismaFraciOptions,
-  Model extends ModelKey,
-  Field extends StringModelFieldName<Model>
-> = Options["fields"][`${Model}.${Field}`] extends FieldOptions
-  ? FraciForPrismaByFieldOptions<
-      Options["fields"][`${Model}.${Field}`],
-      Model,
-      Field
-    >
+  QualifiedField extends keyof Options["fields"]
+> = Options["fields"][QualifiedField] extends FieldOptions
+  ? QualifiedField extends `${infer M}.${infer F}`
+    ? FraciForPrismaByFieldOptions<Options["fields"][QualifiedField], M, F>
+    : never
   : never;
 
 /**
@@ -187,7 +183,9 @@ type PerModelFieldInfo<Options extends PrismaFraciOptions> = {
     [F in StringModelFieldName<M> as `${M}.${F}` extends FieldsUnion<Options>[0]
       ? F
       : never]: {
-      readonly helper: FraciForPrisma<Options, M, F>;
+      readonly helper: Options["fields"][`${M}.${F}`] extends FieldOptions
+        ? FraciForPrismaByFieldOptions<Options["fields"][`${M}.${F}`], M, F>
+        : never;
     };
   };
 };
