@@ -6,9 +6,8 @@ import {
   DEFAULT_MAX_LENGTH,
   DEFAULT_MAX_RETRIES,
   fraci,
-  type Fraci,
 } from "../factory.js";
-import type { FractionalIndex } from "../lib/types.js";
+import type { AnyFractionalIndex, FraciOf, FractionalIndex } from "../types.js";
 import {
   isIndexConflictError,
   type PrismaClientConflictError,
@@ -17,7 +16,6 @@ import { EXTENSION_NAME } from "./config.js";
 import type {
   AllModelFieldName,
   AnyPrismaClient,
-  Indices,
   ModelKey,
   ModelScalarPayload,
   QueryArgs,
@@ -28,29 +26,30 @@ import type { FieldOptions, PrismaFraciOptions } from "./schema.js";
 /**
  * A brand for Prisma models and fields.
  *
- * @template M - The model name
- * @template F - The field name
+ * @template Model - The model name
+ * @template Field - The field name
  */
-type PrismaBrand<M extends string, F extends string> = {
-  readonly __prisma__: { model: M; field: F };
+type PrismaBrand<Model extends string, Field extends string> = {
+  readonly __prisma__: { model: Model; field: Field };
 };
+
+/**
+ * A tuple of two fractional indices, used for generating a new index between them.
+ */
+type Indices<FI extends AnyFractionalIndex> = [a: FI | null, b: FI | null];
 
 /**
  * `Fraci` with some additional methods for Prisma.
  *
- * @template D - The type of the digit base characters
- * @template L - The type of the length base characters
- * @template M - The model name
- * @template W - The type of the required fields for the `where` argument of the `findMany` method
- * @template X - The brand type for the fractional index
+ * @template Model - The model name
+ * @template Where - The type of the required fields for the `where` argument of the `findMany` method
+ * @template FI - The fractional index type
  */
-type FraciForPrisma<
-  D extends string,
-  L extends string,
-  M extends ModelKey,
-  W,
-  X
-> = Fraci<D, L, X> & {
+type FraciForPrismaInternal<
+  Model extends ModelKey,
+  Where,
+  FI extends AnyFractionalIndex
+> = FraciOf<FI> & {
   /**
    * Checks if the error is a conflict error for the fractional index.
    *
@@ -68,15 +67,15 @@ type FraciForPrisma<
    */
   indicesForAfter: {
     (
-      where: W & QueryArgs<M>["where"],
-      cursor: QueryArgs<M>["cursor"],
+      where: Where & QueryArgs<Model>["where"],
+      cursor: QueryArgs<Model>["cursor"],
       client?: AnyPrismaClient
-    ): Promise<Indices<D, L, X> | undefined>;
+    ): Promise<Indices<FI> | undefined>;
     (
-      where: W & QueryArgs<M>["where"],
+      where: Where & QueryArgs<Model>["where"],
       cursor: null,
       client?: AnyPrismaClient
-    ): Promise<Indices<D, L, X>>;
+    ): Promise<Indices<FI>>;
   };
   /**
    * Retrieves the existing indices to generate a new fractional index for the item before the specified item.
@@ -88,15 +87,15 @@ type FraciForPrisma<
    */
   indicesForBefore: {
     (
-      where: W & QueryArgs<M>["where"],
-      cursor: QueryArgs<M>["cursor"],
+      where: Where & QueryArgs<Model>["where"],
+      cursor: QueryArgs<Model>["cursor"],
       client?: AnyPrismaClient
-    ): Promise<Indices<D, L, X> | undefined>;
+    ): Promise<Indices<FI> | undefined>;
     (
-      where: W & QueryArgs<M>["where"],
+      where: Where & QueryArgs<Model>["where"],
       cursor: null,
       client?: AnyPrismaClient
-    ): Promise<Indices<D, L, X>>;
+    ): Promise<Indices<FI>>;
   };
   /**
    * Retrieves the existing indices to generate a new fractional index for the first item.
@@ -107,9 +106,9 @@ type FraciForPrisma<
    * @returns The indices to generate a new fractional index for the first item.
    */
   indicesForFirst(
-    where: W & QueryArgs<M>["where"],
+    where: Where & QueryArgs<Model>["where"],
     client?: AnyPrismaClient
-  ): Promise<Indices<D, L, X>>;
+  ): Promise<Indices<FI>>;
   /**
    * Retrieves the existing indices to generate a new fractional index for the last item.
    * Equivalent to `indicesForBefore(where, null, client)`.
@@ -119,87 +118,111 @@ type FraciForPrisma<
    * @returns The indices to generate a new fractional index for the last item.
    */
   indicesForLast(
-    where: W & QueryArgs<M>["where"],
+    where: Where & QueryArgs<Model>["where"],
     client?: AnyPrismaClient
-  ): Promise<Indices<D, L, X>>;
+  ): Promise<Indices<FI>>;
 };
 
-type HelperValue = FraciForPrisma<any, any, any, any, any>;
+/**
+ * `Fraci` with some additional methods for Prisma.
+ *
+ * @template Options - The field options type
+ * @template Model - The model name
+ * @template Field - The field name
+ */
+type FraciForPrismaByFieldOptions<
+  Options extends FieldOptions,
+  Model extends ModelKey,
+  Field extends StringModelFieldName<Model>
+> = FraciForPrismaInternal<
+  Model,
+  Pick<
+    ModelScalarPayload<Model>,
+    Extract<Options["group"][number], AllModelFieldName<Model>>
+  >,
+  FractionalIndex<
+    Options["digitBase"],
+    Options["lengthBase"],
+    PrismaBrand<Model, Field>
+  >
+>;
+
+/**
+ * `Fraci` with some additional methods for Prisma.
+ *
+ * @template Options - The options type
+ * @template Model - The model name
+ * @template Field - The field name
+ */
+export type FraciForPrisma<
+  Options extends PrismaFraciOptions,
+  Model extends ModelKey,
+  Field extends StringModelFieldName<Model>
+> = Options["fields"][`${Model}.${Field}`] extends FieldOptions
+  ? FraciForPrismaByFieldOptions<
+      Options["fields"][`${Model}.${Field}`],
+      Model,
+      Field
+    >
+  : never;
 
 /**
  * A union of the pairs of the key and value of the `fields` property of the options.
  *
- * @template O - The options type
+ * @template Options - The options type
  *
  * @example ["article.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ["photo.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ...
  */
-type FieldsUnion<O extends PrismaFraciOptions> = {
-  [K in keyof O["fields"]]: [K, O["fields"][K]];
-}[keyof O["fields"]];
-
-/**
- * The field information for the Prisma extension.
- *
- * @template I - The field options type
- * @template M - The model name
- * @template W - The type of the required fields for the `where` argument of the `findMany` method
- * @template X - The brand type for the fractional index
- */
-type FieldInfo<I extends FieldOptions, M extends ModelKey, W, X> = {
-  readonly I: I;
-  readonly value: FractionalIndex<I["digitBase"], I["lengthBase"], X>;
-  readonly helper: FraciForPrisma<I["digitBase"], I["lengthBase"], M, W, X>;
-};
+type FieldsUnion<Options extends PrismaFraciOptions> = {
+  [K in keyof Options["fields"]]: [K, Options["fields"][K]];
+}[keyof Options["fields"]];
 
 /**
  * The field information for each model.
  *
- * @template O - The options type
+ * @template Options - The options type
  */
-type PerModelFieldInfo<O extends PrismaFraciOptions> = {
+type PerModelFieldInfo<Options extends PrismaFraciOptions> = {
   [M in ModelKey]: {
-    [F in StringModelFieldName<M> as `${M}.${F}` extends FieldsUnion<O>[0]
+    [F in StringModelFieldName<M> as `${M}.${F}` extends FieldsUnion<Options>[0]
       ? F
-      : never]: FieldInfo<
-      Extract<FieldsUnion<O>, [`${M}.${F}`, FieldOptions]>[1],
-      M,
-      Pick<
-        ModelScalarPayload<M>,
-        Extract<
-          Extract<
-            FieldsUnion<O>,
-            [`${M}.${F}`, FieldOptions]
-          >[1]["group"][number],
-          AllModelFieldName<M>
-        >
-      >,
-      PrismaBrand<M, F>
-    >;
+      : never]: {
+      readonly helper: FraciForPrisma<Options, M, F>;
+    };
   };
 };
 
 /**
  * [model component](https://www.prisma.io/docs/orm/prisma-client/client-extensions/model) of the Prisma extension.
  *
- * @template O - The options type
+ * @template Options - The options type
  */
-type PrismaFraciExtensionModel<O extends PrismaFraciOptions> = {
-  [M in keyof PerModelFieldInfo<O>]: {
-    fraci<F extends keyof PerModelFieldInfo<O>[M]>(
+type PrismaFraciExtensionModel<Options extends PrismaFraciOptions> = {
+  [M in keyof PerModelFieldInfo<Options>]: {
+    fraci<F extends keyof PerModelFieldInfo<Options>[M]>(
       field: F
-    ): PerModelFieldInfo<O>[M][F]["helper"];
+    ): PerModelFieldInfo<Options>[M][F]["helper"];
   };
 };
 
 /**
  * The type of our Prisma extension.
  *
- * @template O - The options type
+ * @template Options - The options type
  */
-export type PrismaFraciExtension<O extends PrismaFraciOptions> = {
+export type PrismaFraciExtension<Options extends PrismaFraciOptions> = {
   name: typeof EXTENSION_NAME;
-  model: PrismaFraciExtensionModel<O>;
+  model: PrismaFraciExtensionModel<Options>;
 };
+
+/**
+ * `AnyFraci` for Prisma.
+ */
+type AnyFraciForPrisma = FraciForPrismaInternal<
+  string,
+  any,
+  AnyFractionalIndex
+>;
 
 /**
  * Creates a Prisma extension for fractional indexing.
@@ -221,7 +244,7 @@ export function prismaFraci<Options extends PrismaFraciOptions>({
     const cache = createFraciCache();
 
     // Map to store helper instances for each model.field combination
-    const helperMap = new Map<string, HelperValue>();
+    const helperMap = new Map<string, AnyFraciForPrisma>();
 
     // Process each field configuration from the options
     for (const [modelAndField, { lengthBase, digitBase }] of Object.entries(
@@ -315,7 +338,7 @@ export function prismaFraci<Options extends PrismaFraciOptions>({
         indicesFor(where, cursor, "desc", (a, b) => [b, a], pClient);
 
       // Create an enhanced helper with Prisma-specific methods
-      const helperEx: HelperValue = {
+      const helperEx: AnyFraciForPrisma = {
         ...helper, // Include all methods from the base fraci helper
         isIndexConflictError: (
           error: unknown

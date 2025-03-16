@@ -1,5 +1,4 @@
 import { Prisma, PrismaClient } from "@prisma/client/extension.js";
-import type { FractionalIndex } from "../lib/types.js";
 
 /**
  * A union of all model names.
@@ -41,7 +40,7 @@ export type AllModelFieldName<M extends ModelKey> = Extract<
  *
  * @example "title" | "content" | "fi", where M = "article" and T = string
  */
-export type ModelFieldNameByType<M extends ModelKey, T> = {
+type ModelFieldNameByType<M extends ModelKey, T> = {
   [F in AllModelFieldName<M>]: ModelScalarPayload<M>[F] extends T ? F : never;
 }[AllModelFieldName<M>];
 
@@ -52,7 +51,7 @@ export type ModelFieldNameByType<M extends ModelKey, T> = {
  *
  * @example "id" | "title" | "content" | "fi" | "userId", where M = "article"
  */
-export type SerializableModelFieldName<M extends ModelKey> =
+type SerializableModelFieldName<M extends ModelKey> =
   ModelFieldNameByType<M, boolean | bigint | number | string>;
 
 /**
@@ -80,14 +79,6 @@ export type QualifiedFields = {
     ];
   }[StringModelFieldName<M>];
 }[ModelKey];
-
-/**
- * A tuple of two fractional indices, used for generating a new index between them.
- */
-export type Indices<D extends string, L extends string, X> = [
-  a: FractionalIndex<D, L, X> | null,
-  b: FractionalIndex<D, L, X> | null
-];
 
 /**
  * Prisma client or transaction client.

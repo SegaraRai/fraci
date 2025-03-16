@@ -26,6 +26,8 @@
   "exclude": [
     "node_modules",
     "dist",
+    "examples-bundled",
+    "typedoc",
     ".tsup"
   ]
 }
