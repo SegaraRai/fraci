@@ -4,10 +4,15 @@ import { drizzleFraci } from "fraci/drizzle";
 import { exampleItems, fiExampleItems } from "../../drizzle/schema.js";
 import { setupDrizzleDBLibSQL } from "../../test/drizzle.js";
 
+const NUM_GROUPS = 10;
+const NUM_ITEMS_PER_GROUP = 5000;
+const GROUP_ID_START = 100;
+
+const CURSOR_GROUP = 3;
+const CURSOR_ITEM = "Item 400";
+
 test("Ensure that the query plan is optimal", async () => {
-  const NUM_GROUPS = 10;
-  const NUM_ITEMS_PER_GROUP = 1000;
-  const GROUP_ID_START = 1000;
+  // You can check performance without index by editing `drizzle/migrations/0000_init.sql`.
 
   const db = await setupDrizzleDBLibSQL();
   const xfi = drizzleFraci(db, fiExampleItems);
@@ -28,23 +33,27 @@ test("Ensure that the query plan is optimal", async () => {
   }
 
   // explain query
-  const groupId = GROUP_ID_START + 3;
+  const groupId = GROUP_ID_START + CURSOR_GROUP;
   const cursorId = (
     await db.query.exampleItems.findFirst({
       columns: { id: true },
-      where: sql`${exampleItems.groupId} = ${groupId} AND ${
-        exampleItems.name
-      } = ${"Item 400"}`,
+      where: sql`${exampleItems.groupId} = ${groupId} AND ${exampleItems.name} = ${CURSOR_ITEM}`,
     })
   )?.id;
   if (!cursorId) {
-    throw new Error("TEST: Item not found");
+    throw new Error("TEST: Cursor item not found");
   }
 
-  async function explain(query: SQL): Promise<string[]> {
-    return (await db.run(sql`EXPLAIN QUERY PLAN ${query}`)).rows.map(
+  async function explain(query: SQL): Promise<[string[], number]> {
+    const explained = (await db.run(sql`EXPLAIN QUERY PLAN ${query}`)).rows.map(
       (r) => r["detail"]
     ) as string[];
+
+    const begin = performance.now();
+    await db.run(query);
+    const end = performance.now();
+
+    return [explained, end - begin];
   }
 
   for (const [name, compare, order] of [
@@ -72,9 +81,9 @@ test("Ensure that the query plan is optimal", async () => {
       .limit(2) // We need at most 2 items (the cursor item and one adjacent item)
       .orderBy(order(column));
 
-    const explained = await explain(query.getSQL());
+    const [explained, duration] = await explain(query.getSQL());
     console.log(
-      `EXPLAIN Select ${name}:\n${explained
+      `EXPLAIN Select ${name} (${duration.toFixed(3)}ms):\n${explained
         .map((item, index) => `${index + 1}. ${item}\n`)
         .join("")}`
     );
@@ -88,9 +97,9 @@ test("Ensure that the query plan is optimal", async () => {
       .where(and(...groupConditions))
       .orderBy(order(column));
 
-    const listExplained = await explain(listQuery.getSQL());
+    const [listExplained, listDuration] = await explain(listQuery.getSQL());
     console.log(
-      `EXPLAIN List ${name}:\n${listExplained
+      `EXPLAIN List ${name} (${listDuration.toFixed(3)}ms):\n${listExplained
         .map((item, index) => `${index + 1}. ${item}\n`)
         .join("")}`
     );
