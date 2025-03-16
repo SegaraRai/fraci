@@ -29,7 +29,7 @@ const getItemByName = async (groupId: string, name: string) => {
   const items = await getItemsFull(groupId);
   const item = items.find((i) => i.name === name);
   if (!item) {
-    throw new Error(`Item ${name} not found in group ${groupId}`);
+    throw new Error(`TEST: Item ${name} not found in group ${groupId}`);
   }
   return item;
 };

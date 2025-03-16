@@ -6,7 +6,8 @@
  *
  * @param base - The base string to split and validate
  * @returns An array of characters from the base string
- * @throws Error if the base string is invalid
+ * @throws {Error} When the base string has fewer than 4 unique characters
+ * @throws {Error} When the base string characters are not unique or not in ascending order
  */
 function splitBase(base: string): string[] {
   // Intentionally not using a spread operator to ensure consistent splitting behavior.
@@ -18,7 +19,9 @@ function splitBase(base: string): string[] {
     // - We need at least 2 characters to represent +1 and -1 in integer length bases.
     // - We need at least 3 characters to calculate the middle of fractional parts.
     // - An extra character provides additional flexibility.
-    throw new Error("Base must have at least 4 characters.");
+    throw new Error(
+      "Fraci: Base string must have at least 4 unique characters"
+    );
   }
 
   // Validate that characters are in strictly ascending order
@@ -28,7 +31,7 @@ function splitBase(base: string): string[] {
     const code = char.charCodeAt(0);
     if (code <= lastCode) {
       throw new Error(
-        "Invalid base characters. Characters must be unique and in ascending order."
+        "Fraci: Base string characters must be unique and in ascending order"
       );
     }
     lastCode = code;
@@ -45,7 +48,8 @@ function splitBase(base: string): string[] {
  *
  * @param base - The base string containing unique characters in ascending order
  * @returns A tuple containing the forward array and reverse map
- * @throws Error if the base string is invalid (via splitBase)
+ * @throws {Error} When the base string has fewer than 4 unique characters (via {@link splitBase})
+ * @throws {Error} When the base string characters are not unique or not in ascending order (via {@link splitBase})
  */
 export function createDigitBaseMap(
   base: string
@@ -68,7 +72,8 @@ export function createDigitBaseMap(
  *
  * @param base - The base string containing unique characters in ascending order
  * @returns A tuple containing the forward map (length → char) and reverse map (char → length)
- * @throws Error if the base string is invalid (via splitBase)
+ * @throws {Error} When the base string has fewer than 4 unique characters (via {@link splitBase})
+ * @throws {Error} When the base string characters are not unique or not in ascending order (via {@link splitBase})
  */
 export function createIntegerLengthBaseMap(
   base: string

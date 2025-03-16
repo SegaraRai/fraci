@@ -24,7 +24,7 @@ bench("append keys x10000", () => {
   for (let i = 0; i < 10000; i++) {
     const nextA = generateKeyBetween(a, null, ...args);
     if (!nextA) {
-      throw new Error("Unexpected undefined");
+      throw new Error("BENCH: Unexpected undefined");
     }
     a = nextA;
   }
@@ -35,7 +35,7 @@ bench("prepend keys x10000", () => {
   for (let i = 0; i < 10000; i++) {
     const nextB = generateKeyBetween(null, b, ...args);
     if (!nextB) {
-      throw new Error("Unexpected undefined");
+      throw new Error("BENCH: Unexpected undefined");
     }
     b = nextB;
   }
@@ -46,13 +46,13 @@ bench("generate middle keys x10000", () => {
   for (let i = 0; i < 5000; i++) {
     const nextC = generateKeyBetween(a, b, ...args);
     if (!nextC) {
-      throw new Error("Unexpected undefined");
+      throw new Error("BENCH: Unexpected undefined");
     }
     c = nextC;
 
     const nextB = generateKeyBetween(a, c, ...args);
     if (!nextB) {
-      throw new Error("Unexpected undefined");
+      throw new Error("BENCH: Unexpected undefined");
     }
     b = nextB;
   }
@@ -71,7 +71,7 @@ bench("random operations x10000", () => {
           ...args
         );
         if (!result) {
-          throw new Error("Unexpected undefined");
+          throw new Error("BENCH: Unexpected undefined");
         }
         keys.push(result);
         break;
@@ -81,7 +81,7 @@ bench("random operations x10000", () => {
       case 1: {
         const result = generateKeyBetween(null, keys[0] ?? null, ...args);
         if (!result) {
-          throw new Error("Unexpected undefined");
+          throw new Error("BENCH: Unexpected undefined");
         }
         keys.unshift(result);
         break;
@@ -97,7 +97,7 @@ bench("random operations x10000", () => {
         const after = keys[targetIndex + 1] ?? null;
         const result = generateKeyBetween(before, after, ...args);
         if (!result) {
-          throw new Error("Unexpected undefined");
+          throw new Error("BENCH: Unexpected undefined");
         }
         keys.splice(targetIndex + 1, 0, result);
         break;
@@ -117,7 +117,7 @@ bench("random operations 2 x10000", () => {
     const after = keys[targetIndex + 1] ?? null;
     const result = generateKeyBetween(before, after, ...args);
     if (!result) {
-      throw new Error("Unexpected undefined");
+      throw new Error("BENCH: Unexpected undefined");
     }
     keys.splice(targetIndex + 1, 0, result);
   }

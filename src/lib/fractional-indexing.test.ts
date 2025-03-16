@@ -129,7 +129,7 @@ describe("generateKeyBetween", () => {
       for (let i = 0; i < 1000; i++) {
         const result = generateKeyBetween(min, b, ...args);
         if (!result) {
-          throw new Error("Unexpected undefined");
+          throw new Error("TEST: Unexpected undefined");
         }
         expect(!b || result < b).toBe(true);
         expect(!min || min < result).toBe(true);
@@ -150,7 +150,7 @@ describe("generateKeyBetween", () => {
       for (let i = 0; i < 1000; i++) {
         const result = generateKeyBetween(a, max, ...args);
         if (!result) {
-          throw new Error("Unexpected undefined");
+          throw new Error("TEST: Unexpected undefined");
         }
         expect(!a || a < result).toBe(true);
         expect(!max || result < max).toBe(true);
@@ -240,7 +240,7 @@ describe("generateNKeysBetween", () => {
     // We should use larger number than 2 * (10^3 + 10^2 + 10) = 2220 to ensure that it works correctly even if the integer part is completely filled.
     const keys = generateNKeysBetween(null, null, 10000, ...args);
     if (!keys) {
-      throw new Error("Unexpected undefined");
+      throw new Error("TEST: Unexpected undefined");
     }
 
     expect(isValidFractionalIndex(keys[0], ...vArgs)).toBe(true);
@@ -264,7 +264,7 @@ describe("generateNKeysBetween", () => {
             ...args
           );
           if (!result) {
-            throw new Error("Unexpected undefined");
+            throw new Error("TEST: Unexpected undefined");
           }
           expect(isValidFractionalIndex(result, ...vArgs)).toBe(true);
           keys.push(result);
@@ -275,7 +275,7 @@ describe("generateNKeysBetween", () => {
         case 1: {
           const result = generateKeyBetween(null, keys[0] ?? null, ...args);
           if (!result) {
-            throw new Error("Unexpected undefined");
+            throw new Error("TEST: Unexpected undefined");
           }
           expect(isValidFractionalIndex(result, ...vArgs)).toBe(true);
           keys.unshift(result);
@@ -292,7 +292,7 @@ describe("generateNKeysBetween", () => {
           const after = keys[targetIndex + 1];
           const result = generateKeyBetween(before, after, ...args);
           if (!result) {
-            throw new Error("Unexpected undefined");
+            throw new Error("TEST: Unexpected undefined");
           }
           expect(isValidFractionalIndex(result, ...vArgs)).toBe(true);
           keys.splice(targetIndex + 1, 0, result);
@@ -347,7 +347,7 @@ test("What happens if a malicious user tries to generate long key?", () => {
   for (let i = 0; i < 10000; i++) {
     const nextC = generateKeyBetween(a, b, ...args);
     if (!nextC) {
-      throw new Error("Unexpected undefined");
+      throw new Error("TEST: Unexpected undefined");
     }
     expect(nextC < b).toBe(true);
     expect(a < nextC).toBe(true);
@@ -355,7 +355,7 @@ test("What happens if a malicious user tries to generate long key?", () => {
 
     const nextB = generateKeyBetween(a, c, ...args);
     if (!nextB) {
-      throw new Error("Unexpected undefined");
+      throw new Error("TEST: Unexpected undefined");
     }
     expect(nextB < c).toBe(true);
     expect(a < nextB).toBe(true);

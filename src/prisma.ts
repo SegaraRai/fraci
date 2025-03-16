@@ -374,6 +374,8 @@ function isIndexConflictError(
  *
  * @param options - The options for the fractional indexing extension
  * @returns The Prisma extension.
+ * @throws {Error} When field information for a specified model.field cannot be retrieved
+ * @throws {Error} When the digit or length base strings are invalid
  */
 export function prismaFraci<Options extends PrismaFraciOptions>({
   fields,
@@ -400,7 +402,7 @@ export function prismaFraci<Options extends PrismaFraciOptions>({
       const { modelName } = (client as any)[model]?.fields?.[field] ?? {};
       if (!modelName) {
         throw new Error(
-          `Could not get field information for ${model}.${field}`
+          `Fraci Prisma: Could not get field information for ${model}.${field}`
         );
       }
 

@@ -7,7 +7,7 @@ for (const file of ["dist/prisma.d.ts", "dist/prisma.d.cts"]) {
     "import { PrismaClient, Prisma } from '@prisma/client'"
   );
   if (replaced === content) {
-    throw new Error(`Failed to replace import in ${file}`);
+    throw new Error(`BUILD: Failed to replace import in ${file}`);
   }
   await writeFile(file, replaced);
 

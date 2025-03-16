@@ -181,7 +181,7 @@ const xfi = {
   isIndexConflictError: (error: unknown) => {
     return (
       error instanceof Error &&
-      error.message.includes("Index conflict: duplicate fractional index")
+      error.message === "EXAMPLE: Duplicate fractional index"
     );
   },
 };
@@ -246,7 +246,7 @@ const app = new Hono()
         try {
           // Check for index conflicts manually
           if (checkIndexConflict(groupId, fi)) {
-            throw new Error("Index conflict: duplicate fractional index");
+            throw new Error("EXAMPLE: Duplicate fractional index");
           }
 
           // Create the new item
@@ -312,7 +312,7 @@ const app = new Hono()
         try {
           // Check for index conflicts manually
           if (checkIndexConflict(groupId, fi)) {
-            throw new Error("Index conflict: duplicate fractional index");
+            throw new Error("EXAMPLE: Duplicate fractional index");
           }
 
           // Update the item

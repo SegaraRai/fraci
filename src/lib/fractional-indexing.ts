@@ -67,12 +67,12 @@ export function isValidFractionalIndex(
  *
  * @param value - The value to check
  * @returns The original value if it's not undefined
- * @throws Error if the value is undefined
+ * @throws {Error} When the value is undefined (internal error)
  */
 function ensureNotUndefined<T>(value: T | undefined): T {
   if (value === undefined) {
     // This should not happen as we should have validated the value before.
-    throw new Error("Unexpected undefined.");
+    throw new Error("Fraci Internal: Unexpected undefined");
   }
   return value;
 }

@@ -41,7 +41,25 @@ describe("fraci", () => {
       "55001" as any,
       "55002" as any
     );
-    expect(() => generator.next()).toThrow("Exceeded maximum length");
+    expect(() => generator.next()).toThrow("Fraci: Exceeded maximum length");
+  });
+
+  it("should throw an error if an invalid input is provided", () => {
+    const indexing = fraci({
+      digitBase,
+      lengthBase,
+      maxLength: 5,
+    });
+
+    const generator1 = indexing.generateKeyBetween("" as any, "550" as any);
+    expect(() => generator1.next()).toThrow("Fraci: Invalid indices provided");
+
+    const generator2 = indexing.generateNKeysBetween(
+      "550" as any,
+      "55a" as any,
+      2
+    );
+    expect(() => generator2.next()).toThrow("Fraci: Invalid indices provided");
   });
 
   it("should handle skip parameter", () => {
