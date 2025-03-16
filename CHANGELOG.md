@@ -1,5 +1,16 @@
 # fraci
 
+## 0.14.0
+
+### Minor Changes
+
+- 294fb62: Added `FraciForPrisma` type.
+- da64bc1: Added `definePrismaFraci` function. Added `PrismaFraciExtension` type export.
+
+### Patch Changes
+
+- 3c273e3: Reduced Prisma ORM integration code size.
+
 ## 0.13.0
 
 ### Minor Changes
