@@ -125,6 +125,8 @@ export function createFraciCache(): FraciCache {
 /**
  * Retrieves a value from cache or computes it if not present.
  *
+ * @template T - The type of the value to cache
+ *
  * @param cache - The cache to use, or undefined to bypass caching
  * @param key - The cache key to look up
  * @param fn - Function to execute if the value is not in the cache
@@ -156,6 +158,10 @@ function withCache<T>(
  * Creates a fractional indexing utility with the specified configuration.
  * This is the main factory function for creating a Fraci instance that can generate
  * fractional indices between existing values.
+ *
+ * @template D - The type of the digit base characters
+ * @template L - The type of the length base characters
+ * @template X - The brand type for the fractional index
  *
  * @param options - Configuration options for the fractional indexing utility
  * @param cache - Optional cache to improve performance by reusing computed values
