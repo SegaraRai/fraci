@@ -609,4 +609,4 @@ This project is licensed under the MIT License - see the [LICENSE](https://githu
 ## Credits
 
 - [Realtime editing of ordered sequences](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/) by Figma for the idea
-- [Implementing Fractional Indexing](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/) by David Greenspan for the base implementation
+- [Implementing Fractional Indexing](https://observablehq.com/@dgreensp/implementing-fractional-indexing) by David Greenspan for the base implementation
