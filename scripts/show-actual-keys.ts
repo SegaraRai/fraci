@@ -1,5 +1,4 @@
-import { BASE62 } from "./bases.js";
-import { fraci } from "./factory.js";
+import { BASE62, fraci } from "fraci";
 
 const fi = fraci({
   digitBase: BASE62,
