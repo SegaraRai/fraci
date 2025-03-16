@@ -39,8 +39,8 @@
   "scripts": {
     "changeset-version": "changeset version",
     "changeset-publish": "changeset publish",
-    "generate-migrations": "bun run ./generate-migrations.ts",
-    "build": "tsup && bun run ./fix-dts.ts",
+    "generate-migrations": "bun run scripts/generate-migrations.ts",
+    "build": "tsup && bun run scripts/fix-dts.ts",
     "build-examples": "rolldown -c examples/rolldown.config.ts",
     "build-docs": "typedoc",
     "test": "bun test",
