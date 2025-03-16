@@ -46,6 +46,9 @@ jobs:
       - name: Build Docs
         run: bun run build-docs
 
+      - name: Build Examples
+        run: bun run build-examples
+
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1

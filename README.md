@@ -85,6 +85,17 @@ See the detailed examples below for more information.
 - **Smaller bundle size** - Fully tree-shakable
 - **Zero dependencies** - No dependencies, not even on Node.js
 
+### Bundle Sizes
+
+For bundle size measurement, we use Rolldown for bundling and esbuild for minifying.
+Run `bun run build-examples` to see the bundle sizes for each example.
+
+| Integration | Size (minified + gzipped) |
+| ----------- | ------------------------- |
+| Core only   | 1.81 KiB                  |
+| Drizzle ORM | 2.27 KiB                  |
+| Prisma ORM  | 2.44 KiB                  |
+
 ## Security Considerations
 
 ### Preventing Cross-Group Operations
