@@ -1,0 +1,347 @@
+/* A simple example of using Fraci without any ORM. We recommend using an ORM integration, as querying fractional indices manually can be error-prone. */
+
+import { zValidator } from "@hono/zod-validator";
+import { BASE62, fraci, type FractionalIndex } from "fraci";
+import { Hono } from "hono";
+import * as z from "zod";
+
+// Define the type for our fractional index
+type ExampleItemFI = FractionalIndex<
+  typeof BASE62,
+  typeof BASE62,
+  "core.exampleItem.fi"
+>;
+
+// Define the structure of our example item
+interface ExampleItem {
+  id: number;
+  name: string;
+  fi: ExampleItemFI;
+  groupId: number;
+}
+
+// In-memory database tables
+const exampleItems: ExampleItem[] = [];
+let nextId = 1;
+
+// Create a fraci instance for the example items
+const fraciForExampleItem = fraci<
+  typeof BASE62,
+  typeof BASE62,
+  "core.exampleItem.fi"
+>({
+  digitBase: BASE62,
+  lengthBase: BASE62,
+});
+
+// Utility functions for querying the array
+const queryUtils = {
+  // Find many items with filtering and ordering
+  findMany: <
+    S extends Partial<Record<keyof ExampleItem, true>> | undefined = undefined
+  >(options: {
+    where?: (item: ExampleItem) => boolean;
+    orderBy?: { field: keyof ExampleItem; direction: "asc" | "desc" };
+    select?: S;
+  }): (S extends undefined
+    ? ExampleItem
+    : Pick<ExampleItem, Extract<keyof S, keyof ExampleItem>>)[] => {
+    let results = [...exampleItems];
+
+    // Apply where filter if provided
+    if (options.where) {
+      results = results.filter(options.where);
+    }
+
+    // Apply ordering if provided
+    if (options.orderBy) {
+      const { field, direction } = options.orderBy;
+      results.sort((a, b) => {
+        const aValue = a[field];
+        const bValue = b[field];
+        const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        return direction === "asc" ? comparison : -comparison;
+      });
+    }
+
+    // Apply selection if provided
+    if (options.select) {
+      return results.map((item) => {
+        const result = {} as any;
+        for (const key in options.select) {
+          if (options.select[key as keyof ExampleItem]) {
+            result[key] = item[key as keyof ExampleItem];
+          }
+        }
+        return result;
+      });
+    }
+
+    return results as any[];
+  },
+
+  // Create a new item
+  create: (data: Omit<ExampleItem, "id">) => {
+    const item: ExampleItem = {
+      id: nextId++,
+      ...data,
+    };
+    exampleItems.push(item);
+    return item;
+  },
+
+  // Update an existing item
+  update: (where: Partial<ExampleItem>, data: Partial<ExampleItem>) => {
+    // Find the item that matches all conditions in the where clause
+    const index = exampleItems.findIndex((item) => {
+      for (const key in where) {
+        if (
+          item[key as keyof ExampleItem] !== where[key as keyof ExampleItem]
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    if (index === -1) {
+      return null;
+    }
+
+    // Update the item
+    const updatedItem = {
+      ...exampleItems[index],
+      ...data,
+    };
+    exampleItems[index] = updatedItem;
+    return updatedItem;
+  },
+};
+
+// Fraci utility for the example items
+const xfi = {
+  // Generate a key between two existing keys
+  generateKeyBetween: (a: ExampleItemFI | null, b: ExampleItemFI | null) => {
+    return fraciForExampleItem.generateKeyBetween(a, b);
+  },
+
+  // Get indices for the last item in a group
+  indicesForLast: (where: { groupId: number }) => {
+    const items = queryUtils.findMany({
+      where: (item) => item.groupId === where.groupId,
+      orderBy: { field: "fi", direction: "asc" },
+    });
+
+    if (items.length === 0) {
+      return [null, null] as [ExampleItemFI | null, ExampleItemFI | null];
+    }
+
+    const lastItem = items[items.length - 1] as ExampleItem;
+    return [lastItem.fi, null] as [ExampleItemFI | null, ExampleItemFI | null];
+  },
+
+  // Get indices for an item before a reference item
+  indicesForBefore: (where: { groupId: number }, cursor: { id: number }) => {
+    const items = queryUtils.findMany({
+      where: (item) => item.groupId === where.groupId,
+      orderBy: { field: "fi", direction: "asc" },
+    });
+
+    if (items.length === 0) {
+      return null;
+    }
+
+    const refIndex = items.findIndex((item) => item.id === cursor.id);
+    if (refIndex === -1) {
+      return null;
+    }
+
+    const prev = refIndex > 0 ? items[refIndex - 1].fi : null;
+    const curr = items[refIndex].fi;
+
+    return [prev, curr] as [ExampleItemFI | null, ExampleItemFI | null];
+  },
+
+  // Get indices for an item after a reference item
+  indicesForAfter: (where: { groupId: number }, cursor: { id: number }) => {
+    const items = queryUtils.findMany({
+      where: (item) => item.groupId === where.groupId,
+      orderBy: { field: "fi", direction: "asc" },
+    });
+
+    if (items.length === 0) {
+      return null;
+    }
+
+    const refIndex = items.findIndex((item) => item.id === cursor.id);
+    if (refIndex === -1) {
+      return null;
+    }
+
+    const curr = items[refIndex].fi;
+    const next = refIndex < items.length - 1 ? items[refIndex + 1].fi : null;
+
+    return [curr, next] as [ExampleItemFI | null, ExampleItemFI | null];
+  },
+
+  // Check if an error is an index conflict error
+  isIndexConflictError: (error: unknown) => {
+    return (
+      error instanceof Error &&
+      error.message.includes("Index conflict: duplicate fractional index")
+    );
+  },
+};
+
+// Function to check for index conflicts
+function checkIndexConflict(groupId: number, fi: ExampleItemFI): boolean {
+  return exampleItems.some(
+    (item) => item.groupId === groupId && item.fi === fi
+  );
+}
+
+const app = new Hono()
+  .get("/groups/:groupId/items", async (c) => {
+    const groupId = Number(c.req.param("groupId"));
+    return c.json(
+      queryUtils.findMany({
+        where: (item) => item.groupId === groupId,
+        orderBy: { field: "fi", direction: "asc" },
+        select: { id: true, name: true, fi: true, groupId: true },
+      })
+    );
+  })
+  .get("/groups/:groupId/items.simple", async (c) => {
+    const groupId = Number(c.req.param("groupId"));
+    return c.json(
+      queryUtils.findMany({
+        where: (item) => item.groupId === groupId,
+        orderBy: { field: "fi", direction: "asc" },
+        select: { name: true },
+      })
+    );
+  })
+  .post(
+    "/groups/:groupId/items",
+    zValidator(
+      "json",
+      z.object({
+        name: z.string(),
+      })
+    ),
+    zValidator(
+      "query",
+      z.object({
+        delay: z.string().optional(),
+      })
+    ),
+    async (c) => {
+      const groupId = Number(c.req.param("groupId"));
+      const { name } = c.req.valid("json");
+
+      const indices = xfi.indicesForLast({ groupId });
+
+      const delay = Number(c.req.query("delay") ?? "0");
+      if (delay > 0) {
+        await new Promise((r) => setTimeout(r, delay));
+      }
+
+      let retryCount = 0;
+      for (const fi of xfi.generateKeyBetween(...indices)) {
+        try {
+          // Check for index conflicts manually
+          if (checkIndexConflict(groupId, fi)) {
+            throw new Error("Index conflict: duplicate fractional index");
+          }
+
+          // Create the new item
+          const newItem = queryUtils.create({ groupId, name, fi });
+
+          return c.json(newItem, 200, {
+            "Fraci-Retry-Count": String(retryCount),
+          });
+        } catch (error) {
+          if (xfi.isIndexConflictError(error)) {
+            retryCount++;
+            continue;
+          }
+
+          console.error(error);
+          return c.json({ error: "Failed to create item (DB Error)" }, 500);
+        }
+      }
+      return c.json({ error: "Failed to create item (Index Conflict)" }, 500);
+    }
+  )
+  .post(
+    "/groups/:groupId/items/:itemId/order",
+    zValidator(
+      "json",
+      z.union([
+        z.object({
+          before: z.number().int(),
+          after: z.null().optional(),
+        }),
+        z.object({
+          before: z.null().optional(),
+          after: z.number().int(),
+        }),
+      ])
+    ),
+    zValidator(
+      "query",
+      z.object({
+        delay: z.string().optional(),
+      })
+    ),
+    async (c) => {
+      const groupId = Number(c.req.param("groupId"));
+      const itemId = Number(c.req.param("itemId"));
+      const { before, after } = c.req.valid("json");
+
+      const indices =
+        before != null
+          ? xfi.indicesForBefore({ groupId }, { id: before })
+          : xfi.indicesForAfter({ groupId }, { id: after });
+      if (!indices) {
+        return c.json({ error: "Reference item not found" }, 400);
+      }
+
+      const delay = Number(c.req.query("delay") ?? "0");
+      if (delay > 0) {
+        await new Promise((r) => setTimeout(r, delay));
+      }
+
+      let retryCount = 0;
+      for (const fi of xfi.generateKeyBetween(indices[0], indices[1])) {
+        try {
+          // Check for index conflicts manually
+          if (checkIndexConflict(groupId, fi)) {
+            throw new Error("Index conflict: duplicate fractional index");
+          }
+
+          // Update the item
+          const updated = queryUtils.update({ id: itemId, groupId }, { fi });
+
+          if (!updated) {
+            // The item does not exist
+            return c.json({ error: "Item not found" }, 404);
+          }
+
+          return c.json(updated, 200, {
+            "Fraci-Retry-Count": String(retryCount),
+          });
+        } catch (error) {
+          if (xfi.isIndexConflictError(error)) {
+            retryCount++;
+            continue;
+          }
+
+          return c.json({ error: "Failed to update item (DB Error)" }, 500);
+        }
+      }
+      return c.json({ error: "Failed to update item (Index Conflict)" }, 500);
+    }
+  );
+
+export default app;

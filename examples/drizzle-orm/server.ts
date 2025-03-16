@@ -1,3 +1,5 @@
+/* A simple example of using Fraci with Drizzle ORM. */
+
 import { zValidator } from "@hono/zod-validator";
 import { asc, sql } from "drizzle-orm";
 import { drizzleFraci } from "fraci/drizzle";

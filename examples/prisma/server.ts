@@ -1,3 +1,5 @@
+/* A simple example of using Fraci with Prisma ORM. */
+
 import { zValidator } from "@hono/zod-validator";
 import { Prisma } from "@prisma/client";
 import { BASE62 } from "fraci";
