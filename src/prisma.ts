@@ -417,22 +417,37 @@ export function prismaFraci<Options extends PrismaFraciOptions>({
         cache // Share the cache for better performance
       );
 
-      // Function to find indices for inserting an item after a specified cursor
-      const indicesForAfter = async (
+      /**
+       * Internal function to retrieve indices for positioning items.
+       * This function queries the database to find the appropriate indices
+       * for inserting an item before or after a specified cursor position.
+       *
+       * @param where - The where clause to filter items by group
+       * @param cursor - The cursor position, or null for first/last position
+       * @param direction - The direction to search for indices (asc/desc)
+       * @param tuple - A function to create a tuple from two indices
+       * @param pClient - The Prisma client to use
+       * @returns A tuple of indices, or undefined if the cursor doesn't exist
+       */
+      const indicesFor = async (
         where: any,
         cursor: any,
+        direction: "asc" | "desc",
+        tuple: <T>(a: T, b: T) => [T, T],
         pClient: AnyPrismaClient = client
       ): Promise<any> => {
-        // Case 1: No cursor provided - get the first item in the group
+        // Case 1: No cursor provided - get the first/last item in the group
         if (!cursor) {
-          const firstItem = await pClient[model].findFirst({
+          const item = await pClient[model].findFirst({
             where, // Filter by group conditions
             select: { [field]: true }, // Only select the fractional index field
-            orderBy: { [field]: "asc" }, // Order by the fractional index ascending
+            orderBy: { [field]: direction }, // Order by the fractional index in appropriate direction
           });
 
           // We should always return a tuple of two indices if `cursor` is `null`.
-          return [null, firstItem?.[field] ?? null];
+          // For after: [null, firstItem]
+          // For before: [lastItem, null]
+          return tuple(null, item?.[field] ?? null);
         }
 
         // Case 2: Cursor provided - find items adjacent to the cursor
@@ -440,48 +455,32 @@ export function prismaFraci<Options extends PrismaFraciOptions>({
           cursor, // Start from the cursor position
           where, // Filter by group conditions
           select: { [field]: true }, // Only select the fractional index field
-          orderBy: { [field]: "asc" }, // Order by the fractional index ascending
-          take: 2, // Get the cursor item and the next item
+          orderBy: { [field]: direction }, // Order by the fractional index in appropriate direction
+          take: 2, // Get the cursor item and the adjacent item
         });
 
-        // Return undefined if cursor not found, otherwise return the indices
         return items.length < 1
-          ? undefined
-          : [items[0][field], items[1]?.[field] ?? null];
+          ? // Return undefined if cursor not found
+            undefined
+          : // Return the indices in the appropriate order based on direction
+            tuple(items[0][field], items[1]?.[field] ?? null);
       };
+
+      // Function to find indices for inserting an item after a specified cursor
+      const indicesForAfter = (
+        where: any,
+        cursor: any,
+        pClient?: AnyPrismaClient
+      ): Promise<any> =>
+        indicesFor(where, cursor, "asc", (a, b) => [a, b], pClient);
 
       // Function to find indices for inserting an item before a specified cursor
-      const indicesForBefore = async (
+      const indicesForBefore = (
         where: any,
         cursor: any,
-        pClient: AnyPrismaClient = client
-      ): Promise<any> => {
-        // Case 1: No cursor provided - get the last item in the group
-        if (!cursor) {
-          const lastItem = await pClient[model].findFirst({
-            where, // Filter by group conditions
-            select: { [field]: true }, // Only select the fractional index field
-            orderBy: { [field]: "desc" }, // Order by the fractional index descending
-          });
-
-          // We should always return a tuple of two indices if `cursor` is `null`.
-          return [lastItem?.[field] ?? null, null];
-        }
-
-        // Case 2: Cursor provided - find items adjacent to the cursor
-        const items = await pClient[model].findMany({
-          cursor, // Start from the cursor position
-          where, // Filter by group conditions
-          select: { [field]: true }, // Only select the fractional index field
-          orderBy: { [field]: "desc" }, // Order by the fractional index descending
-          take: 2, // Get the cursor item and the previous item
-        });
-
-        // Return undefined if cursor not found, otherwise return the indices in correct order
-        return items.length < 1
-          ? undefined
-          : [items[1]?.[field] ?? null, items[0][field]];
-      };
+        pClient?: AnyPrismaClient
+      ): Promise<any> =>
+        indicesFor(where, cursor, "desc", (a, b) => [b, a], pClient);
 
       // Create an enhanced helper with Prisma-specific methods
       const helperEx: HelperValue = {
