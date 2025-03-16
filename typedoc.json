@@ -1,15 +1,24 @@
 {
   "$schema": "https://typedoc.org/schema.json",
+  "out": "typedoc",
   "entryPoints": [
     "./src/index.ts",
     "./src/drizzle.ts",
     "./src/prisma.ts"
   ],
-  "out": "typedoc",
   "highlightLanguages": [
     "prisma",
     "shell",
     "text",
     "typescript"
-  ]
+  ],
+  "hostedBaseUrl": "https://segararai.github.io/fraci/",
+  "useHostedBaseUrlForAbsoluteLinks": true,
+  "navigationLinks": {
+    "GitHub": "https://github.com/SegaraRai/fraci",
+    "npm": "https://www.npmjs.com/package/fraci"
+  },
+  "hideGenerator": true,
+  "customFooterHtmlDisableWrapper": true,
+  "customFooterHtml": "<p>Copyright (c) 2025 SegaraRai. Generated using <a href=\"https://typedoc.org/\" target=\"_blank\">TypeDoc</a>.</p>"
 }
