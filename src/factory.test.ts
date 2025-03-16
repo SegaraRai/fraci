@@ -92,6 +92,13 @@ describe("createFraciCache", () => {
   const digitBase = "0123456789";
   const lengthBase = "0123456789";
 
+  const measureTime = <T>(fn: () => T): [T, number] => {
+    const start = performance.now();
+    const result = fn();
+    const end = performance.now();
+    return [result, end - start];
+  };
+
   it("should create an empty Map instance", () => {
     const cache = createFraciCache();
     expect(cache).toBeInstanceOf(Map);
@@ -100,38 +107,54 @@ describe("createFraciCache", () => {
 
   it("should be usable with fraci function", () => {
     const cache = createFraciCache();
-    const indexing = fraci({ digitBase, lengthBase }, cache);
 
-    // Generate a key to trigger cache population
-    const generator = indexing.generateKeyBetween(null, null);
-    const [key] = generator;
+    // Create a fraci instance with a cache
+    const indexing = fraci({ digitBase, lengthBase }, cache);
 
     // Cache should now contain entries
     expect(cache.size).toBeGreaterThan(0);
+
+    // Generate a key
+    const generator = indexing.generateKeyBetween(null, null);
+    const [key] = generator;
+
     expect(typeof key).toBe("string");
   });
 
   it("should share cached computations between multiple fraci instances", () => {
     const cache = createFraciCache();
 
-    // Create two fraci instances with the same configuration and cache
-    const indexing1 = fraci({ digitBase, lengthBase }, cache);
-    const indexing2 = fraci({ digitBase, lengthBase }, cache);
+    // Create a first fraci instance with a cache
+    const [indexing1, time1] = measureTime(() =>
+      fraci({ digitBase, lengthBase }, cache)
+    );
+
+    // Record cache size after first instance creation
+    const sizeBefore = cache.size;
+    expect(sizeBefore).toBeGreaterThan(0);
 
     // Generate a key with the first instance to populate the cache
     const [key1] = indexing1.generateKeyBetween(null, null);
 
-    // Record cache size after first use
-    const sizeBefore = cache.size;
-    expect(sizeBefore).toBeGreaterThan(0);
-
-    // Generate a key with the second instance
-    const [key2] = indexing2.generateKeyBetween(null, null);
+    // Create a second fraci instance with the same cache
+    const [indexing2, time2] = measureTime(() =>
+      fraci({ digitBase, lengthBase }, cache)
+    );
 
     // Cache size should remain the same since computations are shared
     expect(cache.size).toBe(sizeBefore);
 
+    // Generate a key with the second instance
+    const [key2] = indexing2.generateKeyBetween(null, null);
+
     // Keys should be the same since they share the same cache
     expect(key1).toBe(key2);
+
+    // Log performance results
+    console.log(
+      `Time to create first instance: ${time1.toFixed(
+        3
+      )}ms, second instance: ${time2.toFixed(3)}ms`
+    );
   });
 });
