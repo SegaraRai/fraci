@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { DEFAULT_MAX_LENGTH, fraci } from "./factory.js";
+import { DEFAULT_MAX_LENGTH, createFraciCache, fraci } from "./factory.js";
 
 describe("fraci", () => {
   const digitBase = "0123456789";
@@ -85,5 +85,53 @@ describe("fraci", () => {
     expect(generator.next().done).toBe(false);
     expect(generator.next().done).toBe(false);
     expect(generator.next().done).toBe(true);
+  });
+});
+
+describe("createFraciCache", () => {
+  const digitBase = "0123456789";
+  const lengthBase = "0123456789";
+
+  it("should create an empty Map instance", () => {
+    const cache = createFraciCache();
+    expect(cache).toBeInstanceOf(Map);
+    expect(cache.size).toBe(0);
+  });
+
+  it("should be usable with fraci function", () => {
+    const cache = createFraciCache();
+    const indexing = fraci({ digitBase, lengthBase }, cache);
+
+    // Generate a key to trigger cache population
+    const generator = indexing.generateKeyBetween(null, null);
+    const [key] = generator;
+
+    // Cache should now contain entries
+    expect(cache.size).toBeGreaterThan(0);
+    expect(typeof key).toBe("string");
+  });
+
+  it("should share cached computations between multiple fraci instances", () => {
+    const cache = createFraciCache();
+
+    // Create two fraci instances with the same configuration and cache
+    const indexing1 = fraci({ digitBase, lengthBase }, cache);
+    const indexing2 = fraci({ digitBase, lengthBase }, cache);
+
+    // Generate a key with the first instance to populate the cache
+    const [key1] = indexing1.generateKeyBetween(null, null);
+
+    // Record cache size after first use
+    const sizeBefore = cache.size;
+    expect(sizeBefore).toBeGreaterThan(0);
+
+    // Generate a key with the second instance
+    const [key2] = indexing2.generateKeyBetween(null, null);
+
+    // Cache size should remain the same since computations are shared
+    expect(cache.size).toBe(sizeBefore);
+
+    // Keys should be the same since they share the same cache
+    expect(key1).toBe(key2);
   });
 });
