@@ -41,7 +41,7 @@ export default defineConfig(
             },
             {
               name: "others",
-              priority: 10,
+              priority: 100,
             },
           ],
         },
@@ -50,6 +50,12 @@ export default defineConfig(
         {
           name: "show-size",
           async generateBundle(_options, bundle) {
+            this.emitFile({
+              fileName: `__${entrypoint}__`,
+              type: "asset",
+              source: "",
+            });
+
             const fraciBundle = bundle["fraci.js"];
             if (fraciBundle?.type !== "chunk") {
               return;
