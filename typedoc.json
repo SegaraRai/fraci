@@ -5,5 +5,11 @@
     "./src/drizzle.ts",
     "./src/prisma.ts"
   ],
-  "out": "typedoc"
+  "out": "typedoc",
+  "highlightLanguages": [
+    "prisma",
+    "shell",
+    "text",
+    "typescript"
+  ]
 }

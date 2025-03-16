@@ -8,7 +8,7 @@ A comprehensive library for [fractional indexing](https://www.figma.com/blog/rea
 
 ## Quick Start
 
-```bash
+```shell
 # Install the package
 npm install fraci
 ```
@@ -117,7 +117,7 @@ Run `bun run build-examples` to see the bundle sizes for each example.
 
 ## Installation
 
-```bash
+```shell
 npm install fraci
 
 # or
@@ -480,7 +480,7 @@ async function remove() {
 
 Fractional indexing allows for inserting items between existing items without reindexing:
 
-```plaintext
+```text
 A (index: "a") --- B (index: "c")
                 |
                 +--- New Item (index: "b")
@@ -488,7 +488,7 @@ A (index: "a") --- B (index: "c")
 
 When you need to insert between A and B, fraci generates a new index that sorts lexicographically between them. If you need to insert between A and the new item:
 
-```plaintext
+```text
 A (index: "a") --- New Item (index: "b") --- B (index: "c")
                 |
                 +--- Another Item (index: "a5")
