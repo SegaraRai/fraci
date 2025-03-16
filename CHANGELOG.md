@@ -1,5 +1,15 @@
 # fraci
 
+## 0.13.0
+
+### Minor Changes
+
+- b0c4151: Enhanced error handling:
+
+  - Added "Fraci" prefix to error messages to make it easier to identify the source of the error
+  - Added comprehensive "Runtime Errors" section to the documentation with detailed information about each error message
+  - Provided clear causes and solutions for each error message to improve troubleshooting experience
+
 ## 0.12.0
 
 ### Minor Changes
