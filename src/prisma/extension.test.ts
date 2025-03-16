@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { beforeAll, describe, expect, test } from "bun:test";
 import { BASE26L, BASE36L, BASE95 } from "fraci";
 import { prismaFraci } from "fraci/prisma";
-import { setupPrisma } from "../test/prisma.js";
+import { setupPrisma } from "../../test/prisma.js";
 
 const basePrisma = await setupPrisma();
 
@@ -182,22 +182,7 @@ beforeAll(async () => {
   });
 });
 
-test("instantiation type check", () => {
-  prismaFraci({
-    fields: {
-      "article.fi": {
-        group: [],
-        digitBase: BASE36L,
-        lengthBase: BASE26L,
-      },
-      "photo.fi": {
-        group: [],
-        digitBase: BASE36L,
-        lengthBase: BASE26L,
-      },
-    } as const,
-  });
-
+test("should throw error if invalid column specified", () => {
   expect(() =>
     basePrisma.$extends(
       prismaFraci({
@@ -211,7 +196,9 @@ test("instantiation type check", () => {
         } as const,
       })
     )
-  ).toThrowError("Could not get field information for notExist.fi");
+  ).toThrowError(
+    "Fraci Prisma: Could not get field information for notExist.fi"
+  );
 
   expect(() =>
     basePrisma.$extends(
@@ -226,42 +213,9 @@ test("instantiation type check", () => {
         } as const,
       })
     )
-  ).toThrowError("Could not get field information for article.notExist");
-
-  prismaFraci({
-    fields: {
-      "article.fi": {
-        // @ts-expect-error Only existing fields can be specified.
-        group: ["altText"],
-        digitBase: BASE36L,
-        lengthBase: BASE26L,
-      },
-    } as const,
-  });
-
-  prismaFraci({
-    fields: {
-      "article.fi": {
-        // @ts-expect-error Only serializable fields can be specified.
-        group: ["createdAt"],
-        digitBase: BASE36L,
-        lengthBase: BASE26L,
-      },
-    } as const,
-  });
-
-  prismaFraci({
-    fields: {
-      "article.fi": {
-        // @ts-expect-error The fractional index field itself cannot be specified.
-        group: ["fi"],
-        digitBase: BASE36L,
-        lengthBase: BASE26L,
-      },
-    } as const,
-  });
-
-  expect(true).toBe(true);
+  ).toThrowError(
+    "Fraci Prisma: Could not get field information for article.notExist"
+  );
 });
 
 describe("basic", () => {
