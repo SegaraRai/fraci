@@ -81,17 +81,26 @@ export type BinaryModelFieldName<M extends ModelKey> = ModelFieldNameByType<
 >;
 
 /**
- * A union of a tuple of 1) a qualified string field key and 2) a union of the names of the other serializable fields of its model.
+ * A union of a tuple of 1) a qualified binary or string field key and 2) a union of the names of the other serializable fields of its model.
  *
- * @example ["article.title", "id" | "content" | "fi" | "userId"] | ["article.fi", "id" | "title" | "content" | "userId"] | ... | ["user.name", "id" | "email"] | ...
+ * @example ["article.title", "id" | "content" | "fi" | "userId", "string"] | ["article.fi", "id" | "title" | "content" | "userId", "string"] | ... | ["user.fi", "id" | "name" | "email", "binary"] | ...
  */
 export type QualifiedFields = {
-  [M in ModelKey]: {
-    [F in StringModelFieldName<M>]: [
-      `${M}.${F}`,
-      Exclude<SerializableModelFieldName<M>, F>
-    ];
-  }[StringModelFieldName<M>];
+  [M in ModelKey]:
+    | {
+        [F in BinaryModelFieldName<M>]: [
+          `${M}.${F}`,
+          Exclude<SerializableModelFieldName<M>, F>,
+          "binary"
+        ];
+      }[BinaryModelFieldName<M>]
+    | {
+        [F in StringModelFieldName<M>]: [
+          `${M}.${F}`,
+          Exclude<SerializableModelFieldName<M>, F>,
+          "string"
+        ];
+      }[StringModelFieldName<M>];
 }[ModelKey];
 
 /**
