@@ -134,7 +134,7 @@ Run `bun run build-examples` to see the bundle sizes for each example.
 ### Protection Against Index Expansion Attacks
 
 - Fractional indices can grow in length through repeated operations, especially when repeatedly inserting between the same two indices.
-- As shown in the test at the bottom of `fractional-indexing-binary.test.ts`, a malicious user could intentionally create very long indices by repeatedly moving items back and forth.
+- As shown in the test at the bottom of `fractional-indexing-*.test.ts`, a malicious user could intentionally create very long indices by repeatedly moving items back and forth.
 - Fraci includes a configurable `maxLength` parameter (default: 50) to prevent these attacks from creating excessively long indices.
 - When this limit is exceeded, an exception is thrown, preventing database bloat and performance degradation.
 
