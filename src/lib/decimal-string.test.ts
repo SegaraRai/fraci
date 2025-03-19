@@ -8,7 +8,7 @@ import {
   getSmallestInteger,
   incrementInteger,
   splitParts,
-} from "./decimal.js";
+} from "./decimal-string.js";
 import { createDigitBaseMap, createIntegerLengthBaseMap } from "./utils.js";
 
 const [LF10, LR10] = createIntegerLengthBaseMap(BASE10);

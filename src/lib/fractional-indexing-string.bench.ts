@@ -1,11 +1,11 @@
 import { bench, run } from "mitata";
-import { BASE95 } from "../bases";
-import { getSmallestInteger } from "./decimal";
+import { BASE95 } from "../bases.js";
+import { getSmallestInteger } from "./decimal-string.js";
 import {
   generateKeyBetween,
   generateNKeysBetween,
-} from "./fractional-indexing";
-import { createDigitBaseMap, createIntegerLengthBaseMap } from "./utils";
+} from "./fractional-indexing-string.js";
+import { createDigitBaseMap, createIntegerLengthBaseMap } from "./utils.js";
 
 const [L_LEN_FORWARD, L_LEN_REVERSE] = createIntegerLengthBaseMap(BASE95);
 const [L_DIG_FORWARD, L_DIG_REVERSE] = createDigitBaseMap(BASE95);

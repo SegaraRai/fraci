@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { BASE95 } from "../bases.js";
-import { getSmallestInteger } from "./decimal.js";
+import { getSmallestInteger } from "./decimal-string.js";
 import {
   avoidConflictSuffix,
   generateKeyBetween,
   generateNKeysBetween,
   isValidFractionalIndex,
-} from "./fractional-indexing.js";
+} from "./fractional-indexing-string.js";
 import { createDigitBaseMap, createIntegerLengthBaseMap } from "./utils.js";
 
 const TEST_BASE6 = "ABCabc";

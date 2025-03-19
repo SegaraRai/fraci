@@ -4,7 +4,7 @@ import {
   getMidpointFractional,
   incrementInteger,
   splitParts,
-} from "./decimal.js";
+} from "./decimal-string.js";
 
 /**
  * Validates if a string is a valid fractional index.

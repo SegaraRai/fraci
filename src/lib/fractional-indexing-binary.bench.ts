@@ -2,7 +2,7 @@ import { bench, run } from "mitata";
 import {
   generateKeyBetween,
   generateNKeysBetween,
-} from "./fractional-indexing-binary";
+} from "./fractional-indexing-binary.js";
 
 bench("append keys x10000", () => {
   let [a] = generateNKeysBetween(null, null, 2)!;

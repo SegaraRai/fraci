@@ -1,5 +1,5 @@
 import { concat } from "./lib/decimal-binary.js";
-import { getSmallestInteger } from "./lib/decimal.js";
+import { getSmallestInteger } from "./lib/decimal-string.js";
 import {
   avoidConflictSuffix as avoidConflictSuffixBinary,
   generateKeyBetween as generateKeyBetweenBinary,
@@ -9,12 +9,12 @@ import {
   avoidConflictSuffix,
   generateKeyBetween,
   generateNKeysBetween,
-} from "./lib/fractional-indexing.js";
+} from "./lib/fractional-indexing-string.js";
 import type {
-  FractionalIndexBase,
-  FractionalIndex,
   AnyBinaryFractionalIndexBase,
   AnyStringFractionalIndexBase,
+  FractionalIndex,
+  FractionalIndexBase,
 } from "./lib/types.js";
 import { createDigitBaseMap, createIntegerLengthBaseMap } from "./lib/utils.js";
 
