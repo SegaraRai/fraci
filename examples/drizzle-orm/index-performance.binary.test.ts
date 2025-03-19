@@ -7,8 +7,8 @@ import {
 } from "../../drizzle/schema.e2e-binary.js";
 import { setupDrizzleDBLibSQL } from "../../test/drizzle.e2e-binary.js";
 
-const NUM_GROUPS = 10;
-const NUM_ITEMS_PER_GROUP = 5000;
+const NUM_GROUPS = 15;
+const NUM_ITEMS_PER_GROUP = 10000;
 const GROUP_ID_START = 100;
 
 const CURSOR_GROUP = 3;
@@ -60,8 +60,8 @@ test("Ensure that the query plan is optimal (Binary)", async () => {
   }
 
   for (const [name, compare, order] of [
-    ["asc", gte, asc],
-    ["desc", lte, desc],
+    ["Ascending", gte, asc],
+    ["Descending", lte, desc],
   ] as const) {
     const table = exampleItems;
     const column = exampleItems.fi;
@@ -86,7 +86,7 @@ test("Ensure that the query plan is optimal (Binary)", async () => {
 
     const [explained, duration] = await explain(query.getSQL());
     console.log(
-      `EXPLAIN Select ${name} (${duration.toFixed(3)}ms):\n${explained
+      `Select ${name} (${duration.toFixed(3)}ms):\n${explained
         .map((item, index) => `${index + 1}. ${item}\n`)
         .join("")}`,
     );
@@ -96,14 +96,14 @@ test("Ensure that the query plan is optimal (Binary)", async () => {
     expect(explained.every((item) => !item.includes("SCAN"))).toBe(true);
 
     const listQuery = db
-      .select(fiSelector)
+      .select({ id: exampleItems.id, name: exampleItems.name })
       .from(table)
       .where(and(...groupConditions))
       .orderBy(order(column));
 
     const [listExplained, listDuration] = await explain(listQuery.getSQL());
     console.log(
-      `EXPLAIN List ${name} (${listDuration.toFixed(3)}ms):\n${listExplained
+      `List ${name} (${listDuration.toFixed(3)}ms):\n${listExplained
         .map((item, index) => `${index + 1}. ${item}\n`)
         .join("")}`,
     );
