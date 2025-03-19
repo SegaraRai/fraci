@@ -111,12 +111,12 @@ Run `bun run build-examples` to see the bundle sizes for each example.
 | Integration              | Total Size (minified)     | Total Size (minified + gzipped) |
 | ------------------------ | ------------------------- | ------------------------------- |
 | **Core only (Binary)**   | 3.26 KiB                  | **1.40 KiB**                    |
-| **Core only (String)**   | 4.56 KiB                  | **1.88 KiB**                    |
-| **Core only (Both)**     | 7.69 KiB                  | **2.87 KiB**                    |
-| **Drizzle ORM (Binary)** | 4.36 KiB (Core +1.10 KiB) | **1.86 KiB** (Core +0.46 KiB)   |
-| **Drizzle ORM (String)** | 5.63 KiB (Core +1.07 KiB) | **2.32 KiB** (Core +0.44 KiB)   |
-| **Drizzle ORM (Both)**   | 8.66 KiB (Core +0.97 KiB) | **3.28 KiB** (Core +0.41 KiB)   |
-| **Prisma ORM (Both)**    | 8.97 KiB (Core +1.28 KiB) | **3.46 KiB** (Core +0.59 KiB)   |
+| **Core only (String)**   | 4.60 KiB                  | **1.88 KiB**                    |
+| **Core only (Both)**     | 7.73 KiB                  | **2.88 KiB**                    |
+| **Drizzle ORM (Binary)** | 4.31 KiB (Core +1.05 KiB) | **1.86 KiB** (Core +0.46 KiB)   |
+| **Drizzle ORM (String)** | 5.67 KiB (Core +1.07 KiB) | **2.33 KiB** (Core +0.45 KiB)   |
+| **Drizzle ORM (Both)**   | 8.69 KiB (Core +0.96 KiB) | **3.28 KiB** (Core +0.40 KiB)   |
+| **Prisma ORM (Both)**    | 9.01 KiB (Core +1.28 KiB) | **3.46 KiB** (Core +0.58 KiB)   |
 
 ## Security Considerations
 
