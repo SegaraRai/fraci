@@ -72,7 +72,11 @@ describe("fraciString", () => {
   it("should create a string fractional indexing utility", () => {
     const indexing = fraciString({ lengthBase, digitBase });
     // The base is cast to the correct type but is initially an array
-    expect(Array.isArray(indexing.base)).toBe(true);
+    expect(indexing.base).toEqual({
+      type: "string",
+      lengthBase,
+      digitBase,
+    });
 
     const generator = indexing.generateKeyBetween(null, null);
     const key = generator.next().value;
