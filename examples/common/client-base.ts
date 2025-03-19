@@ -1,40 +1,39 @@
-// Note that this test needs the package to be built before running and type checking.
-import { expect, test } from "bun:test";
+import { expect } from "bun:test";
 import { hc } from "hono/client";
-import app from "./server.js";
+import type { ServerType } from "./server-base.js";
 
-const client = hc<typeof app>("/", {
-  fetch: app.request,
-});
-
-const getItemsFull = async (groupId: string) => {
-  const res = await client.groups[":groupId"].items.$get({
-    param: { groupId },
+export async function runTest(app: ServerType): Promise<void> {
+  const client = hc<typeof app>("/", {
+    fetch: app.request,
   });
-  expect(res.status).toBe(200);
-  const data = await res.json();
-  return data;
-};
 
-const getItemsSimple = async (groupId: string) => {
-  const res = await client.groups[":groupId"]["items.simple"].$get({
-    param: { groupId },
-  });
-  expect(res.status).toBe(200);
-  const data = await res.json();
-  return data;
-};
+  const getItemsFull = async (groupId: string) => {
+    const res = await client.groups[":groupId"].items.$get({
+      param: { groupId },
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    return data;
+  };
 
-const getItemByName = async (groupId: string, name: string) => {
-  const items = await getItemsFull(groupId);
-  const item = items.find((i) => i.name === name);
-  if (!item) {
-    throw new Error(`TEST: Item ${name} not found in group ${groupId}`);
-  }
-  return item;
-};
+  const getItemsSimple = async (groupId: string) => {
+    const res = await client.groups[":groupId"]["items.simple"].$get({
+      param: { groupId },
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    return data;
+  };
 
-test("E2E", async () => {
+  const getItemByName = async (groupId: string, name: string) => {
+    const items = await getItemsFull(groupId);
+    const item = items.find((i) => i.name === name);
+    if (!item) {
+      throw new Error(`TEST: Item ${name} not found in group ${groupId}`);
+    }
+    return item;
+  };
+
   // Add 3 items
   {
     const r1 = await client.groups[":groupId"].items.$post({
@@ -328,4 +327,4 @@ test("E2E", async () => {
     expect(r2.status).toBe(400);
     expect(await r2.json()).toEqual({ error: "Reference item not found" });
   }
-});
+}

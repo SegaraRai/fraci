@@ -1,14 +1,19 @@
-/* A simple example of using Fraci with Drizzle ORM. */
+/* A simple example of using Fraci with Drizzle ORM and a synchronous database. */
 
 import { zValidator } from "@hono/zod-validator";
 import { asc, sql } from "drizzle-orm";
-import { drizzleFraci } from "fraci/drizzle";
+import { drizzleFraciSync } from "fraci/drizzle";
 import { Hono } from "hono";
+import { Buffer } from "node:buffer";
 import * as z from "zod";
-import { exampleItems, fiExampleItems } from "../../drizzle/schema.js";
-import { setupDrizzleDBLibSQL } from "../../test/drizzle.js";
+import {
+  exampleItems,
+  fiExampleItems,
+} from "../../drizzle/schema.e2e-binary.js";
+import { setupDrizzleDBBunSQLite } from "../../test/drizzle.e2e-binary.js";
+import type { ServerType } from "../common/server-base.js";
 
-const db = await setupDrizzleDBLibSQL();
+const db = setupDrizzleDBBunSQLite();
 
 // Fraci does not have a built-in function to detect index conflict errors for Drizzle ORM, since Drizzle ORM does not have a unified error handling mechanism.
 function isIndexConflictError(error: unknown): boolean {
@@ -24,11 +29,13 @@ const app = new Hono()
   .get("/groups/:groupId/items", async (c) => {
     const groupId = Number(c.req.param("groupId"));
     return c.json(
-      await db.query.exampleItems.findMany({
-        columns: { id: true, name: true, fi: true, groupId: true },
-        where: sql`${exampleItems.groupId} = ${groupId}`,
-        orderBy: asc(exampleItems.fi),
-      })
+      (
+        await db.query.exampleItems.findMany({
+          columns: { id: true, name: true, fi: true, groupId: true },
+          where: sql`${exampleItems.groupId} = ${groupId}`,
+          orderBy: asc(exampleItems.fi),
+        })
+      ).map((item) => ({ ...item, fi: Buffer.from(item.fi).toString("hex") }))
     );
   })
   .get("/groups/:groupId/items.simple", async (c) => {
@@ -59,8 +66,8 @@ const app = new Hono()
       const groupId = Number(c.req.param("groupId"));
       const { name } = c.req.valid("json");
 
-      const xfi = drizzleFraci(db, fiExampleItems);
-      const indices = await xfi.indicesForLast({ groupId });
+      const xfi = drizzleFraciSync(db, fiExampleItems);
+      const indices = xfi.indicesForLast({ groupId });
 
       const delay = Number(c.req.query("delay") ?? "0");
       if (delay > 0) {
@@ -71,7 +78,7 @@ const app = new Hono()
       for (const fi of xfi.generateKeyBetween(...indices)) {
         try {
           return c.json(
-            await db
+            db
               .insert(exampleItems)
               .values({ groupId, name, fi })
               .returning()
@@ -120,11 +127,11 @@ const app = new Hono()
       const itemId = Number(c.req.param("itemId"));
       const { before, after } = c.req.valid("json");
 
-      const xfi = drizzleFraci(db, fiExampleItems);
+      const xfi = drizzleFraciSync(db, fiExampleItems);
       const indices =
         before != null
-          ? await xfi.indicesForBefore({ groupId }, { id: before })
-          : await xfi.indicesForAfter({ groupId }, { id: after });
+          ? xfi.indicesForBefore({ groupId }, { id: before })
+          : xfi.indicesForAfter({ groupId }, { id: after });
       if (!indices) {
         return c.json({ error: "Reference item not found" }, 400);
       }
@@ -137,7 +144,7 @@ const app = new Hono()
       let retryCount = 0;
       for (const fi of xfi.generateKeyBetween(indices[0], indices[1])) {
         try {
-          const updated = await db
+          const updated = db
             .update(exampleItems)
             .set({
               fi,
@@ -167,6 +174,6 @@ const app = new Hono()
       }
       return c.json({ error: "Failed to update item (Index Conflict)" }, 500);
     }
-  );
+  ) satisfies ServerType;
 
 export default app;

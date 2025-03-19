@@ -9,19 +9,19 @@ import {
 import {
   BASE26L,
   BASE36L,
-  BASE62,
   BASE95,
   fraci,
-  type AnyFractionalIndex,
+  type AnyStringFraci,
   type FractionalIndexOf,
 } from "fraci";
 import { defineDrizzleFraci } from "fraci/drizzle";
 
 // Utility function to define a fractional index column. Should be copied to your project.
-function fi<FractionalIndex extends AnyFractionalIndex, Name extends string>(
-  name: Name
+function fi<const Name extends string, const Fraci extends AnyStringFraci>(
+  name: Name,
+  _fi: () => Fraci
 ) {
-  return text(name).notNull().$type<FractionalIndex>();
+  return text(name).notNull().$type<FractionalIndexOf<Fraci>>();
 }
 
 // ----------------------
@@ -52,7 +52,7 @@ export const articles = sqliteTable(
     id: integer("id").primaryKey({ autoIncrement: true }),
     title: text("title").notNull(),
     content: text("content").notNull(),
-    fi: fi<FractionalIndexOf<typeof fraciForArticles>, "fi">("fi"), // Fractional Index
+    fi: fi("fi", () => fraciForArticles), // Fractional Index
     userId: integer("user_id")
       .notNull()
       .references(() => users.id),
@@ -83,7 +83,7 @@ export const photos = sqliteTable(
     id: integer("id").primaryKey({ autoIncrement: true }),
     title: text("title").notNull(),
     altText: text("alt_text").notNull(),
-    fi: fi<FractionalIndexOf<typeof fraciForPhotos>, "fi">("fi"), // Fractional Index
+    fi: fi("fi", () => fraciForPhotos), // Fractional Index
     articleId: integer("article_id")
       .notNull()
       .references(() => articles.id),
@@ -128,13 +128,8 @@ export const tagsOnPhotos = sqliteTable(
   "tagsOnPhotos",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
-    photoFI: fi<
-      FractionalIndexOf<typeof fraciForPhotoFIInTagsOnPhotos>,
-      "photo_fi"
-    >("photo_fi"), // Fractional Index
-    tagFI: fi<FractionalIndexOf<typeof fraciForTagFIInTagsOnPhotos>, "tag_fi">(
-      "tag_fi"
-    ), // Another Fractional Index
+    photoFI: fi("photo_fi", () => fraciForPhotoFIInTagsOnPhotos), // Fractional Index
+    tagFI: fi("tag_fi", () => fraciForTagFIInTagsOnPhotos), // Another Fractional Index
     photoId: integer("photo_id")
       .notNull()
       .references(() => photos.id),
@@ -175,31 +170,4 @@ export const fiPhotosInTagsOnPhotos = defineDrizzleFraci(
   tagsOnPhotos.photoFI,
   { tagId: tagsOnPhotos.tagId },
   { photoId: tagsOnPhotos.photoId }
-);
-
-// exampleItem table
-export const exampleItems = sqliteTable(
-  "exampleItem",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    name: text("name").notNull(),
-    fi: fi<FractionalIndexOf<typeof fraciForExampleItem>, "fi">("fi"), // Fractional Index
-    groupId: integer("group_id").notNull(),
-    ...timestamps,
-  },
-  (table) => [uniqueIndex("group_id_fi_idx").on(table.groupId, table.fi)]
-);
-
-const fraciForExampleItem = fraci({
-  brand: "drizzle.exampleItem.fi",
-  lengthBase: BASE62,
-  digitBase: BASE62,
-});
-
-export const fiExampleItems = defineDrizzleFraci(
-  fraciForExampleItem,
-  exampleItems,
-  exampleItems.fi,
-  { groupId: exampleItems.groupId },
-  { id: exampleItems.id }
 );

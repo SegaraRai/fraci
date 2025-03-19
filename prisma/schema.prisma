@@ -83,7 +83,18 @@ model TagsOnPhotos {
 
 // Table only used for examples/prisma
 
-model ExampleItem {
+model BinaryExampleItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  fi        Bytes // Fractional Index
+  groupId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, fi])
+}
+
+model StringExampleItem {
   id        Int      @id @default(autoincrement())
   name      String
   fi        String // Fractional Index

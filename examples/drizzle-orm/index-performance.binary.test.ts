@@ -1,8 +1,11 @@
 import { expect, test } from "bun:test";
 import { and, asc, desc, gte, lte, SQL, sql } from "drizzle-orm";
 import { drizzleFraci } from "fraci/drizzle";
-import { exampleItems, fiExampleItems } from "../../drizzle/schema.js";
-import { setupDrizzleDBLibSQL } from "../../test/drizzle.js";
+import {
+  exampleItems,
+  fiExampleItems,
+} from "../../drizzle/schema.e2e-binary.js";
+import { setupDrizzleDBLibSQL } from "../../test/drizzle.e2e-binary.js";
 
 const NUM_GROUPS = 10;
 const NUM_ITEMS_PER_GROUP = 5000;
@@ -11,8 +14,8 @@ const GROUP_ID_START = 100;
 const CURSOR_GROUP = 3;
 const CURSOR_ITEM = "Item 400";
 
-test("Ensure that the query plan is optimal", async () => {
-  // You can check performance without index by editing `drizzle/migrations/0000_init.sql`.
+test("Ensure that the query plan is optimal (Binary)", async () => {
+  // You can check performance without index by editing `drizzle/migrations.e2e-binary/0000_init.sql`.
 
   const db = await setupDrizzleDBLibSQL();
   const xfi = drizzleFraci(db, fiExampleItems);
@@ -90,6 +93,9 @@ test("Ensure that the query plan is optimal", async () => {
     expect(explained.some((item) => item.includes("group_id_fi_idx"))).toBe(
       true
     );
+    expect(explained.every((item) => !item.includes("SCAN"))).toBe(
+      true
+    );
 
     const listQuery = db
       .select(fiSelector)
@@ -104,6 +110,9 @@ test("Ensure that the query plan is optimal", async () => {
         .join("")}`
     );
     expect(listExplained.some((item) => item.includes("group_id_fi_idx"))).toBe(
+      true
+    );
+    expect(listExplained.every((item) => !item.includes("SCAN"))).toBe(
       true
     );
   }

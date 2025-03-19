@@ -55,7 +55,17 @@ CREATE TABLE "TagsOnPhotos" (
 );
 
 -- CreateTable
-CREATE TABLE "ExampleItem" (
+CREATE TABLE "BinaryExampleItem" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL,
+    "fi" BLOB NOT NULL,
+    "groupId" INTEGER NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "StringExampleItem" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT NOT NULL,
     "fi" TEXT NOT NULL,
@@ -83,4 +93,7 @@ CREATE UNIQUE INDEX "TagsOnPhotos_tagId_photoFI_key" ON "TagsOnPhotos"("tagId", 
 CREATE UNIQUE INDEX "TagsOnPhotos_photoId_tagFI_key" ON "TagsOnPhotos"("photoId", "tagFI");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ExampleItem_groupId_fi_key" ON "ExampleItem"("groupId", "fi");
+CREATE UNIQUE INDEX "BinaryExampleItem_groupId_fi_key" ON "BinaryExampleItem"("groupId", "fi");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "StringExampleItem_groupId_fi_key" ON "StringExampleItem"("groupId", "fi");

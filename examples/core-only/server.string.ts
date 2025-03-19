@@ -1,9 +1,10 @@
 /* A simple example of using Fraci without any ORM. We strongly recommend using our ORM integrations, as querying fractional indices manually can be error-prone. */
 
 import { zValidator } from "@hono/zod-validator";
-import { BASE62, fraci, type FractionalIndexOf } from "fraci";
+import { BASE62, fraciString, type FractionalIndexOf } from "fraci";
 import { Hono } from "hono";
 import * as z from "zod";
+import type { ServerType } from "../common/server-base.js";
 
 // Define the type for our fractional index
 type FI = FractionalIndexOf<typeof fraciForExampleItem>;
@@ -21,8 +22,8 @@ const exampleItems: ExampleItem[] = [];
 let nextId = 1;
 
 // Create a fraci instance for the example items
-const fraciForExampleItem = fraci({
-  base: "core.exampleItem.fi",
+const fraciForExampleItem = fraciString({
+  brand: "core.exampleItem.fi",
   lengthBase: BASE62,
   digitBase: BASE62,
 });
@@ -334,6 +335,6 @@ const app = new Hono()
       }
       return c.json({ error: "Failed to update item (Index Conflict)" }, 500);
     }
-  );
+  ) satisfies ServerType;
 
 export default app;

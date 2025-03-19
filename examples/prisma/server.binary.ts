@@ -2,20 +2,20 @@
 
 import { zValidator } from "@hono/zod-validator";
 import { Prisma } from "@prisma/client";
-import { BASE62 } from "fraci";
 import { prismaFraci } from "fraci/prisma";
 import { Hono } from "hono";
+import { Buffer } from "node:buffer";
 import * as z from "zod";
 import { setupPrisma } from "../../test/prisma.js";
+import type { ServerType } from "../common/server-base.js";
 
 const basePrisma = await setupPrisma();
 const prisma = basePrisma.$extends(
   prismaFraci({
     fields: {
-      "exampleItem.fi": {
+      "binaryExampleItem.fi": {
         group: ["groupId"],
-        digitBase: BASE62,
-        lengthBase: BASE62,
+        type: "binary",
       },
     } as const,
   })
@@ -25,17 +25,19 @@ const app = new Hono()
   .get("/groups/:groupId/items", async (c) => {
     const groupId = Number(c.req.param("groupId"));
     return c.json(
-      await prisma.exampleItem.findMany({
-        select: { id: true, name: true, fi: true, groupId: true },
-        where: { groupId },
-        orderBy: { fi: "asc" },
-      })
+      (
+        await prisma.binaryExampleItem.findMany({
+          select: { id: true, name: true, fi: true, groupId: true },
+          where: { groupId },
+          orderBy: { fi: "asc" },
+        })
+      ).map((item) => ({ ...item, fi: Buffer.from(item.fi).toString("hex") }))
     );
   })
   .get("/groups/:groupId/items.simple", async (c) => {
     const groupId = Number(c.req.param("groupId"));
     return c.json(
-      await prisma.exampleItem.findMany({
+      await prisma.binaryExampleItem.findMany({
         select: { name: true },
         where: { groupId },
         orderBy: { fi: "asc" },
@@ -60,7 +62,7 @@ const app = new Hono()
       const groupId = Number(c.req.param("groupId"));
       const { name } = c.req.valid("json");
 
-      const xfi = prisma.exampleItem.fraci("fi");
+      const xfi = prisma.binaryExampleItem.fraci("fi");
       const indices = await xfi.indicesForLast({ groupId });
 
       const delay = Number(c.req.query("delay") ?? "0");
@@ -72,7 +74,7 @@ const app = new Hono()
       for (const fi of xfi.generateKeyBetween(...indices)) {
         try {
           return c.json(
-            await prisma.exampleItem.create({
+            await prisma.binaryExampleItem.create({
               data: { groupId, name, fi },
             }),
             200,
@@ -119,7 +121,7 @@ const app = new Hono()
       const itemId = Number(c.req.param("itemId"));
       const { before, after } = c.req.valid("json");
 
-      const xfi = prisma.exampleItem.fraci("fi");
+      const xfi = prisma.binaryExampleItem.fraci("fi");
 
       const indices =
         before != null
@@ -137,7 +139,7 @@ const app = new Hono()
       let retryCount = 0;
       for (const fi of xfi.generateKeyBetween(indices[0], indices[1])) {
         try {
-          const updated = await prisma.exampleItem.update({
+          const updated = await prisma.binaryExampleItem.update({
             // SECURITY: Always filter by group id to prevent cross-reference.
             where: { id: itemId, groupId },
             data: { fi },
@@ -164,6 +166,6 @@ const app = new Hono()
       }
       return c.json({ error: "Failed to update item (Index Conflict)" }, 500);
     }
-  );
+  ) satisfies ServerType;
 
 export default app;
