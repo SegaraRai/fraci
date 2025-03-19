@@ -211,6 +211,27 @@ function withCache<T>(
   return value;
 }
 
+/**
+ * Creates a binary-based fractional indexing utility with the specified configuration.
+ *
+ * @template X - The brand type for the fractional index
+ *
+ * @param options - Configuration options for the fractional indexing utility
+ * @returns A binary-based fractional indexing utility instance
+ *
+ * @example
+ * ```typescript
+ * // Create a binary-based fractional indexing utility
+ * const binaryFraci = fraciBinary({ brand: "exampleIndex" });
+ *
+ * // Generate a key between null and null (first key)
+ * const [key1] = binaryFraci.generateKeyBetween(null, null);
+ * // Generate a key between key1 and null (key after key1)
+ * const [key2] = binaryFraci.generateKeyBetween(key1, null);
+ * // Generate a key between key1 and key2
+ * const [key3] = binaryFraci.generateKeyBetween(key1, key2);
+ * ```
+ */
 export function fraciBinary<const X = unknown>({
   maxLength = DEFAULT_MAX_LENGTH,
   maxRetries = DEFAULT_MAX_RETRIES,
@@ -264,6 +285,34 @@ export function fraciBinary<const X = unknown>({
   };
 }
 
+/**
+ * Creates a string-based fractional indexing utility with the specified configuration.
+ *
+ * @template B - The type of the base characters
+ * @template X - The brand type for the fractional index
+ *
+ * @param options - Configuration options for the fractional indexing utility
+ * @param cache - Optional cache to improve performance by reusing computed values
+ * @returns A string-based fractional indexing utility instance
+ * @throws {Error} When the digit or length base strings are invalid
+ *
+ * @example
+ * ```typescript
+ * // Create a decimal-based fractional indexing utility
+ * const decimalFraci = fraciString({
+ *   brand: "exampleIndex",
+ *   digitBase: "0123456789",
+ *   lengthBase: "abcdefghij"
+ * });
+ *
+ * // Generate a key between null and null (first key)
+ * const [key1] = decimalFraci.generateKeyBetween(null, null);
+ * // Generate a key between key1 and null (key after key1)
+ * const [key2] = decimalFraci.generateKeyBetween(key1, null);
+ * // Generate a key between key1 and key2
+ * const [key3] = decimalFraci.generateKeyBetween(key1, key2);
+ * ```
+ */
 export function fraciString<
   const B extends StringFraciOptions,
   const X = unknown
@@ -354,6 +403,8 @@ export function fraciString<
 }
 
 /**
+ * **We recommend using {@link fraciBinary} or {@link fraciString} directly to reduce bundle size whenever possible.**
+ *
  * Creates a fractional indexing utility with the specified configuration.
  * This is the main factory function for creating a Fraci instance that can generate
  * fractional indices between existing values.
@@ -370,6 +421,7 @@ export function fraciString<
  * ```typescript
  * // Create a decimal-based fractional indexing utility
  * const decimalFraci = fraci({
+ *   brand: "exampleIndex",
  *   digitBase: "0123456789",
  *   lengthBase: "abcdefghij"
  * });

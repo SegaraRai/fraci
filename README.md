@@ -14,16 +14,20 @@ npm install fraci
 ```
 
 ```typescript
-// With Drizzle ORM
-import { BASE62, fraci, type FractionalIndexOf } from "fraci";
+// With Drizzle ORM (String-based)
+import { BASE62, fraciString, type FractionalIndexOf } from "fraci";
 import { defineDrizzleFraci, drizzleFraci } from "fraci/drizzle";
 
-// Create a fraci instance
-const tasksFraci = fraci({
+// Create a string-based fraci instance
+const tasksFraci = fraciString({
   brand: "tasks.fi",
   lengthBase: BASE62,
   digitBase: BASE62,
 });
+
+// Or with binary-based fractional indexing for better performance
+// import { fraciBinary, type FractionalIndexOf } from "fraci";
+// const tasksFraci = fraciBinary({ brand: "tasks.fi" });
 
 // Use it in your schema
 export const tasks = sqliteTable(
@@ -31,7 +35,8 @@ export const tasks = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     title: text("title").notNull(),
-    fi: text("fi").notNull().$type<FractionalIndexOf<typeof tasksFraci>>(),
+    fi: text("fi").notNull().$type<FractionalIndexOf<typeof tasksFraci>>(), // For string-based
+    // fi: blob("fi", { mode: "buffer" }).notNull().$type<FractionalIndexOf<typeof tasksFraci>>(), // For binary-based
     userId: integer("user_id").notNull(),
   },
   (t) => [uniqueIndex("tasks_user_id_fi_idx").on(t.userId, t.fi)]
@@ -79,12 +84,24 @@ See the detailed examples below for more information.
 ## Key Features
 
 - **Fractional indexing** with arbitrary base characters
+- **Binary-based fractional indexing** - More efficient storage and processing using `Uint8Array`
 - **ORM integrations** - First-class support for Drizzle ORM and Prisma ORM with human-friendly and strongly typed APIs
 - **Regeneration on conflict** - Automatic regeneration of fractional indices on conflict
-- **TypeScript support** - Strongly typed APIs with branded types for added protection
+- **TypeScript support** - Strongly typed APIs with branded types (type safety technique to prevent mixing different types) for added protection
 - **High performance** - Optimized for performance with minimal overhead
 - **Smaller bundle size** - Fully tree-shakable
 - **Zero dependencies** - No dependencies, not even on Node.js
+
+### String vs Binary Comparison
+
+| Feature              | String-based                          | Binary-based                             |
+| -------------------- | ------------------------------------- | ---------------------------------------- |
+| **Storage**          | Stored as text strings                | Stored as binary data (`Uint8Array`)     |
+| **Performance**      | Good                                  | Better (faster comparisons, less memory) |
+| **Bundle Size**      | 1.88 KiB (Core-only, gzipped)         | 1.40 KiB (Core-only, gzipped)            |
+| **Database Column**  | `text` or `varchar`                   | `blob` or `bytea`                        |
+| **Visual Debugging** | Easier (human-readable)               | Harder (requires conversion)             |
+| **Configuration**    | Requires `digitBase` and `lengthBase` | Simpler configuration                    |
 
 ### Bundle Sizes
 
@@ -105,20 +122,21 @@ Run `bun run build-examples` to see the bundle sizes for each example.
 
 ### Preventing Cross-Group Operations
 
-- **IMPORTANT:** Never accept user input directly as a fractional index. Instead, use fraci's built-in ORM integrations which safely query fractional indices via cursors (record IDs).
-- **IMPORTANT:** Always filter by group columns (e.g., `userId`) when updating items to prevent cross-group operations.
+- **⚠️ IMPORTANT:** Never accept user input directly as a fractional index. Instead, use fraci's built-in ORM integrations which safely query fractional indices via cursors (record IDs).
+- **⚠️ IMPORTANT:** Always filter by group columns (e.g., `userId`) when updating items to prevent cross-group operations.
 - The examples in this README demonstrate this pattern with `where` clauses that include both ID and group columns.
 
 ### Type Safety
 
-- Fraci uses branded types to prevent confusion between fractional indices from different columns.
+- Fraci uses branded types (a TypeScript technique that adds a unique "brand" to types) to prevent confusion between fractional indices from different columns.
 - This provides compile-time protection against mixing indices from different contexts.
 
 ### Protection Against Index Expansion Attacks
 
-- Fractional indices can grow in length through repeated operations.
-- Fraci includes a configurable `maxLength` parameter (default: 50) to prevent malicious users from creating excessively long indices.
-- When this limit is exceeded, an exception is thrown.
+- Fractional indices can grow in length through repeated operations, especially when repeatedly inserting between the same two indices.
+- As shown in the test at the bottom of `fractional-indexing-binary.test.ts`, a malicious user could intentionally create very long indices by repeatedly moving items back and forth.
+- Fraci includes a configurable `maxLength` parameter (default: 50) to prevent these attacks from creating excessively long indices.
+- When this limit is exceeded, an exception is thrown, preventing database bloat and performance degradation.
 
 ## Installation
 
@@ -150,15 +168,15 @@ See the `examples` directory for full examples.
 ```typescript
 import {
   BASE62,
-  fraci,
-  type AnyStringFractionalIndex,
+  fraciString,
+  type AnyStringFraci,
   type FractionalIndexOf,
 } from "fraci";
 import { defineDrizzleFraci } from "fraci/drizzle";
 
 // Define a utility function to create a fractional index column
-function fi<FractionalIndex extends AnyStringFractionalIndex>() {
-  return text().notNull().$type<FractionalIndex>();
+function fi<Fraci extends AnyStringFraci>(_fraci: () => Fraci) {
+  return text().notNull().$type<FractionalIndexOf<Fraci>>();
 }
 
 // Define your table with a fractional index column
@@ -168,7 +186,7 @@ export const articles = table(
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
     content: text().notNull(),
-    fi: fi<FractionalIndexOf<typeof fraciForArticles>>(), // Define the fractional index column
+    fi: fi(() => fraciForArticles), // Define the fractional index column
     userId: integer()
       .notNull()
       .references(() => users.id),
@@ -202,11 +220,48 @@ export const fiArticles = defineDrizzleFraci(
 > The fractional index column should be placed at the end of the compound index for optimal performance.
 
 > [!TIP]
-> To use a binary fractional index:
 >
-> - Use `AnyBinaryFractionalIndex` and `blob().notNull().$type<FractionalIndexOf<typeof fraciForArticles>>()` for the column definition
-> - Replace `fraciString` with `fraciBinary`
-> - Remove `digitBase` and `lengthBase` from the fraci configuration
+> **Using Binary Fractional Index with Drizzle ORM**
+>
+> For more efficient storage and processing, you can use the binary-based fractional index:
+>
+> ```typescript
+> import {
+>   fraciBinary,
+>   type AnyBinaryFraci,
+>   type FractionalIndexOf,
+> } from "fraci";
+>
+> // Define a utility function to create a binary fractional index column
+> function fi<Fraci extends AnyBinaryFraci>(_fraci: () => Fraci) {
+>   return blob({ mode: "buffer" }).notNull().$type<FractionalIndexOf<Fraci>>();
+> }
+>
+> // Create a binary fraci instance
+> const fraciForArticles = fraciBinary({
+>   brand: "drizzle.articles.fi", // Brand the fractional index type
+>   maxRetries: 5, // Maximum number of retries on conflict (default: 5)
+>   maxLength: 50, // Maximum length to prevent attacks (default: 50)
+> });
+>
+> // Use it in your table definition
+> export const articles = table(
+>   "articles",
+>   {
+>     // ...other columns
+>     fi: fi(() => fraciForArticles), // Binary fractional index column
+>     // ...other columns
+>   }
+>   // ...rest of the table definition
+> );
+> ```
+>
+> The binary implementation:
+>
+> - Uses `Uint8Array` instead of strings for more efficient storage and processing
+> - Doesn't require `digitBase` and `lengthBase` parameters
+> - Has smaller bundle size (see [Bundle Sizes section](#bundle-sizes))
+> - Works with the same API as the string-based implementation
 
 #### 2. CRUD operations with Drizzle ORM
 
@@ -350,6 +405,25 @@ model Article {
 }
 ```
 
+> [!TIP]
+>
+> **Using Binary Fractional Index with Prisma ORM**
+>
+> To use binary fractional index with Prisma ORM, define your schema with a `Bytes` type:
+>
+> ```prisma
+> model Article {
+>   id Int @id @default(autoincrement())
+>   title String
+>   content String
+>   fi Bytes  // Binary Fractional Index
+>   userId Int
+>   user User @relation(fields: [userId], references: [id])
+>
+>   @@unique([userId, fi])
+> }
+> ```
+
 #### 2. Configure the Prisma extension
 
 ```typescript
@@ -366,12 +440,39 @@ const prisma = new PrismaClient().$extends(
         digitBase: BASE62, // Determines the radix of the fractional index
         lengthBase: BASE62, // Used to represent the length of the integer part
       },
-    } as const,
+    },
     maxRetries: 5, // Maximum number of retries on conflict (default: 5)
     maxLength: 50, // Maximum length to prevent attacks (default: 50)
   })
 );
 ```
+
+> [!TIP]
+>
+> **Using Binary Fractional Index with Prisma Extension**
+>
+> To configure the Prisma extension for binary fractional indexing:
+>
+> ```typescript
+> import { PrismaClient } from "@prisma/client";
+> import { prismaFraci } from "fraci/prisma";
+>
+> const prisma = new PrismaClient().$extends(
+>   prismaFraci({
+>     fields: {
+>       // Define the binary fractional index column
+>       "article.fi": {
+>         group: ["userId"], // Group columns
+>         type: "binary", // Specify binary type instead of digitBase/lengthBase
+>       },
+>     },
+>     maxRetries: 5, // Maximum number of retries on conflict
+>     maxLength: 50, // Maximum length to prevent attacks
+>   })
+> );
+> ```
+>
+> The usage pattern remains the same as with string-based indices, but with improved performance and smaller storage requirements.
 
 #### 3. CRUD operations with Prisma ORM
 
@@ -489,31 +590,59 @@ async function remove() {
 
 Fractional indexing allows for inserting items between existing items without reindexing:
 
+### String-based Example (with BASE62)
+
 ```text
-A (index: "a") --- B (index: "c")
-                |
-                +--- New Item (index: "b")
+A (index: "V0") --- B (index: "V1")
+                 |
+                 +--- New Item (index: "V0V")
 ```
 
-When you need to insert between A and B, fraci generates a new index that sorts lexicographically between them. If you need to insert between A and the new item:
+When you need to insert between A and B, fraci generates a new index that sorts lexicographically (in dictionary order) between them. If you need to insert between A and the new item:
 
 ```text
-A (index: "a") --- New Item (index: "b") --- B (index: "c")
-                |
-                +--- Another Item (index: "a5")
+A (index: "V0") --- New Item (index: "V0V") --- B (index: "V1")
+                 |
+                 +--- Another Item (index: "V0F")
+```
+
+### Binary-based Example
+
+```text
+A (index: [0x80, 0x00]) --- B (index: [0x80, 0x01])
+                          |
+                          +--- New Item (index: [0x80, 0x00, 0x80])
+```
+
+When you need to insert between A and the new item:
+
+```text
+A ([0x80, 0x00]) --- New Item ([0x80, 0x00, 0x80]) --- B ([0x80, 0x01])
+                  |
+                  +--- Another Item ([0x80, 0x00, 0x40])
 ```
 
 Fraci handles the generation of these indices automatically, with conflict resolution and type safety.
 
-> [!NOTE]
-> The indices shown in these examples ("a", "b", "c", "a5") are simplified for illustrative purposes only. The actual indices generated by the library will have a different format based on your chosen character base and will include length encoding characters. For example, with the default BASE62 configuration, actual indices might look more like "V0", "V1", "V2", "V0V", etc.
-
 ## Performance Considerations
 
-- The compound index structure (`[groupId, fi]`) is optimized for both uniqueness and query performance
-- Using larger character sets (BASE62, BASE95) results in shorter indices, reducing storage requirements
-- The library is designed to minimize allocations and computations during index generation
-- For optimal performance in high-concurrency scenarios, consider [skipping indices randomly](#skipping-indices-randomly)
+### Key Performance Optimizations
+
+- **Database Structure:** The compound index structure (`[groupId, fi]`) is optimized for both uniqueness and query performance
+- **Character Sets:** Using larger character sets (BASE62, BASE95) results in shorter indices, reducing storage requirements
+- **Binary vs String:** Binary-based fractional indexing provides significantly better performance and smaller storage footprint compared to string-based indexing
+- **Bundle Size:** Use `fraciBinary` or `fraciString` instead of `fraci` for instantiation to reduce bundle size
+- **Efficient Implementation:** The library is designed to minimize allocations and computations during index generation
+- **Concurrency:** For optimal performance in high-concurrency scenarios, consider [skipping indices randomly](#skipping-indices-randomly)
+
+### Performance Impact of Implementation Choices
+
+| Choice            | Impact                                                                            |
+| ----------------- | --------------------------------------------------------------------------------- |
+| Binary vs String  | Binary implementation is ~25% smaller and processes faster                        |
+| Compound Index    | Ensures efficient queries when filtering by group and sorting by index            |
+| Index Length      | Shorter indices (from larger character sets) improve storage and comparison speed |
+| Conflict Handling | Automatic regeneration with retry limits prevents performance degradation         |
 
 ## Skipping Indices Randomly
 
