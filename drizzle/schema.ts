@@ -62,13 +62,10 @@ export const articles = sqliteTable(
 );
 
 // Here, we create a fraci instance for the articles table.
-const fraciForArticles = fraci<
-  typeof BASE36L, // Digit base
-  typeof BASE26L, // Length base
-  "drizzle.article.fi" // Branding string. Any string is fine.
->({
-  digitBase: BASE36L,
-  lengthBase: BASE26L,
+const fraciForArticles = fraci({
+  brand: "drizzle.article.fi", // Branding string. Any string is fine.
+  lengthBase: BASE26L, // Length base
+  digitBase: BASE36L, // Digit base
 });
 
 export const fiArticles = defineDrizzleFraci(
@@ -101,13 +98,10 @@ export const photos = sqliteTable(
   ]
 );
 
-const fraciForPhotos = fraci<
-  typeof BASE36L,
-  typeof BASE26L,
-  "drizzle.photo.fi"
->({
-  digitBase: BASE36L,
+const fraciForPhotos = fraci({
+  brand: "drizzle.photo.fi",
   lengthBase: BASE26L,
+  digitBase: BASE36L,
 });
 
 export const fiPhotos = defineDrizzleFraci(
@@ -155,22 +149,16 @@ export const tagsOnPhotos = sqliteTable(
   ]
 );
 
-const fraciForPhotoFIInTagsOnPhotos = fraci<
-  typeof BASE95,
-  typeof BASE95,
-  "drizzle.tagsOnPhotos.photo_fi"
->({
-  digitBase: BASE95,
+const fraciForPhotoFIInTagsOnPhotos = fraci({
+  brand: "drizzle.tagsOnPhotos.photo_fi",
   lengthBase: BASE95,
+  digitBase: BASE95,
 });
 
-const fraciForTagFIInTagsOnPhotos = fraci<
-  typeof BASE95,
-  typeof BASE95,
-  "drizzle.tagsOnPhotos.tag_fi"
->({
-  digitBase: BASE95,
+const fraciForTagFIInTagsOnPhotos = fraci({
+  brand: "drizzle.tagsOnPhotos.tag_fi",
   lengthBase: BASE95,
+  digitBase: BASE95,
 });
 
 export const fiTagsInTagsOnPhotos = defineDrizzleFraci(
@@ -202,13 +190,10 @@ export const exampleItems = sqliteTable(
   (table) => [uniqueIndex("group_id_fi_idx").on(table.groupId, table.fi)]
 );
 
-const fraciForExampleItem = fraci<
-  typeof BASE62,
-  typeof BASE62,
-  "drizzle.exampleItem.fi"
->({
-  digitBase: BASE62,
+const fraciForExampleItem = fraci({
+  brand: "drizzle.exampleItem.fi",
   lengthBase: BASE62,
+  digitBase: BASE62,
 });
 
 export const fiExampleItems = defineDrizzleFraci(

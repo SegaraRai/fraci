@@ -7,11 +7,17 @@ import type { QualifiedFields } from "./prisma-types.js";
  *
  * @example { group: ["userId", "title"], digitBase: "0123456789", lengthBase: "0123456789" }, where T = "userId" | "title"
  */
-export type FieldOptions<T extends string = string> = {
-  readonly group: readonly T[];
-  readonly digitBase: string;
-  readonly lengthBase: string;
-};
+export type FieldOptions<T extends string = string> =
+  | {
+      readonly type: "binary";
+      readonly group: readonly T[];
+    }
+  | {
+      readonly type?: "string";
+      readonly group: readonly T[];
+      readonly digitBase: string;
+      readonly lengthBase: string;
+    };
 
 /**
  * The record of the fractional index fields.

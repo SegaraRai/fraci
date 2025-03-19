@@ -1,5 +1,10 @@
 import type { Column, ColumnBaseConfig, Table } from "drizzle-orm";
-import type { AnyFraci, AnyFractionalIndex, FractionalIndexOf } from "../types";
+import type { AnyFraci } from "../factory.js";
+import type {
+  AnyBinaryFractionalIndex,
+  AnyFractionalIndex,
+} from "../lib/types.js";
+import type { FractionalIndexOf } from "../types.js";
 
 /**
  * Represents a Drizzle ORM column that stores a fractional index.
@@ -10,7 +15,13 @@ import type { AnyFraci, AnyFractionalIndex, FractionalIndexOf } from "../types";
  */
 export type DrizzleFraciColumn<
   FI extends AnyFractionalIndex = AnyFractionalIndex
-> = Column<ColumnBaseConfig<"string", string>, object> & {
+> = Column<
+  ColumnBaseConfig<
+    FI extends AnyBinaryFractionalIndex ? "buffer" : "string",
+    string
+  >,
+  object
+> & {
   _: { data: FI };
 };
 

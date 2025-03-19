@@ -1,5 +1,6 @@
 import type { Column, Table } from "drizzle-orm";
-import type { AnyFraci, FractionalIndexOf } from "../types.js";
+import type { AnyFraci } from "../factory.js";
+import type { FractionalIndexOf } from "../types.js";
 import type { DrizzleFraciColumn, DrizzleFraciConfig } from "./types.js";
 
 /**
@@ -32,6 +33,6 @@ export function defineDrizzleFraci<
   column: FraciColumn,
   group: Group,
   cursor: Cursor
-): NoInfer<DrizzleFraciConfig<F, T, FraciColumn, Group, Cursor>> {
+): DrizzleFraciConfig<F, T, FraciColumn, Group, Cursor> {
   return { fraci, table, column, group, cursor };
 }

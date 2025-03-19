@@ -51,8 +51,10 @@ type ModelFieldNameByType<M extends ModelKey, T> = {
  *
  * @example "id" | "title" | "content" | "fi" | "userId", where M = "article"
  */
-type SerializableModelFieldName<M extends ModelKey> =
-  ModelFieldNameByType<M, boolean | bigint | number | string>;
+type SerializableModelFieldName<M extends ModelKey> = ModelFieldNameByType<
+  M,
+  boolean | bigint | number | string
+>;
 
 /**
  * A union of the field names of a model that are of type `string`.
@@ -64,6 +66,18 @@ type SerializableModelFieldName<M extends ModelKey> =
 export type StringModelFieldName<M extends ModelKey> = ModelFieldNameByType<
   M,
   string
+>;
+
+/**
+ * A union of the field names of a model that are of type `Uint8Array`.
+ *
+ * @template M The model name
+ *
+ * @example "title" | "content" | "fi", where M = "User"
+ */
+export type BinaryModelFieldName<M extends ModelKey> = ModelFieldNameByType<
+  M,
+  Uint8Array
 >;
 
 /**

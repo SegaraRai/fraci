@@ -5,17 +5,21 @@ import {
   createFraciCache,
   DEFAULT_MAX_LENGTH,
   DEFAULT_MAX_RETRIES,
-  fraci,
+  fraciBinary,
+  fraciString,
+  type AnyFraci,
 } from "../factory.js";
-import type { AnyFractionalIndex, FraciOf, FractionalIndex } from "../types.js";
+import type { AnyFractionalIndex, FractionalIndex } from "../lib/types.js";
+import type { FraciOf } from "../types.js";
 import {
   isIndexConflictError,
   type PrismaClientConflictError,
 } from "./common.js";
-import { EXTENSION_NAME } from "./config.js";
+import { EXTENSION_NAME } from "./constants.js";
 import type {
   AllModelFieldName,
   AnyPrismaClient,
+  BinaryModelFieldName,
   ModelKey,
   ModelScalarPayload,
   QueryArgs,
@@ -133,18 +137,30 @@ type FraciForPrismaInternal<
 type FraciForPrismaByFieldOptions<
   Options extends FieldOptions,
   Model extends ModelKey,
-  Field extends StringModelFieldName<Model>
+  Field extends BinaryModelFieldName<Model> | StringModelFieldName<Model>
 > = FraciForPrismaInternal<
   Model,
   Pick<
     ModelScalarPayload<Model>,
     Extract<Options["group"][number], AllModelFieldName<Model>>
   >,
-  FractionalIndex<
-    Options["digitBase"],
-    Options["lengthBase"],
-    PrismaBrand<Model, Field>
-  >
+  Field extends BinaryModelFieldName<Model>
+    ? Options extends { readonly type: "binary" }
+      ? FractionalIndex<Options, PrismaBrand<Model, Field>>
+      : never
+    : Options extends {
+        readonly lengthBase: string;
+        readonly digitBase: string;
+      }
+    ? FractionalIndex<
+        {
+          readonly type: "string";
+          readonly lengthBase: Options["lengthBase"];
+          readonly digitBase: Options["digitBase"];
+        },
+        PrismaBrand<Model, Field>
+      >
+    : never
 >;
 
 /**
@@ -180,7 +196,9 @@ type FieldsUnion<Options extends PrismaFraciOptions> = {
  */
 type PerModelFieldInfo<Options extends PrismaFraciOptions> = {
   [M in ModelKey]: {
-    [F in StringModelFieldName<M> as `${M}.${F}` extends FieldsUnion<Options>[0]
+    [F in
+      | BinaryModelFieldName<M>
+      | StringModelFieldName<M> as `${M}.${F}` extends FieldsUnion<Options>[0]
       ? F
       : never]: {
       readonly helper: Options["fields"][`${M}.${F}`] extends FieldOptions
@@ -245,9 +263,10 @@ export function prismaFraci<Options extends PrismaFraciOptions>({
     const helperMap = new Map<string, AnyFraciForPrisma>();
 
     // Process each field configuration from the options
-    for (const [modelAndField, { lengthBase, digitBase }] of Object.entries(
-      fields
-    ) as [string, FieldOptions][]) {
+    for (const [modelAndField, config] of Object.entries(fields) as [
+      string,
+      FieldOptions
+    ][]) {
       // Split the "model.field" string into separate parts
       const [model, field] = modelAndField.split(".", 2) as [ModelKey, string];
 
@@ -260,15 +279,20 @@ export function prismaFraci<Options extends PrismaFraciOptions>({
       }
 
       // Create the base fractional indexing helper
-      const helper = fraci(
-        {
-          digitBase,
-          lengthBase,
-          maxLength,
-          maxRetries,
-        },
-        cache // Share the cache for better performance
-      );
+      const helper =
+        config.type === "binary"
+          ? fraciBinary({
+              maxLength,
+              maxRetries,
+            })
+          : fraciString(
+              {
+                ...config,
+                maxLength,
+                maxRetries,
+              },
+              cache
+            );
 
       /**
        * Internal function to retrieve indices for positioning items.
@@ -337,7 +361,7 @@ export function prismaFraci<Options extends PrismaFraciOptions>({
 
       // Create an enhanced helper with Prisma-specific methods
       const helperEx: AnyFraciForPrisma = {
-        ...helper, // Include all methods from the base fraci helper
+        ...(helper as AnyFraci), // Include all methods from the base fraci helper
         isIndexConflictError: (
           error: unknown
         ): error is PrismaClientConflictError =>

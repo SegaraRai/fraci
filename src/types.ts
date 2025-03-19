@@ -1,19 +1,7 @@
-import type { Fraci } from "./factory.js";
-import type { FractionalIndex } from "./lib/types.js";
+import type { AnyFraci, Fraci } from "./factory.js";
+import type { AnyFractionalIndex, FractionalIndex } from "./lib/types.js";
 
 export type * from "./lib/types.js";
-
-/**
- * Type alias for any Fraci instance with any digit base, length base, and brand.
- * This is useful for cases where the specific parameters don't matter.
- */
-export type AnyFraci = Fraci<string, string, any>;
-
-/**
- * Type alias for any fractional index with any digit base, length base, and brand.
- * This is useful for cases where the specific parameters don't matter.
- */
-export type AnyFractionalIndex = FractionalIndex<string, string, any>;
 
 /**
  * Extracts the Fraci type from a fractional index type.
@@ -23,11 +11,10 @@ export type AnyFractionalIndex = FractionalIndex<string, string, any>;
  * @template F - The fractional index type to extract from
  */
 export type FraciOf<F extends AnyFractionalIndex> = F extends FractionalIndex<
-  infer D,
-  infer L,
+  infer B,
   infer X
 >
-  ? Fraci<D, L, X>
+  ? Fraci<B, X>
   : never;
 
 /**
@@ -38,9 +25,8 @@ export type FraciOf<F extends AnyFractionalIndex> = F extends FractionalIndex<
  * @template F - The Fraci type to extract from
  */
 export type FractionalIndexOf<F extends AnyFraci> = F extends Fraci<
-  infer D,
-  infer L,
+  infer B,
   infer X
 >
-  ? FractionalIndex<D, L, X>
+  ? FractionalIndex<B, X>
   : never;

@@ -19,9 +19,10 @@ import { BASE62, fraci, type FractionalIndexOf } from "fraci";
 import { defineDrizzleFraci, drizzleFraci } from "fraci/drizzle";
 
 // Create a fraci instance
-const tasksFraci = fraci<typeof BASE62, typeof BASE62, "tasks.fi">({
-  digitBase: BASE62,
+const tasksFraci = fraci({
+  brand: "tasks.fi",
   lengthBase: BASE62,
+  digitBase: BASE62,
 });
 
 // Use it in your schema
@@ -146,13 +147,13 @@ See the `examples` directory for full examples.
 import {
   BASE62,
   fraci,
-  type AnyFractionalIndex,
+  type AnyStringFractionalIndex,
   type FractionalIndexOf,
 } from "fraci";
 import { defineDrizzleFraci } from "fraci/drizzle";
 
-// Utility function for fractional index columns
-function fi<FractionalIndex extends AnyFractionalIndex>() {
+// Define a utility function to create a fractional index column
+function fi<FractionalIndex extends AnyStringFractionalIndex>() {
   return text().notNull().$type<FractionalIndex>();
 }
 
@@ -163,7 +164,7 @@ export const articles = table(
     id: integer().primaryKey({ autoIncrement: true }),
     title: text().notNull(),
     content: text().notNull(),
-    fi: fi<FractionalIndexOf<typeof fraciForArticles>, "fi">("fi"),
+    fi: fi<FractionalIndexOf<typeof fraciForArticles>>(), // Define the fractional index column
     userId: integer()
       .notNull()
       .references(() => users.id),
@@ -175,13 +176,10 @@ export const articles = table(
 );
 
 // Create a fraci instance
-const fraciForArticles = fraci<
-  typeof BASE62,
-  typeof BASE62,
-  "drizzle.articles.fi"
->({
-  digitBase: BASE62, // Determines the radix of the fractional index (second character onward)
+const fraciForArticles = fraciString({
+  brand: "drizzle.articles.fi", // Brand the fractional index type
   lengthBase: BASE62, // Used to represent the length of the integer part (first character)
+  digitBase: BASE62, // Determines the radix of the fractional index (second character onward)
   maxRetries: 5, // Maximum number of retries on conflict (default: 5)
   maxLength: 50, // Maximum length to prevent attacks (default: 50)
 });
@@ -198,6 +196,13 @@ export const fiArticles = defineDrizzleFraci(
 
 > [!TIP]
 > The fractional index column should be placed at the end of the compound index for optimal performance.
+
+> [!TIP]
+> To use a binary fractional index:
+>
+> - Use `AnyBinaryFractionalIndex` and `blob().notNull().$type<FractionalIndexOf<typeof fraciForArticles>>()` for the column definition
+> - Replace `fraciString` with `fraciBinary`
+> - Remove `digitBase` and `lengthBase` from the fraci configuration
 
 #### 2. CRUD operations with Drizzle ORM
 

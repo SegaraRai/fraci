@@ -1,6 +1,6 @@
 import { and, sql } from "drizzle-orm";
 import type { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
-import type { AnyFractionalIndex as AFI } from "../types.js";
+import type { AnyFractionalIndex as AFI } from "../lib/types.js";
 import { equity, OPERATORS } from "./common.js";
 import type {
   DrizzleFraciConfig,

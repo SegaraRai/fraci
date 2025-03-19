@@ -1,5 +1,5 @@
 import { asc, desc, eq, gte, isNull, lte, sql, type Column } from "drizzle-orm";
-import type { AnyFractionalIndex as AFI } from "../types.js";
+import type { AnyFractionalIndex as AFI } from "../lib/types.js";
 
 /**
  * Creates a SQL condition for equality comparison that safely handles null and undefined values.

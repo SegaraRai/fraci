@@ -1,12 +1,12 @@
 /* A simple example of using Fraci without any ORM. We strongly recommend using our ORM integrations, as querying fractional indices manually can be error-prone. */
 
 import { zValidator } from "@hono/zod-validator";
-import { BASE62, fraci, type FractionalIndex } from "fraci";
+import { BASE62, fraci, type FractionalIndexOf } from "fraci";
 import { Hono } from "hono";
 import * as z from "zod";
 
 // Define the type for our fractional index
-type FI = FractionalIndex<typeof BASE62, typeof BASE62, "core.exampleItem.fi">;
+type FI = FractionalIndexOf<typeof fraciForExampleItem>;
 
 // Define the structure of our example item
 interface ExampleItem {
@@ -21,13 +21,10 @@ const exampleItems: ExampleItem[] = [];
 let nextId = 1;
 
 // Create a fraci instance for the example items
-const fraciForExampleItem = fraci<
-  typeof BASE62,
-  typeof BASE62,
-  "core.exampleItem.fi"
->({
-  digitBase: BASE62,
+const fraciForExampleItem = fraci({
+  base: "core.exampleItem.fi",
   lengthBase: BASE62,
+  digitBase: BASE62,
 });
 
 // Utility functions for querying the array

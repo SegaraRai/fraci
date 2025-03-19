@@ -343,7 +343,7 @@ test("What happens if a malicious user tries to generate long key?", () => {
   ] as const;
 
   let [a, b, c] = generateNKeysBetween(null, null, 3, ...args)!;
-  console.log(a.length, b.length, c.length);
+  console.log(`Initial lengths (String): ${a.length}, ${b.length}, ${c.length}`);
   for (let i = 0; i < 10000; i++) {
     const nextC = generateKeyBetween(a, b, ...args);
     if (!nextC) {
@@ -362,7 +362,7 @@ test("What happens if a malicious user tries to generate long key?", () => {
     b = nextB;
   }
 
-  console.log(a.length, b.length, c.length);
+  console.log(`Final lengths (String): ${a.length}, ${b.length}, ${c.length}`);
 
   // There are no effective ways to prevent this attack.
   // The only way is to limit the length of the key.

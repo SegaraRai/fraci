@@ -5,12 +5,6 @@ describe("fraci", () => {
   const digitBase = "0123456789";
   const lengthBase = "0123456789";
 
-  it("should create a fraci instance with default options", () => {
-    const indexing = fraci({ digitBase, lengthBase });
-    expect(indexing.digitBase).toBe(digitBase);
-    expect(indexing.lengthBase).toBe(lengthBase);
-  });
-
   it("should generate a key between two indices", () => {
     const indexing = fraci({ digitBase, lengthBase });
     const generator = indexing.generateKeyBetween(null, null);
