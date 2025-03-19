@@ -633,7 +633,7 @@ Fraci handles the generation of these indices automatically, with conflict resol
 - **Binary vs String:** Binary-based fractional indexing provides significantly better performance and smaller storage footprint compared to string-based indexing
 - **Bundle Size:** Use `fraciBinary` or `fraciString` instead of `fraci` for instantiation to reduce bundle size
 - **Efficient Implementation:** The library is designed to minimize allocations and computations during index generation
-- **Concurrency:** For optimal performance in high-concurrency scenarios, consider [skipping indices randomly](#skipping-indices-randomly)
+- **Concurrency:** For optimal performance in high-concurrency scenarios, consider [skipping indices for collision avoidance](#skipping-indices-for-collision-avoidance)
 
 ### Performance Impact of Implementation Choices
 
@@ -644,13 +644,26 @@ Fraci handles the generation of these indices automatically, with conflict resol
 | Index Length      | Shorter indices (from larger character sets) improve storage and comparison speed |
 | Conflict Handling | Automatic regeneration with retry limits prevents performance degradation         |
 
-## Skipping Indices Randomly
+## Skipping Indices for Collision Avoidance
 
-In highly concurrent environments, you may experience index conflicts when multiple operations try to insert items at the same position simultaneously. Since fractional indices are generated in a deterministic sequence, concurrent operations will attempt to use the same index value.
+In concurrent environments, index conflicts occur when multiple operations try to insert items at the same position simultaneously. Since fractional indices are generated in a deterministic sequence, concurrent operations will attempt to use the same index value, resulting in conflicts.
 
-For example, the first fractional index generated between `a` and `b` is always `a5` (see the note in the [How It Works](#how-it-works) section about simplified indices). If multiple operations try to insert between `a` and `b` at the same time, they'll all try to use `a5`, resulting in conflicts.
+Fraci provides a built-in `skip` parameter in both `generateKeyBetween` and `generateNKeysBetween` methods to address this issue. This parameter allows operations to use different indices in the sequence, reducing or eliminating conflicts.
 
-To reduce conflicts, fraci provides a built-in `skip` parameter in both `generateKeyBetween` and `generateNKeysBetween` methods. This parameter is implemented directly in the methods to work correctly with the `maxRetries` parameter:
+### How Index Skipping Works
+
+The skipping technique works because:
+
+1. The fractional index generator produces a sequence of valid indices
+2. Any index in this sequence is valid for insertion at the desired position
+3. By skipping ahead in the sequence, different operations use different indices
+4. If conflicts still occur, the normal conflict resolution mechanism handles them
+
+There are two approaches to index skipping:
+
+### Deterministic Skipping with Participant IDs
+
+**When pre-coordination is possible**, this approach guarantees collision avoidance by assigning each participant a unique sequential identifier and deterministically skipping based on this identifier:
 
 ```typescript
 // Get indices for the position where we want to insert
@@ -659,17 +672,43 @@ if (!indices) {
   throw new Error("Reference item not found");
 }
 
-// Skip a random number of indices to reduce collision probability
-const skipCount = Math.floor(Math.random() * 10); // Skip 0-9 indices (adjust as needed)
+// participantId: unique identifier for each participant (0, 1, 2, ...)
+const skipCount = participantId;
+for (const fi of afi.generateKeyBetween(...indices, skipCount)) {
+  // Each participant uses a different index in the sequence
+  // No conflict handling needed if all participants use their assigned ID
+  await db.insert(items).values({ title: "New Item", fi, userId: 1 });
+  return;
+}
+```
+
+This approach:
+
+- Eliminates randomness
+- Guarantees no collisions between participants
+- Is ideal when participant identities are known in advance
+- Provides predictable index generation
+
+### Random Skipping for Uncoordinated Environments
+
+When pre-coordination isn't possible, random skipping provides a probabilistic approach:
+
+```typescript
+// Get indices for the position where we want to insert
+const indices = await afi.indicesForAfter({ userId: 1 }, { id: 4 });
+if (!indices) {
+  throw new Error("Reference item not found");
+}
+
+// Skip a random number of indices
+const skipCount = Math.floor(Math.random() * 10); // Skip 0-9 indices
 for (const fi of afi.generateKeyBetween(...indices, skipCount)) {
   try {
-    // Insert with the randomly advanced index
     await db.insert(items).values({ title: "New Item", fi, userId: 1 });
     return; // Success
   } catch (error) {
-    // Still handle potential conflicts
     if (isIndexConflictError(error)) {
-      // Continue with normal conflict resolution
+      // Still need conflict resolution
       continue;
     }
     throw error;
@@ -679,25 +718,20 @@ for (const fi of afi.generateKeyBetween(...indices, skipCount)) {
 throw new Error("Failed to generate a new fractional index.");
 ```
 
-This technique works because:
+This approach:
 
-1. The fractional index generator produces a sequence of valid indices
-2. Any index in this sequence is valid for insertion at the desired position
-3. By randomly skipping ahead, different concurrent operations are likely to use different indices
-4. Even if conflicts still occur, the normal conflict resolution mechanism will handle them
+- Reduces (but doesn't eliminate) the probability of conflicts
+- Works without coordination between participants
+- Still requires conflict handling as a fallback
 
-This approach is particularly effective in scenarios with many concurrent users modifying the same ordered list.
+### Efficiency Considerations
 
-### Trade-offs of Skipping Indices
+For optimal efficiency:
 
-While randomly skipping indices reduces conflicts in concurrent environments, it does come with a trade-off:
-
-- In environments where collisions rarely occur, skipping indices causes the number of digits in the indices to increase faster than necessary
-- This is because the second and subsequent indices in a sequence always have more digits than the first index
-- As a result, index space is consumed approximately twice as quickly when skipping is used
-- However, in high-concurrency environments where collisions are common, this disadvantage is minimal since you would need to use the longer indices anyway after the first collision
-
-Consider your specific use case when deciding whether to implement random index skipping.
+- Keep the number of indices skipped below the encoding radix being used (e.g., less than 36 for BASE36, less than 62 for BASE62, less than 256 for binary encoding)
+- Be aware that skipping indices causes the number of digits to increase faster than necessary
+- In high-concurrency environments, this trade-off is acceptable since you would need longer indices anyway after conflicts
+- Consider your specific use case when choosing between deterministic and random skipping
 
 ## Troubleshooting
 
@@ -706,7 +740,7 @@ Consider your specific use case when deciding whether to implement random index 
 If you're experiencing frequent index conflicts:
 
 - Ensure your compound unique indices are correctly defined
-- Implement the [skipping indices randomly](#skipping-indices-randomly) technique
+- Implement the [skipping indices for collision avoidance](#skipping-indices-for-collision-avoidance) technique
 - Verify that your conflict detection logic is working correctly
 
 ### Type Errors
