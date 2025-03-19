@@ -250,7 +250,7 @@ type AnyFraciForPrisma = FraciForPrismaInternal<
  * @throws {Error} When field information for a specified model.field cannot be retrieved
  * @throws {Error} When the digit or length base strings are invalid
  */
-export function prismaFraci<Options extends PrismaFraciOptions>({
+export function prismaFraci<const Options extends PrismaFraciOptions>({
   fields,
   maxLength = DEFAULT_MAX_LENGTH,
   maxRetries = DEFAULT_MAX_RETRIES,

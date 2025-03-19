@@ -35,7 +35,7 @@ const prisma = basePrisma.$extends(
         digitBase: BASE95,
         lengthBase: BASE95,
       },
-    } as const,
+    },
   })
 );
 
@@ -197,7 +197,7 @@ test("should throw error if invalid column specified", () => {
             digitBase: BASE36L,
             lengthBase: BASE26L,
           },
-        } as const,
+        },
       })
     )
   ).toThrowError(
@@ -214,7 +214,7 @@ test("should throw error if invalid column specified", () => {
             digitBase: BASE36L,
             lengthBase: BASE26L,
           },
-        } as const,
+        },
       })
     )
   ).toThrowError(
@@ -492,7 +492,7 @@ test("FraciForPrisma", () => {
         lengthBase: BASE95,
       },
     },
-  } as const);
+  });
 
   type AFraci = FraciForPrisma<typeof definition, "article.fi">;
   type AFI = FractionalIndexOf<AFraci>;

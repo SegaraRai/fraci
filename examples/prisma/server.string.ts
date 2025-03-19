@@ -18,7 +18,7 @@ const prisma = basePrisma.$extends(
         digitBase: BASE62,
         lengthBase: BASE62,
       },
-    } as const,
+    },
   })
 );
 

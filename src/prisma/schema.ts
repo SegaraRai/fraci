@@ -69,7 +69,7 @@ export interface PrismaFraciOptions {
  * @param options - The options for the fractional indexing extension
  * @returns The options object with default values applied
  */
-export function definePrismaFraci<Options extends PrismaFraciOptions>(
+export function definePrismaFraci<const Options extends PrismaFraciOptions>(
   options: Options
 ): Options {
   return options;

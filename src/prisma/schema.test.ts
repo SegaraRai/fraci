@@ -17,7 +17,7 @@ test("definePrismaFraci type check", () => {
           digitBase: BASE36L,
           lengthBase: BASE26L,
         },
-      } as const,
+      },
     })
   ).toEqual({
     fields: {
@@ -42,7 +42,7 @@ test("definePrismaFraci type check", () => {
         digitBase: BASE36L,
         lengthBase: BASE26L,
       },
-    } as const,
+    },
   });
 
   definePrismaFraci({
@@ -53,7 +53,7 @@ test("definePrismaFraci type check", () => {
         digitBase: BASE36L,
         lengthBase: BASE26L,
       },
-    } as const,
+    },
   });
 
   definePrismaFraci({
@@ -64,7 +64,7 @@ test("definePrismaFraci type check", () => {
         digitBase: BASE36L,
         lengthBase: BASE26L,
       },
-    } as const,
+    },
   });
 
   definePrismaFraci({
@@ -75,7 +75,7 @@ test("definePrismaFraci type check", () => {
         digitBase: BASE36L,
         lengthBase: BASE26L,
       },
-    } as const,
+    },
   });
 
   definePrismaFraci({
@@ -86,6 +86,6 @@ test("definePrismaFraci type check", () => {
         digitBase: BASE36L,
         lengthBase: BASE26L,
       },
-    } as const,
+    },
   });
 });

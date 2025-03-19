@@ -17,7 +17,7 @@ const prisma = basePrisma.$extends(
         group: ["groupId"],
         type: "binary",
       },
-    } as const,
+    },
   })
 );
 
