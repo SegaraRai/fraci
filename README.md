@@ -610,8 +610,8 @@ A (index: "V0") --- New Item (index: "V0V") --- B (index: "V1")
 
 ```text
 A (index: [0x80, 0x00]) --- B (index: [0x80, 0x01])
-                          |
-                          +--- New Item (index: [0x80, 0x00, 0x80])
+                         |
+                         +--- New Item (index: [0x80, 0x00, 0x80])
 ```
 
 When you need to insert between A and the new item:
