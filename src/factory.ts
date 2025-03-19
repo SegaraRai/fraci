@@ -146,11 +146,14 @@ export type FraciOptions<B extends FraciOptionsBase> = B & {
 
 export type BinaryFraciOptions = FraciOptions<{ readonly type: "binary" }>;
 
-export type StringFraciOptions<B extends [string, string]> = FraciOptions<{
-  readonly type?: "string";
-  readonly lengthBase: B[0];
-  readonly digitBase: B[1];
-}>;
+export type StringFraciOptions<
+  B extends {
+    readonly lengthBase: string;
+    readonly digitBase: string;
+  } = { readonly lengthBase: string; readonly digitBase: string }
+> = FraciOptions<B>;
+
+type BrandableOptions<T, X> = T & { readonly brand?: X };
 
 /**
  * Cache for storing computed values to improve performance.
@@ -211,10 +214,10 @@ function withCache<T>(
 export function fraciBinary<const X = unknown>({
   maxLength = DEFAULT_MAX_LENGTH,
   maxRetries = DEFAULT_MAX_RETRIES,
-}: Omit<
-  BinaryFraciOptions | (BinaryFraciOptions & { readonly base: X }),
-  "type"
-> = {}): Fraci<AnyBinaryFractionalIndexBase, X> {
+}: BrandableOptions<Omit<BinaryFraciOptions, "type">, X> = {}): Fraci<
+  AnyBinaryFractionalIndexBase,
+  X
+> {
   type F = FractionalIndex<AnyBinaryFractionalIndexBase, X>;
 
   return {
@@ -262,7 +265,7 @@ export function fraciBinary<const X = unknown>({
 }
 
 export function fraciString<
-  const B extends Extract<FraciOptionsBase, { readonly type?: "string" }>,
+  const B extends StringFraciOptions,
   const X = unknown
 >(
   {
@@ -270,7 +273,7 @@ export function fraciString<
     lengthBase,
     maxLength = DEFAULT_MAX_LENGTH,
     maxRetries = DEFAULT_MAX_RETRIES,
-  }: Omit<FraciOptions<B> | (FraciOptions<B> & { readonly brand: X }), "type">,
+  }: BrandableOptions<B, X>,
   cache?: FraciCache
 ): Fraci<FraciOptionsBaseToBase<B>, X> {
   type F = FractionalIndex<FraciOptionsBaseToBase<B>, X>;
