@@ -10,6 +10,19 @@ import {
 } from "./decimal-binary.js";
 
 /**
+ * Converts a Node.js Buffer to a Uint8Array if necessary.
+ * Our library is not compatible with Node.js Buffers due to [the difference of the `slice` method](https://nodejs.org/api/buffer.html#bufslicestart-end).
+ *
+ * @param value - The value to convert to a Uint8Array
+ * @returns The original value as a Uint8Array, or null if the value is null
+ */
+function forceUint8Array(value: Uint8Array | null): Uint8Array | null {
+  return value?.constructor.name === "Buffer"
+    ? new Uint8Array(value.buffer, value.byteOffset, value.length)
+    : value;
+}
+
+/**
  * Validates if a binary is a valid fractional index.
  * A valid fractional index must:
  * - Not be empty or equal to the smallest integer
@@ -183,7 +196,7 @@ export function generateKeyBetween(
     (b != null && !isValidFractionalIndex(b)) ||
     (a != null && b != null && compare(a, b) >= 0)
     ? undefined
-    : generateKeyBetweenUnsafe(a, b);
+    : generateKeyBetweenUnsafe(forceUint8Array(a), forceUint8Array(b));
 }
 
 /**
@@ -271,7 +284,7 @@ export function generateNKeysBetween(
     (b != null && !isValidFractionalIndex(b)) ||
     (a != null && b != null && compare(a, b) >= 0)
     ? undefined
-    : generateNKeysBetweenUnsafe(a, b, n);
+    : generateNKeysBetweenUnsafe(forceUint8Array(a), forceUint8Array(b), n);
 }
 
 /**
