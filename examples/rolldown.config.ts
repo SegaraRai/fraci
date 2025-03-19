@@ -3,13 +3,27 @@ import { gzipSync } from "node:zlib";
 import { defineConfig, type RolldownOptions } from "rolldown";
 
 function dumpSize(size: number): string {
-  return `${size}B (${(size / 1024).toFixed(2)} KiB)`;
+  return `${String(size).padStart(5)}B (${(size / 1024)
+    .toFixed(2)
+    .padStart(5)} KiB)`;
 }
 
 export default defineConfig(
-  ["core-only", "drizzle-orm", "drizzle-orm-sync", "prisma"].map(
+  [
+    "core-only/entrypoint.all",
+    "core-only/entrypoint.binary",
+    "core-only/server.string",
+    "drizzle-orm/entrypoint.all",
+    "drizzle-orm/server.binary",
+    "drizzle-orm/server.string",
+    "drizzle-orm-sync/entrypoint.all",
+    "drizzle-orm-sync/server.binary",
+    "drizzle-orm-sync/server.string",
+    "prisma/server.binary",
+    "prisma/server.string",
+  ].map(
     (entrypoint): RolldownOptions => ({
-      input: `examples/${entrypoint}/server.ts`,
+      input: `examples/${entrypoint}.ts`,
       external: [
         "bun",
         /^bun:/,
@@ -21,7 +35,7 @@ export default defineConfig(
       ],
       treeshake: true,
       output: {
-        dir: `examples-bundled/${entrypoint}`,
+        dir: `examples-bundled/${entrypoint.replace(/\W+/g, "-")}`,
         chunkFileNames: "[name].js",
         advancedChunks: {
           minSize: 0,
@@ -51,7 +65,7 @@ export default defineConfig(
           name: "show-size",
           async generateBundle(_options, bundle) {
             this.emitFile({
-              fileName: `__${entrypoint}__`,
+              fileName: `__${entrypoint.replace(/\W+/g, "_")}__`,
               type: "asset",
               source: "",
             });
@@ -81,7 +95,7 @@ export default defineConfig(
             });
 
             console.log(
-              `Fraci size for ${entrypoint}: raw: ${dumpSize(
+              `Fraci size for ${entrypoint.padEnd(32)}: raw: ${dumpSize(
                 fraciBundle.code.length
               )}, minified: ${dumpSize(
                 minified.code.length

@@ -91,11 +91,15 @@ See the detailed examples below for more information.
 For bundle size measurement, we use Rolldown for bundling and esbuild for minifying.
 Run `bun run build-examples` to see the bundle sizes for each example.
 
-| Integration     | Total Size (minified)     | Total Size (minified + gzipped) |
-| --------------- | ------------------------- | ------------------------------- |
-| **Core only**   | 4.51 KiB                  | **1.84 KiB**                    |
-| **Drizzle ORM** | 5.61 KiB (Core +1.10 KiB) | **2.29 KiB** (Core +0.45 KiB)   |
-| **Prisma ORM**  | 5.90 KiB (Core +1.39 KiB) | **2.48 KiB** (Core +0.64 KiB)   |
+| Integration              | Total Size (minified)     | Total Size (minified + gzipped) |
+| ------------------------ | ------------------------- | ------------------------------- |
+| **Core only (Binary)**   | 3.26 KiB                  | **1.40 KiB**                    |
+| **Core only (String)**   | 4.56 KiB                  | **1.88 KiB**                    |
+| **Core only (Both)**     | 7.69 KiB                  | **2.87 KiB**                    |
+| **Drizzle ORM (Binary)** | 4.36 KiB (Core +1.10 KiB) | **1.86 KiB** (Core +0.46 KiB)   |
+| **Drizzle ORM (String)** | 5.63 KiB (Core +1.07 KiB) | **2.32 KiB** (Core +0.44 KiB)   |
+| **Drizzle ORM (Both)**   | 8.66 KiB (Core +0.97 KiB) | **3.28 KiB** (Core +0.41 KiB)   |
+| **Prisma ORM (Both)**    | 8.97 KiB (Core +1.28 KiB) | **3.46 KiB** (Core +0.59 KiB)   |
 
 ## Security Considerations
 
