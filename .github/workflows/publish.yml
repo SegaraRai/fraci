@@ -28,19 +28,22 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: bun install
 
       - name: Build
         run: bun run build
 
-      - name: Type check
+      - name: Type Check
         run: bun run typecheck
 
       - name: Test
         run: bun test
 
-      - name: Package type check
+      - name: Run Benchmarks
+        run: bun run bench
+
+      - name: Package Type Check
         run: bun run attw
 
       - name: Build Docs
