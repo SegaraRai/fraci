@@ -49,7 +49,7 @@ export interface Fraci<B extends FractionalIndexBase, X> {
    *
    * @internal
    */
-  readonly brand?: X;
+  readonly brand?: X | undefined;
 
   /**
    * Generates a key between two existing keys.
@@ -100,7 +100,7 @@ export type AnyFraci = AnyBinaryFraci | AnyStringFraci;
 
 export type FraciOptionsBase =
   | {
-      readonly type?: "string";
+      readonly type?: "string" | undefined;
       /**
        * The character set used for encoding the length of the integer part.
        */
@@ -135,13 +135,13 @@ export type FraciOptions<B extends FraciOptionsBase> = B & {
    * Maximum allowed length for generated keys.
    * @default DEFAULT_MAX_LENGTH (50)
    */
-  readonly maxLength?: number;
+  readonly maxLength?: number | undefined;
 
   /**
    * Maximum number of retry attempts when generating keys.
    * @default DEFAULT_MAX_RETRIES (5)
    */
-  readonly maxRetries?: number;
+  readonly maxRetries?: number | undefined;
 };
 
 export type BinaryFraciOptions = FraciOptions<{ readonly type: "binary" }>;
@@ -153,7 +153,7 @@ export type StringFraciOptions<
   } = { readonly lengthBase: string; readonly digitBase: string }
 > = FraciOptions<B>;
 
-type BrandableOptions<T, X> = T & { readonly brand?: X };
+type BrandableOptions<T, X> = T & { readonly brand?: X | undefined };
 
 /**
  * Cache for storing computed values to improve performance.
@@ -170,8 +170,8 @@ export type FraciCache = Map<string, unknown> & { readonly __fraci__: never };
  * @example
  * ```typescript
  * const cache = createFraciCache();
- * const fraci1 = fraci({ digitBase: "0123456789", lengthBase: "abcdefghij" }, cache);
- * const fraci2 = fraci({ digitBase: "0123456789", lengthBase: "abcdefghij" }, cache);
+ * const fraci1 = fraciString({ digitBase: "0123456789", lengthBase: "abcdefghij" }, cache);
+ * const fraci2 = fraciString({ digitBase: "0123456789", lengthBase: "abcdefghij" }, cache);
  * // Both instances will share cached computations
  * ```
  */
@@ -235,10 +235,10 @@ function withCache<T>(
 export function fraciBinary<const X = unknown>({
   maxLength = DEFAULT_MAX_LENGTH,
   maxRetries = DEFAULT_MAX_RETRIES,
-}: BrandableOptions<Omit<BinaryFraciOptions, "type">, X> = {}): Fraci<
-  AnyBinaryFractionalIndexBase,
+}: BrandableOptions<
+  Omit<BinaryFraciOptions, "type"> & { readonly type?: "binary" | undefined },
   X
-> {
+> = {}): Fraci<AnyBinaryFractionalIndexBase, X> {
   type F = FractionalIndex<AnyBinaryFractionalIndexBase, X>;
 
   return {

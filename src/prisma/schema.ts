@@ -16,7 +16,7 @@ export type FieldOptions<
     readonly group: readonly T[];
   };
   readonly string: {
-    readonly type?: "string";
+    readonly type?: "string" | undefined;
     readonly group: readonly T[];
     readonly digitBase: string;
     readonly lengthBase: string;
@@ -29,10 +29,12 @@ export type FieldOptions<
  * @example { "article.fi": { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" } }
  */
 type FieldOptionsRecord = {
-  readonly [Q in QualifiedFields[0]]?: FieldOptions<
-    Extract<QualifiedFields, [Q, any, any]>[1],
-    Extract<QualifiedFields, [Q, any, any]>[2]
-  >;
+  readonly [Q in QualifiedFields[0]]?:
+    | FieldOptions<
+        Extract<QualifiedFields, [Q, any, any]>[1],
+        Extract<QualifiedFields, [Q, any, any]>[2]
+      >
+    | undefined;
 };
 
 /**
@@ -44,14 +46,14 @@ export interface PrismaFraciOptions {
    *
    * @default 5
    */
-  readonly maxRetries?: number;
+  readonly maxRetries?: number | undefined;
 
   /**
    * The maximum length of the fractional index.
    *
    * @default 50
    */
-  readonly maxLength?: number;
+  readonly maxLength?: number | undefined;
 
   /**
    * The fractional index fields.

@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { BASE36L } from "../bases.js";
-import { fraci } from "../factory.js";
+import { fraciString } from "../factory.js";
 import type { FractionalIndexOf } from "../types.js";
 import { drizzleFraci } from "./runtime.js";
 
@@ -20,7 +20,7 @@ describe("drizzleFraci with group columns", () => {
   });
 
   // Create fraci instance
-  const testFraci = fraci({
+  const testFraci = fraciString({
     digitBase: BASE36L,
     lengthBase: BASE36L,
   });
@@ -222,7 +222,7 @@ describe("drizzleFraci without group columns", () => {
   });
 
   // Create fraci instance
-  const noGroupFraci = fraci({
+  const noGroupFraci = fraciString({
     digitBase: BASE36L,
     lengthBase: BASE36L,
   });

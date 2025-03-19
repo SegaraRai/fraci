@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { BASE36L } from "../bases.js";
-import { fraci } from "../factory.js";
+import { fraciString } from "../factory.js";
 import type { FractionalIndex } from "../types.js";
 import { defineDrizzleFraci } from "./schema.js";
 
@@ -24,7 +24,7 @@ describe("defineDrizzleFraci", () => {
     });
 
     // Create a fraci instance
-    const testFraci = fraci({
+    const testFraci = fraciString({
       digitBase: BASE36L,
       lengthBase: BASE36L,
     });
@@ -70,7 +70,7 @@ describe("defineDrizzleFraci", () => {
 
     // Type check - should error if the fractional index is not the same as the fraci instance
     defineDrizzleFraci(
-      fraci({
+      fraciString({
         brand: "",
         lengthBase: BASE36L,
         digitBase: BASE36L,
