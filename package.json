@@ -43,7 +43,7 @@
     "bench": "bun run src/lib/fractional-indexing-string.bench.ts && bun run src/lib/fractional-indexing-binary.bench.ts",
     "build": "tsup && bun run scripts/fix-dts.ts",
     "build-examples": "rolldown -c examples/rolldown.config.ts",
-    "build-docs": "typedoc",
+    "build-docs": "typedoc && bun run scripts/copy-assets.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "attw": "attw --profile node16 --pack"
