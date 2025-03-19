@@ -146,12 +146,11 @@ export type FraciOptions<B extends FraciOptionsBase> = B & {
 
 export type BinaryFraciOptions = FraciOptions<{ readonly type: "binary" }>;
 
-export type StringFraciOptions<
-  B extends {
-    readonly lengthBase: string;
-    readonly digitBase: string;
-  } = { readonly lengthBase: string; readonly digitBase: string }
-> = FraciOptions<B>;
+export type StringFraciOptions = FraciOptions<{
+  readonly type?: "string" | undefined;
+  readonly lengthBase: string;
+  readonly digitBase: string;
+}>;
 
 type BrandableOptions<T, X> = T & { readonly brand?: X | undefined };
 
