@@ -77,7 +77,7 @@ export function isSmallestInteger(index: Uint8Array): boolean {
  * @returns A tuple containing the integer and fractional parts, or undefined if the index is invalid
  */
 export function splitParts(
-  index: Uint8Array
+  index: Uint8Array,
 ): [integer: Uint8Array, fractional: Uint8Array] | undefined {
   // Get the encoded length from the first character and convert to absolute value
   // Add 1 because the length includes the length character itself
@@ -106,7 +106,7 @@ export function splitParts(
  *   - undefined if the input is invalid
  */
 export function incrementInteger(
-  index: Uint8Array
+  index: Uint8Array,
 ): Uint8Array | null | undefined {
   if (!index.length) {
     return;
@@ -165,7 +165,7 @@ export function incrementInteger(
  *   - undefined if the input is invalid
  */
 export function decrementInteger(
-  index: Uint8Array
+  index: Uint8Array,
 ): Uint8Array | null | undefined {
   const intLengthSigned = getIntegerLengthSigned(index);
   if (Number.isNaN(intLengthSigned)) {
@@ -222,7 +222,7 @@ export function decrementInteger(
  */
 export function getMidpointFractional(
   a: Uint8Array,
-  b: Uint8Array | null
+  b: Uint8Array | null,
 ): Uint8Array | undefined {
   if (b != null && compare(a, b) >= 0) {
     // Precondition failed.
@@ -238,7 +238,7 @@ export function getMidpointFractional(
     if (prefixLength > 0) {
       const suffix = getMidpointFractional(
         a.subarray(prefixLength),
-        b.subarray(prefixLength)
+        b.subarray(prefixLength),
       );
       if (!suffix) {
         return;

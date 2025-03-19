@@ -1,7 +1,7 @@
+import { createClient } from "@libsql/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { BASE36L } from "../bases.js";
 import { fraciString } from "../factory.js";
@@ -102,7 +102,7 @@ describe("drizzleFraci with group columns", () => {
       .select()
       .from(testItems)
       .where(
-        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 1 (Group 1)'`
+        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 1 (Group 1)'`,
       )
       .limit(1)
       .get();
@@ -110,7 +110,7 @@ describe("drizzleFraci with group columns", () => {
 
     const indices = await fetcher.indicesForAfter(
       { groupId: 1 },
-      { id: item!.id }
+      { id: item!.id },
     );
 
     expect(indices).toBeArrayOfSize(2);
@@ -124,7 +124,7 @@ describe("drizzleFraci with group columns", () => {
       .select()
       .from(testItems)
       .where(
-        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 3 (Group 1)'`
+        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 3 (Group 1)'`,
       )
       .limit(1)
       .get();
@@ -132,7 +132,7 @@ describe("drizzleFraci with group columns", () => {
 
     const indices = await fetcher.indicesForBefore(
       { groupId: 1 },
-      { id: item!.id }
+      { id: item!.id },
     );
 
     expect(indices).toBeArrayOfSize(2);
@@ -142,10 +142,10 @@ describe("drizzleFraci with group columns", () => {
 
   test("should return undefined for non-existent cursor", async () => {
     expect(
-      await fetcher.indicesForAfter({ groupId: 1 }, { id: 999 })
+      await fetcher.indicesForAfter({ groupId: 1 }, { id: 999 }),
     ).toBeUndefined();
     expect(
-      await fetcher.indicesForBefore({ groupId: 1 }, { id: 999 })
+      await fetcher.indicesForBefore({ groupId: 1 }, { id: 999 }),
     ).toBeUndefined();
   });
 
@@ -155,17 +155,17 @@ describe("drizzleFraci with group columns", () => {
       .select()
       .from(testItems)
       .where(
-        sql`${testItems.groupId} = 2 AND ${testItems.name} = 'Item 2 (Group 2)'`
+        sql`${testItems.groupId} = 2 AND ${testItems.name} = 'Item 2 (Group 2)'`,
       )
       .limit(1)
       .get();
     expect(item).not.toBeUndefined();
 
     expect(
-      await fetcher.indicesForAfter({ groupId: 1 }, { id: item!.id })
+      await fetcher.indicesForAfter({ groupId: 1 }, { id: item!.id }),
     ).toBeUndefined();
     expect(
-      await fetcher.indicesForBefore({ groupId: 1 }, { id: item!.id })
+      await fetcher.indicesForBefore({ groupId: 1 }, { id: item!.id }),
     ).toBeUndefined();
   });
 
@@ -179,7 +179,7 @@ describe("drizzleFraci with group columns", () => {
       .select()
       .from(testItems)
       .where(
-        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 1 (Group 1)'`
+        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 1 (Group 1)'`,
       )
       .limit(1)
       .get();
@@ -187,11 +187,11 @@ describe("drizzleFraci with group columns", () => {
 
     expect(
       // @ts-expect-error
-      await fetcher.indicesForAfter({}, { id: item!.id })
+      await fetcher.indicesForAfter({}, { id: item!.id }),
     ).toBeUndefined();
     expect(
       // @ts-expect-error
-      await fetcher.indicesForBefore({}, { id: item!.id })
+      await fetcher.indicesForBefore({}, { id: item!.id }),
     ).toBeUndefined();
   });
 

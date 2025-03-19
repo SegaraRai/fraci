@@ -34,7 +34,7 @@ test("Binary comparison and sorting", async () => {
         .all()
     )
       .map((r) => r.name)
-      .join("")
+      .join(""),
   ).toBe("ABCDEFGHIJKL");
 
   for (const truthy of [

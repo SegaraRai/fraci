@@ -97,7 +97,7 @@ describe("drizzleFraciSync with group columns", () => {
       .select()
       .from(testItems)
       .where(
-        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 1 (Group 1)'`
+        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 1 (Group 1)'`,
       )
       .limit(1)
       .get();
@@ -116,7 +116,7 @@ describe("drizzleFraciSync with group columns", () => {
       .select()
       .from(testItems)
       .where(
-        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 3 (Group 1)'`
+        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 3 (Group 1)'`,
       )
       .limit(1)
       .get();
@@ -131,10 +131,10 @@ describe("drizzleFraciSync with group columns", () => {
 
   test("should return undefined for non-existent cursor", () => {
     expect(
-      fetcher.indicesForAfter({ groupId: 1 }, { id: 999 })
+      fetcher.indicesForAfter({ groupId: 1 }, { id: 999 }),
     ).toBeUndefined();
     expect(
-      fetcher.indicesForBefore({ groupId: 1 }, { id: 999 })
+      fetcher.indicesForBefore({ groupId: 1 }, { id: 999 }),
     ).toBeUndefined();
   });
 
@@ -144,17 +144,17 @@ describe("drizzleFraciSync with group columns", () => {
       .select()
       .from(testItems)
       .where(
-        sql`${testItems.groupId} = 2 AND ${testItems.name} = 'Item 2 (Group 2)'`
+        sql`${testItems.groupId} = 2 AND ${testItems.name} = 'Item 2 (Group 2)'`,
       )
       .limit(1)
       .get();
     expect(item).not.toBeUndefined();
 
     expect(
-      fetcher.indicesForAfter({ groupId: 1 }, { id: item!.id })
+      fetcher.indicesForAfter({ groupId: 1 }, { id: item!.id }),
     ).toBeUndefined();
     expect(
-      fetcher.indicesForBefore({ groupId: 1 }, { id: item!.id })
+      fetcher.indicesForBefore({ groupId: 1 }, { id: item!.id }),
     ).toBeUndefined();
   });
 
@@ -168,7 +168,7 @@ describe("drizzleFraciSync with group columns", () => {
       .select()
       .from(testItems)
       .where(
-        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 1 (Group 1)'`
+        sql`${testItems.groupId} = 1 AND ${testItems.name} = 'Item 1 (Group 1)'`,
       )
       .limit(1)
       .get();
@@ -176,11 +176,11 @@ describe("drizzleFraciSync with group columns", () => {
 
     expect(
       // @ts-expect-error
-      fetcher.indicesForAfter({}, { id: item!.id })
+      fetcher.indicesForAfter({}, { id: item!.id }),
     ).toBeUndefined();
     expect(
       // @ts-expect-error
-      fetcher.indicesForBefore({}, { id: item!.id })
+      fetcher.indicesForBefore({}, { id: item!.id }),
     ).toBeUndefined();
   });
 

@@ -198,7 +198,7 @@ describe("fraci", () => {
     });
     const generator = indexing.generateKeyBetween(
       "55001" as any,
-      "55002" as any
+      "55002" as any,
     );
     expect(() => generator.next()).toThrow("Fraci: Exceeded maximum length");
   });
@@ -216,7 +216,7 @@ describe("fraci", () => {
     const generator2 = indexing.generateNKeysBetween(
       "550" as any,
       "55a" as any,
-      2
+      2,
     );
     expect(() => generator2.next()).toThrow("Fraci: Invalid indices provided");
   });
@@ -303,7 +303,7 @@ describe("createFraciCache", () => {
 
     // Create a first fraci instance with a cache
     const [indexing1, time1] = measureTime(() =>
-      fraci({ lengthBase, digitBase }, cache)
+      fraci({ lengthBase, digitBase }, cache),
     );
 
     // Record cache size after first instance creation
@@ -315,7 +315,7 @@ describe("createFraciCache", () => {
 
     // Create a second fraci instance with the same cache
     const [indexing2, time2] = measureTime(() =>
-      fraci({ lengthBase, digitBase }, cache)
+      fraci({ lengthBase, digitBase }, cache),
     );
 
     // Cache size should remain the same since computations are shared
@@ -330,8 +330,8 @@ describe("createFraciCache", () => {
     // Log performance results
     console.log(
       `Time to create first instance: ${time1.toFixed(
-        3
-      )}ms, second instance: ${time2.toFixed(3)}ms`
+        3,
+      )}ms, second instance: ${time2.toFixed(3)}ms`,
     );
   });
 });

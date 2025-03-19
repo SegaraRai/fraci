@@ -68,7 +68,7 @@ export async function runTest(app: ServerType): Promise<void> {
 
     console.log(
       "NO-DELAY1",
-      (await getItemsFull("1")).map((i) => i.fi)
+      (await getItemsFull("1")).map((i) => i.fi),
     );
   }
 
@@ -94,7 +94,7 @@ export async function runTest(app: ServerType): Promise<void> {
 
     console.log(
       "NO-DELAY2",
-      (await getItemsFull("1")).map((i) => i.fi)
+      (await getItemsFull("1")).map((i) => i.fi),
     );
   }
 
@@ -151,7 +151,7 @@ export async function runTest(app: ServerType): Promise<void> {
 
     console.log(
       "DELAY1",
-      (await getItemsFull("2")).map((i) => i.fi)
+      (await getItemsFull("2")).map((i) => i.fi),
     );
   }
 
@@ -204,7 +204,7 @@ export async function runTest(app: ServerType): Promise<void> {
 
     console.log(
       "DELAY2",
-      (await getItemsFull("2")).map((i) => i.fi)
+      (await getItemsFull("2")).map((i) => i.fi),
     );
   }
 

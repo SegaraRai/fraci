@@ -18,11 +18,11 @@ const dbString = setupDrizzleDBBunSQLiteString();
 const app = new Hono().get("/test", async (c) => {
   const [binaryFI] = drizzleFraciSync(
     dbBinary,
-    fiExampleItemsBinary
+    fiExampleItemsBinary,
   ).generateKeyBetween(null, null);
   const [stringFI] = drizzleFraciSync(
     dbString,
-    fiExampleItemsString
+    fiExampleItemsString,
   ).generateKeyBetween(null, null);
 
   return c.json({

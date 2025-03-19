@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
     // Enable latest features
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleDetection": "force",
@@ -23,11 +21,5 @@
     "noUnusedParameters": true,
     "noPropertyAccessFromIndexSignature": true
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "examples-bundled",
-    "typedoc",
-    ".tsup"
-  ]
+  "exclude": ["node_modules", "dist", "examples-bundled", "typedoc", ".tsup"]
 }

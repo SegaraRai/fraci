@@ -108,7 +108,7 @@
     table, // Table
     column, // Fractional index column
     group, // Group (columns that define the grouping context)
-    cursor // Cursor (columns that uniquely identify a row within a group)
+    cursor, // Cursor (columns that uniquely identify a row within a group)
   );
   ```
 

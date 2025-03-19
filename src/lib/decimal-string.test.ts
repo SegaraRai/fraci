@@ -65,25 +65,25 @@ describe("splitParts", () => {
 
   test("BASE95", () => {
     expect(
-      splitParts(" abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", LR95)
+      splitParts(" abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", LR95),
     ).toEqual([" abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu", "vwxyz"]);
     expect(
-      splitParts("~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", LR95)
+      splitParts("~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz", LR95),
     ).toEqual(["~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv", "wxyz"]);
 
     expect(
-      splitParts(" abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu", LR95)
+      splitParts(" abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu", LR95),
     ).toEqual([" abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu", ""]);
     expect(
-      splitParts("~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv", LR95)
+      splitParts("~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv", LR95),
     ).toEqual(["~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv", ""]);
 
     // Too short
     expect(
-      splitParts(" abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrst", LR95)
+      splitParts(" abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrst", LR95),
     ).toBeUndefined();
     expect(
-      splitParts("~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu", LR95)
+      splitParts("~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu", LR95),
     ).toBeUndefined();
   });
 });
@@ -105,7 +105,7 @@ describe("getSmallestInteger", () => {
 
   test("BASE95", () => {
     expect(getSmallestInteger(DF95, LF95)).toBe(
-      "                                                "
+      "                                                ",
     );
   });
 });
@@ -160,7 +160,7 @@ describe("getMidpointFractional", () => {
     expect(getMidpointFractional("01234", "789", DF10, DR10)).toBe("3");
     expect(getMidpointFractional("4", "6", DF10, DR10)).toBe("5");
     expect(getMidpointFractional("4999999999", "50000001", DF10, DR10)).toBe(
-      "5"
+      "5",
     );
     expect(getMidpointFractional("49", "495", DF10, DR10)).toBe("492");
     expect(getMidpointFractional("49", "492", DF10, DR10)).toBe("491");

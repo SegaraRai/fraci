@@ -36,7 +36,7 @@ const prisma = basePrisma.$extends(
         digitBase: BASE95,
       },
     },
-  })
+  }),
 );
 
 // Data seeding
@@ -198,10 +198,10 @@ test("should throw error if invalid column specified", () => {
             digitBase: BASE36L,
           },
         },
-      })
-    )
+      }),
+    ),
   ).toThrowError(
-    "Fraci Prisma: Could not get field information for notExist.fi"
+    "Fraci Prisma: Could not get field information for notExist.fi",
   );
 
   expect(() =>
@@ -215,10 +215,10 @@ test("should throw error if invalid column specified", () => {
             digitBase: BASE36L,
           },
         },
-      })
-    )
+      }),
+    ),
   ).toThrowError(
-    "Fraci Prisma: Could not get field information for article.notExist"
+    "Fraci Prisma: Could not get field information for article.notExist",
   );
 });
 
@@ -408,7 +408,7 @@ describe("indicesForBefore and indicesForAfter", () => {
       await pfi.indicesForBefore(
         { articleId: 2, userId: 1 },
         // @ts-expect-error missing field
-        { articleId: 2, userId: 1 }
+        { articleId: 2, userId: 1 },
       );
 
       // @ts-expect-error scalar
@@ -450,14 +450,14 @@ test("custom client", async () => {
   await afi.indicesForBefore(
     { userId: article.userId },
     { id: article.id },
-    customClient
+    customClient,
   );
   expect(calledCount).toBe(1);
 
   await afi.indicesForAfter(
     { userId: article.userId },
     { id: article.id },
-    customClient
+    customClient,
   );
   expect(calledCount).toBe(2);
 

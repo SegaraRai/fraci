@@ -91,14 +91,14 @@ export type QualifiedFields = {
         [F in BinaryModelFieldName<M>]: [
           `${M}.${F}`,
           Exclude<SerializableModelFieldName<M>, F>,
-          "binary"
+          "binary",
         ];
       }[BinaryModelFieldName<M>]
     | {
         [F in StringModelFieldName<M>]: [
           `${M}.${F}`,
           Exclude<SerializableModelFieldName<M>, F>,
-          "string"
+          "string",
         ];
       }[StringModelFieldName<M>];
 }[ModelKey];

@@ -72,7 +72,7 @@ bench("random operations x10000", () => {
       case 2: {
         const targetIndex = Math.max(
           Math.floor(Math.random() * (keys.length - 1)),
-          0
+          0,
         );
         const before = keys[targetIndex] ?? null;
         const after = keys[targetIndex + 1] ?? null;
@@ -92,7 +92,7 @@ bench("random operations 2 x10000", () => {
   for (let i = 0; i < 10000; i++) {
     const targetIndex = Math.max(
       Math.floor(Math.random() * (keys.length - 1)),
-      0
+      0,
     );
     const before = keys[targetIndex] ?? null;
     const after = keys[targetIndex + 1] ?? null;

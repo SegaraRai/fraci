@@ -19,7 +19,7 @@ import { defineDrizzleFraci } from "fraci/drizzle";
 // Utility function to define a fractional index column. Should be copied to your project.
 function fi<const Name extends string, const Fraci extends AnyStringFraci>(
   name: Name,
-  _fi: () => Fraci
+  _fi: () => Fraci,
 ) {
   return text(name).notNull().$type<FractionalIndexOf<Fraci>>();
 }
@@ -58,7 +58,7 @@ export const articles = sqliteTable(
       .references(() => users.id),
     ...timestamps,
   },
-  (table) => [uniqueIndex("user_id_fi_idx").on(table.userId, table.fi)]
+  (table) => [uniqueIndex("user_id_fi_idx").on(table.userId, table.fi)],
 );
 
 // Here, we create a fraci instance for the articles table.
@@ -73,7 +73,7 @@ export const fiArticles = defineDrizzleFraci(
   articles, // Table
   articles.fi, // Fractional index column
   { userId: articles.userId }, // Group (columns that are used to find the group uniquely)
-  { id: articles.id } // Cursor (columns that are used to find the row uniquely in the group)
+  { id: articles.id }, // Cursor (columns that are used to find the row uniquely in the group)
 );
 
 // photo table
@@ -95,7 +95,7 @@ export const photos = sqliteTable(
   (table) => [
     uniqueIndex("article_id_fi_idx").on(table.articleId, table.fi),
     index("user_id_idx").on(table.userId),
-  ]
+  ],
 );
 
 const fraciForPhotos = fraci({
@@ -109,7 +109,7 @@ export const fiPhotos = defineDrizzleFraci(
   photos,
   photos.fi,
   { articleId: photos.articleId },
-  { id: photos.id }
+  { id: photos.id },
 );
 
 // tag table
@@ -120,7 +120,7 @@ export const tags = sqliteTable(
     name: text("name").notNull(),
     ...timestamps,
   },
-  (table) => [index("name_idx").on(table.name)]
+  (table) => [index("name_idx").on(table.name)],
 );
 
 // tagsOnPhotos table
@@ -141,7 +141,7 @@ export const tagsOnPhotos = sqliteTable(
   (table) => [
     uniqueIndex("tag_id_photo_fi_idx").on(table.tagId, table.photoFI),
     uniqueIndex("photo_id_tag_fi_idx").on(table.photoId, table.tagFI),
-  ]
+  ],
 );
 
 const fraciForPhotoFIInTagsOnPhotos = fraci({
@@ -161,7 +161,7 @@ export const fiTagsInTagsOnPhotos = defineDrizzleFraci(
   tagsOnPhotos,
   tagsOnPhotos.tagFI,
   { photoId: tagsOnPhotos.photoId },
-  { tagId: tagsOnPhotos.tagId }
+  { tagId: tagsOnPhotos.tagId },
 );
 
 export const fiPhotosInTagsOnPhotos = defineDrizzleFraci(
@@ -169,5 +169,5 @@ export const fiPhotosInTagsOnPhotos = defineDrizzleFraci(
   tagsOnPhotos,
   tagsOnPhotos.photoFI,
   { tagId: tagsOnPhotos.tagId },
-  { photoId: tagsOnPhotos.photoId }
+  { photoId: tagsOnPhotos.photoId },
 );

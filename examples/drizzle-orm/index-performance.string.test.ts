@@ -30,7 +30,7 @@ test("Ensure that the query plan is optimal (String)", async () => {
           groupId: GROUP_ID_START + j,
           name: `Item ${i + 1}`,
           fi: keys[i],
-        }))
+        })),
       )
       .execute();
   }
@@ -49,7 +49,7 @@ test("Ensure that the query plan is optimal (String)", async () => {
 
   async function explain(query: SQL): Promise<[string[], number]> {
     const explained = (await db.run(sql`EXPLAIN QUERY PLAN ${query}`)).rows.map(
-      (r) => r["detail"]
+      (r) => r["detail"],
     ) as string[];
 
     const begin = performance.now();
@@ -68,7 +68,7 @@ test("Ensure that the query plan is optimal (String)", async () => {
     const groupConditions = [sql`${exampleItems.groupId} = ${groupId}`];
     const cursorCondition = and(
       ...groupConditions,
-      sql`${exampleItems.id} = ${cursorId}`
+      sql`${exampleItems.id} = ${cursorId}`,
     );
 
     const fiSelector = { v: sql`${column}` };
@@ -88,10 +88,10 @@ test("Ensure that the query plan is optimal (String)", async () => {
     console.log(
       `EXPLAIN Select ${name} (${duration.toFixed(3)}ms):\n${explained
         .map((item, index) => `${index + 1}. ${item}\n`)
-        .join("")}`
+        .join("")}`,
     );
     expect(explained.some((item) => item.includes("group_id_fi_idx"))).toBe(
-      true
+      true,
     );
     expect(explained.every((item) => !item.includes("SCAN"))).toBe(true);
 
@@ -105,10 +105,10 @@ test("Ensure that the query plan is optimal (String)", async () => {
     console.log(
       `EXPLAIN List ${name} (${listDuration.toFixed(3)}ms):\n${listExplained
         .map((item, index) => `${index + 1}. ${item}\n`)
-        .join("")}`
+        .join("")}`,
     );
     expect(listExplained.some((item) => item.includes("group_id_fi_idx"))).toBe(
-      true
+      true,
     );
     expect(listExplained.every((item) => !item.includes("SCAN"))).toBe(true);
   }

@@ -39,7 +39,7 @@ export const tasks = sqliteTable(
     // fi: blob("fi", { mode: "buffer" }).notNull().$type<FractionalIndexOf<typeof tasksFraci>>(), // For binary-based
     userId: integer("user_id").notNull(),
   },
-  (t) => [uniqueIndex("tasks_user_id_fi_idx").on(t.userId, t.fi)]
+  (t) => [uniqueIndex("tasks_user_id_fi_idx").on(t.userId, t.fi)],
 );
 
 // Define the fractional index configuration
@@ -48,7 +48,7 @@ export const fiTasks = defineDrizzleFraci(
   tasks, // Table
   tasks.fi, // Fractional index column
   { userId: tasks.userId }, // Group (columns that uniquely identify the group)
-  { id: tasks.id } // Cursor (columns that uniquely identify the row within a group)
+  { id: tasks.id }, // Cursor (columns that uniquely identify the row within a group)
 );
 
 // Define a helper function to check for index conflicts (may vary by database)
@@ -194,7 +194,7 @@ export const articles = table(
   (t) => [
     // IMPORTANT: This compound index is necessary for both uniqueness and performance
     uniqueIndex("user_id_fi_idx").on(t.userId, t.fi),
-  ]
+  ],
 );
 
 // Create a fraci instance
@@ -212,7 +212,7 @@ export const fiArticles = defineDrizzleFraci(
   articles, // Table
   articles.fi, // Fractional index column
   { userId: articles.userId }, // Group (columns that uniquely identify the group)
-  { id: articles.id } // Cursor (columns that uniquely identify the row within a group)
+  { id: articles.id }, // Cursor (columns that uniquely identify the row within a group)
 );
 ```
 
@@ -251,7 +251,7 @@ export const fiArticles = defineDrizzleFraci(
 >     // ...other columns
 >     fi: fi(() => fraciForArticles), // Binary fractional index column
 >     // ...other columns
->   }
+>   },
 >   // ...rest of the table definition
 > );
 > ```
@@ -352,15 +352,15 @@ async function move() {
         .where(
           and(
             eq(articles.id, 3),
-            eq(articles.userId, 1) // IMPORTANT: Always filter by group columns
-          )
+            eq(articles.userId, 1), // IMPORTANT: Always filter by group columns
+          ),
         )
         .returning()
         .get();
 
       if (!result) {
         throw new Error(
-          "Article 3 does not exist or does not belong to user 1."
+          "Article 3 does not exist or does not belong to user 1.",
         );
       }
       return result;
@@ -443,7 +443,7 @@ const prisma = new PrismaClient().$extends(
     },
     maxRetries: 5, // Maximum number of retries on conflict (default: 5)
     maxLength: 50, // Maximum length to prevent attacks (default: 50)
-  })
+  }),
 );
 ```
 
@@ -468,7 +468,7 @@ const prisma = new PrismaClient().$extends(
 >     },
 >     maxRetries: 5, // Maximum number of retries on conflict
 >     maxLength: 50, // Maximum length to prevent attacks
->   })
+>   }),
 > );
 > ```
 >
@@ -563,7 +563,7 @@ async function move() {
         error.code === "P2025"
       ) {
         throw new Error(
-          "Article 3 does not exist or does not belong to user 1."
+          "Article 3 does not exist or does not belong to user 1.",
         );
       }
       throw error;

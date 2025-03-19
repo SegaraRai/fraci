@@ -4,7 +4,7 @@ for (const file of ["dist/prisma.d.ts", "dist/prisma.d.cts"]) {
   const content = await readFile(file, "utf-8");
   const replaced = content.replace(
     "import { PrismaClient, Prisma } from '@prisma/client/extension.js'",
-    "import { PrismaClient, Prisma } from '@prisma/client'"
+    "import { PrismaClient, Prisma } from '@prisma/client'",
   );
   if (replaced === content) {
     throw new Error(`BUILD: Failed to replace import in ${file}`);

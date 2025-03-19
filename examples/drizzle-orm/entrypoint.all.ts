@@ -18,11 +18,11 @@ const dbString = await setupDrizzleDBLibSQLString();
 const app = new Hono().get("/test", async (c) => {
   const [binaryFI] = drizzleFraci(
     dbBinary,
-    fiExampleItemsBinary
+    fiExampleItemsBinary,
   ).generateKeyBetween(null, null);
   const [stringFI] = drizzleFraci(
     dbString,
-    fiExampleItemsString
+    fiExampleItemsString,
   ).generateKeyBetween(null, null);
 
   return c.json({

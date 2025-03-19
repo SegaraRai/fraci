@@ -52,7 +52,7 @@ type Indices<FI extends AnyFractionalIndex> = [a: FI | null, b: FI | null];
 type FraciForPrismaInternal<
   Model extends ModelKey,
   Where,
-  FI extends AnyFractionalIndex
+  FI extends AnyFractionalIndex,
 > = FraciOf<FI> & {
   /**
    * Checks if the error is a conflict error for the fractional index.
@@ -73,12 +73,12 @@ type FraciForPrismaInternal<
     (
       where: Where & QueryArgs<Model>["where"],
       cursor: QueryArgs<Model>["cursor"],
-      client?: AnyPrismaClient
+      client?: AnyPrismaClient,
     ): Promise<Indices<FI> | undefined>;
     (
       where: Where & QueryArgs<Model>["where"],
       cursor: null,
-      client?: AnyPrismaClient
+      client?: AnyPrismaClient,
     ): Promise<Indices<FI>>;
   };
   /**
@@ -93,12 +93,12 @@ type FraciForPrismaInternal<
     (
       where: Where & QueryArgs<Model>["where"],
       cursor: QueryArgs<Model>["cursor"],
-      client?: AnyPrismaClient
+      client?: AnyPrismaClient,
     ): Promise<Indices<FI> | undefined>;
     (
       where: Where & QueryArgs<Model>["where"],
       cursor: null,
-      client?: AnyPrismaClient
+      client?: AnyPrismaClient,
     ): Promise<Indices<FI>>;
   };
   /**
@@ -111,7 +111,7 @@ type FraciForPrismaInternal<
    */
   indicesForFirst(
     where: Where & QueryArgs<Model>["where"],
-    client?: AnyPrismaClient
+    client?: AnyPrismaClient,
   ): Promise<Indices<FI>>;
   /**
    * Retrieves the existing indices to generate a new fractional index for the last item.
@@ -123,7 +123,7 @@ type FraciForPrismaInternal<
    */
   indicesForLast(
     where: Where & QueryArgs<Model>["where"],
-    client?: AnyPrismaClient
+    client?: AnyPrismaClient,
   ): Promise<Indices<FI>>;
 };
 
@@ -137,7 +137,7 @@ type FraciForPrismaInternal<
 type FraciForPrismaByFieldOptions<
   Options extends FieldOptions,
   Model extends ModelKey,
-  Field extends BinaryModelFieldName<Model> | StringModelFieldName<Model>
+  Field extends BinaryModelFieldName<Model> | StringModelFieldName<Model>,
 > = FraciForPrismaInternal<
   Model,
   Pick<
@@ -149,18 +149,18 @@ type FraciForPrismaByFieldOptions<
       ? FractionalIndex<Options, PrismaBrand<Model, Field>>
       : never
     : Options extends {
-        readonly lengthBase: string;
-        readonly digitBase: string;
-      }
-    ? FractionalIndex<
-        {
-          readonly type: "string";
-          readonly lengthBase: Options["lengthBase"];
-          readonly digitBase: Options["digitBase"];
-        },
-        PrismaBrand<Model, Field>
-      >
-    : never
+          readonly lengthBase: string;
+          readonly digitBase: string;
+        }
+      ? FractionalIndex<
+          {
+            readonly type: "string";
+            readonly lengthBase: Options["lengthBase"];
+            readonly digitBase: Options["digitBase"];
+          },
+          PrismaBrand<Model, Field>
+        >
+      : never
 >;
 
 /**
@@ -171,7 +171,7 @@ type FraciForPrismaByFieldOptions<
  */
 export type FraciForPrisma<
   Options extends PrismaFraciOptions,
-  QualifiedField extends keyof Options["fields"]
+  QualifiedField extends keyof Options["fields"],
 > = Options["fields"][QualifiedField] extends FieldOptions
   ? QualifiedField extends `${infer M}.${infer F}`
     ? FraciForPrismaByFieldOptions<Options["fields"][QualifiedField], M, F>
@@ -216,7 +216,7 @@ type PerModelFieldInfo<Options extends PrismaFraciOptions> = {
 type PrismaFraciExtensionModel<Options extends PrismaFraciOptions> = {
   [M in keyof PerModelFieldInfo<Options>]: {
     fraci<F extends keyof PerModelFieldInfo<Options>[M]>(
-      field: F
+      field: F,
     ): PerModelFieldInfo<Options>[M][F]["helper"];
   };
 };
@@ -265,7 +265,7 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
     // Process each field configuration from the options
     for (const [modelAndField, config] of Object.entries(fields) as [
       string,
-      FieldOptions
+      FieldOptions,
     ][]) {
       // Split the "model.field" string into separate parts
       const [model, field] = modelAndField.split(".", 2) as [ModelKey, string];
@@ -274,7 +274,7 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
       const { modelName } = (client as any)[model]?.fields?.[field] ?? {};
       if (!modelName) {
         throw new Error(
-          `Fraci Prisma: Could not get field information for ${model}.${field}`
+          `Fraci Prisma: Could not get field information for ${model}.${field}`,
         );
       }
 
@@ -291,7 +291,7 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
                 maxLength,
                 maxRetries,
               },
-              cache
+              cache,
             );
 
       /**
@@ -311,7 +311,7 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
         cursor: any,
         direction: "asc" | "desc",
         tuple: <T>(a: T, b: T) => [T, T],
-        pClient: AnyPrismaClient = client
+        pClient: AnyPrismaClient = client,
       ): Promise<any> => {
         // Case 1: No cursor provided - get the first/last item in the group
         if (!cursor) {
@@ -347,7 +347,7 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
       const indicesForAfter = (
         where: any,
         cursor: any,
-        pClient?: AnyPrismaClient
+        pClient?: AnyPrismaClient,
       ): Promise<any> =>
         indicesFor(where, cursor, "asc", (a, b) => [a, b], pClient);
 
@@ -355,7 +355,7 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
       const indicesForBefore = (
         where: any,
         cursor: any,
-        pClient?: AnyPrismaClient
+        pClient?: AnyPrismaClient,
       ): Promise<any> =>
         indicesFor(where, cursor, "desc", (a, b) => [b, a], pClient);
 
@@ -363,7 +363,7 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
       const helperEx: AnyFraciForPrisma = {
         ...(helper as AnyFraci), // Include all methods from the base fraci helper
         isIndexConflictError: (
-          error: unknown
+          error: unknown,
         ): error is PrismaClientConflictError =>
           isIndexConflictError(error, modelName, field),
         indicesForAfter,

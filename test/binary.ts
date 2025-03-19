@@ -30,6 +30,9 @@ export function fromHex(hex: string): Uint8Array {
  * @param initialByte - The byte value to fill the array with (default: 0)
  * @returns A new Uint8Array with the specified length and filled with the initial byte
  */
-export function createBinary(length: number, initialByte: number = 0): Uint8Array {
+export function createBinary(
+  length: number,
+  initialByte: number = 0,
+): Uint8Array {
   return new Uint8Array(length).fill(initialByte);
 }

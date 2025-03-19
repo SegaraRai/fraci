@@ -9,7 +9,7 @@
  */
 export function getIntegerLengthSigned(
   index: string,
-  lenBaseReverse: ReadonlyMap<string, number>
+  lenBaseReverse: ReadonlyMap<string, number>,
 ): number | undefined {
   return lenBaseReverse.get(index[0]);
 }
@@ -25,7 +25,7 @@ export function getIntegerLengthSigned(
  */
 export function splitParts(
   index: string,
-  lenBaseReverse: ReadonlyMap<string, number>
+  lenBaseReverse: ReadonlyMap<string, number>,
 ): [integer: string, fractional: string] | undefined {
   // Get the encoded length from the first character and convert to absolute value
   // Add 1 because the length includes the length character itself
@@ -55,7 +55,7 @@ export function splitParts(
  */
 export function getIntegerZero(
   digBaseForward: readonly string[],
-  lenBaseForward: ReadonlyMap<number, string>
+  lenBaseForward: ReadonlyMap<number, string>,
 ): string {
   return lenBaseForward.get(1)! + digBaseForward[0];
 }
@@ -71,7 +71,7 @@ export function getIntegerZero(
  */
 export function getSmallestInteger(
   digBaseForward: readonly string[],
-  lenBaseForward: ReadonlyMap<number, string>
+  lenBaseForward: ReadonlyMap<number, string>,
 ): string {
   // Find the smallest length value in the length encoding map
   // This will be the most negative value, representing the smallest possible integer
@@ -104,7 +104,7 @@ export function incrementInteger(
   digBaseForward: readonly string[],
   digBaseReverse: ReadonlyMap<string, number>,
   lenBaseForward: ReadonlyMap<number, string>,
-  lenBaseReverse: ReadonlyMap<string, number>
+  lenBaseReverse: ReadonlyMap<string, number>,
 ): string | null | undefined {
   const intLengthSigned = getIntegerLengthSigned(index, lenBaseReverse);
   if (!intLengthSigned) {
@@ -180,7 +180,7 @@ export function decrementInteger(
   digBaseForward: readonly string[],
   digBaseReverse: ReadonlyMap<string, number>,
   lenBaseForward: ReadonlyMap<number, string>,
-  lenBaseReverse: ReadonlyMap<string, number>
+  lenBaseReverse: ReadonlyMap<string, number>,
 ): string | null | undefined {
   const intLengthSigned = getIntegerLengthSigned(index, lenBaseReverse);
   if (!intLengthSigned) {
@@ -252,7 +252,7 @@ export function getMidpointFractional(
   a: string,
   b: string | null,
   digBaseForward: readonly string[],
-  digBaseReverse: ReadonlyMap<string, number>
+  digBaseReverse: ReadonlyMap<string, number>,
 ): string | undefined {
   if (b != null && b <= a) {
     // Precondition failed.
@@ -267,7 +267,7 @@ export function getMidpointFractional(
     // Find the first position where a and b differ
     const prefixLength = Array.prototype.findIndex.call(
       b,
-      (char, i) => char !== aPadded[i]
+      (char, i) => char !== aPadded[i],
     );
 
     // If they share a prefix, keep it and recursively find midpoint of the differing parts
@@ -276,7 +276,7 @@ export function getMidpointFractional(
         a.slice(prefixLength),
         b.slice(prefixLength),
         digBaseForward,
-        digBaseReverse
+        digBaseReverse,
       )}`;
     }
   }
@@ -309,6 +309,6 @@ export function getMidpointFractional(
     a.slice(1),
     null,
     digBaseForward,
-    digBaseReverse
+    digBaseReverse,
   )}`;
 }

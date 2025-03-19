@@ -27,7 +27,7 @@ export type PrismaClientConflictError = PrismaClientKnownRequestError & {
 export function isIndexConflictError(
   error: unknown,
   modelName: string,
-  field: string
+  field: string,
 ): error is PrismaClientConflictError {
   return (
     error instanceof Error &&

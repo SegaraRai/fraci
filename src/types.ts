@@ -10,12 +10,8 @@ export type * from "./lib/types.js";
  *
  * @template F - The fractional index type to extract from
  */
-export type FraciOf<F extends AnyFractionalIndex> = F extends FractionalIndex<
-  infer B,
-  infer X
->
-  ? Fraci<B, X>
-  : never;
+export type FraciOf<F extends AnyFractionalIndex> =
+  F extends FractionalIndex<infer B, infer X> ? Fraci<B, X> : never;
 
 /**
  * Extracts the fractional index type from a Fraci type.
@@ -24,9 +20,5 @@ export type FraciOf<F extends AnyFractionalIndex> = F extends FractionalIndex<
  *
  * @template F - The Fraci type to extract from
  */
-export type FractionalIndexOf<F extends AnyFraci> = F extends Fraci<
-  infer B,
-  infer X
->
-  ? FractionalIndex<B, X>
-  : never;
+export type FractionalIndexOf<F extends AnyFraci> =
+  F extends Fraci<infer B, infer X> ? FractionalIndex<B, X> : never;

@@ -16,7 +16,7 @@ import { defineDrizzleFraci } from "fraci/drizzle";
 // Utility function to define a fractional index column. Should be copied to your project.
 function fi<const Name extends string, const Fraci extends AnyBinaryFraci>(
   name: Name,
-  _fi: () => Fraci
+  _fi: () => Fraci,
 ) {
   return blob(name, { mode: "buffer" })
     .notNull()
@@ -46,7 +46,7 @@ export const exampleItems = sqliteTable(
     groupId: integer("group_id").notNull(),
     ...timestamps,
   },
-  (table) => [uniqueIndex("group_id_fi_idx").on(table.groupId, table.fi)]
+  (table) => [uniqueIndex("group_id_fi_idx").on(table.groupId, table.fi)],
 );
 
 const fraciForExampleItem = fraciBinary({
@@ -58,5 +58,5 @@ export const fiExampleItems = defineDrizzleFraci(
   exampleItems,
   exampleItems.fi,
   { groupId: exampleItems.groupId },
-  { id: exampleItems.id }
+  { id: exampleItems.id },
 );

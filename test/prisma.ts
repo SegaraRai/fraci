@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { collectMigrations } from "./common.js";
 
 const migrationQueries = await collectMigrations(
-  fileURLToPath(new URL("../prisma/migrations", import.meta.url))
+  fileURLToPath(new URL("../prisma/migrations", import.meta.url)),
 );
 
 export async function setupPrisma(): Promise<PrismaClient> {

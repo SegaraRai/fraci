@@ -6,7 +6,7 @@ import * as schema from "../drizzle/schema.e2e-binary.js";
 import { collectMigrations } from "./common.js";
 
 const migrationQueries = await collectMigrations(
-  fileURLToPath(new URL("../drizzle/migrations.e2e-binary", import.meta.url))
+  fileURLToPath(new URL("../drizzle/migrations.e2e-binary", import.meta.url)),
 );
 
 function asSingleTuple<T>(arr: T[]): [T] {
@@ -35,7 +35,7 @@ export async function setupDrizzleDBLibSQL() {
   });
 
   await db.batch(
-    asSingleTuple(migrationQueries.map((query) => db.run(sql.raw(query))))
+    asSingleTuple(migrationQueries.map((query) => db.run(sql.raw(query)))),
   );
 
   return db;

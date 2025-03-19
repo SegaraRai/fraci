@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { toHex, fromHex, createBinary } from "../../test/binary.js";
+import { createBinary, fromHex, toHex } from "../../test/binary.js";
+import { INTEGER_ZERO, compare } from "./decimal-binary.js";
 import {
   avoidConflictSuffix,
   generateKeyBetween,
   generateNKeysBetween,
   isValidFractionalIndex,
 } from "./fractional-indexing-binary.js";
-import { INTEGER_ZERO, compare } from "./decimal-binary.js";
 
 test("Uint8Array comparison", () => {
   // Use compare from decimal-binary.js for consistent comparison
@@ -317,7 +317,7 @@ describe("generateNKeysBetween", () => {
         case 0: {
           const result = generateKeyBetween(
             keys.length > 0 ? keys[keys.length - 1] : null,
-            null
+            null,
           );
           if (!result) {
             throw new Error("TEST: Unexpected undefined");
@@ -331,7 +331,7 @@ describe("generateNKeysBetween", () => {
         case 1: {
           const result = generateKeyBetween(
             null,
-            keys.length > 0 ? keys[0] : null
+            keys.length > 0 ? keys[0] : null,
           );
           if (!result) {
             throw new Error("TEST: Unexpected undefined");
@@ -349,7 +349,7 @@ describe("generateNKeysBetween", () => {
           }
           const targetIndex = Math.max(
             Math.floor(Math.random() * (keys.length - 1)),
-            0
+            0,
           );
           const before = keys[targetIndex];
           const after = keys[targetIndex + 1];
@@ -357,7 +357,7 @@ describe("generateNKeysBetween", () => {
           // Verify that before < after
           if (compare(before, after) >= 0) {
             console.error(
-              `Invalid key order at index ${targetIndex}: before >= after`
+              `Invalid key order at index ${targetIndex}: before >= after`,
             );
             continue;
           }
@@ -367,8 +367,8 @@ describe("generateNKeysBetween", () => {
             if (!result) {
               console.error(
                 `Failed to generate key between ${toHex(before)} and ${toHex(
-                  after
-                )}`
+                  after,
+                )}`,
               );
               continue;
             }
@@ -380,8 +380,8 @@ describe("generateNKeysBetween", () => {
             if (compare(before, result) >= 0 || compare(result, after) >= 0) {
               console.error(
                 `Generated key ${toHex(result)} is not between ${toHex(
-                  before
-                )} and ${toHex(after)}`
+                  before,
+                )} and ${toHex(after)}`,
               );
               continue;
             }
@@ -448,7 +448,7 @@ test("What happens if a malicious user tries to generate long key?", () => {
 
   // Log initial key lengths
   console.log(
-    `Initial lengths (Binary): ${a.length}, ${b.length}, ${c.length}`
+    `Initial lengths (Binary): ${a.length}, ${b.length}, ${c.length}`,
   );
 
   // Perform the attack for a smaller number of iterations (100 instead of 10000)

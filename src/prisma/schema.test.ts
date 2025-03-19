@@ -18,7 +18,7 @@ test("definePrismaFraci type check", () => {
           digitBase: BASE36L,
         },
       },
-    })
+    }),
   ).toEqual({
     fields: {
       "article.fi": {

@@ -26,13 +26,13 @@ const app = new Hono()
       "json",
       z.object({
         name: z.string(),
-      })
+      }),
     ),
     zValidator(
       "query",
       z.object({
         delay: z.string().optional(),
-      })
+      }),
     ),
     async (c) => {
       return anyOf([
@@ -40,10 +40,10 @@ const app = new Hono()
         c.json({ error: "Failed to create item (DB Error)" as const }, 500),
         c.json(
           { error: "Failed to create item (Index Conflict)" as const },
-          500
+          500,
         ),
       ]);
-    }
+    },
   )
   .post(
     "/groups/:groupId/items/:itemId/order",
@@ -58,13 +58,13 @@ const app = new Hono()
           before: z.null().optional(),
           after: z.number().int(),
         }),
-      ])
+      ]),
     ),
     zValidator(
       "query",
       z.object({
         delay: z.string().optional(),
-      })
+      }),
     ),
     async (c) => {
       return anyOf([
@@ -74,10 +74,10 @@ const app = new Hono()
         c.json({ error: "Failed to update item (DB Error)" } as const, 500),
         c.json(
           { error: "Failed to update item (Index Conflict)" } as const,
-          500
+          500,
         ),
       ]);
-    }
+    },
   );
 
 export type ServerType = typeof app;

@@ -96,14 +96,14 @@ export default defineConfig(
 
             console.log(
               `Fraci size for ${entrypoint.padEnd(32)}: raw: ${dumpSize(
-                fraciBundle.code.length
+                fraciBundle.code.length,
               )}, minified: ${dumpSize(
-                minified.code.length
-              )}, minified + gzipped: ${dumpSize(gzipped.length)}`
+                minified.code.length,
+              )}, minified + gzipped: ${dumpSize(gzipped.length)}`,
             );
           },
         },
       ],
-    })
-  )
+    }),
+  ),
 );

@@ -1,12 +1,12 @@
 import {
+  INTEGER_ZERO,
+  compare,
+  concat,
   decrementInteger,
-  isSmallestInteger,
   getMidpointFractional,
   incrementInteger,
+  isSmallestInteger,
   splitParts,
-  INTEGER_ZERO,
-  concat,
-  compare,
 } from "./decimal-binary.js";
 
 /**
@@ -91,7 +91,7 @@ function ensureNotUndefined<T>(value: T | undefined): T {
  */
 function generateKeyBetweenUnsafe(
   a: Uint8Array | null,
-  b: Uint8Array | null
+  b: Uint8Array | null,
 ): Uint8Array {
   // Strategy: Handle different cases based on bounds
   if (!a) {
@@ -108,7 +108,7 @@ function generateKeyBetweenUnsafe(
       // that sorts before b's fractional part
       return concat(
         bInt,
-        ensureNotUndefined(getMidpointFractional(new Uint8Array(), bFrac))
+        ensureNotUndefined(getMidpointFractional(new Uint8Array(), bFrac)),
       );
     }
 
@@ -120,7 +120,7 @@ function generateKeyBetweenUnsafe(
 
     // Standard case: Decrement the integer part of b
     const decremented = ensureNotUndefined(
-      decrementInteger(bInt)
+      decrementInteger(bInt),
     ) as Uint8Array;
     if (!isSmallestInteger(decremented)) {
       return decremented;
@@ -162,7 +162,7 @@ function generateKeyBetweenUnsafe(
     // Calculate the midpoint between the two fractional parts
     return concat(
       aInt,
-      ensureNotUndefined(getMidpointFractional(aFrac, bFrac))
+      ensureNotUndefined(getMidpointFractional(aFrac, bFrac)),
     );
   }
 
@@ -190,7 +190,7 @@ function generateKeyBetweenUnsafe(
  */
 export function generateKeyBetween(
   a: Uint8Array | null,
-  b: Uint8Array | null
+  b: Uint8Array | null,
 ): Uint8Array | undefined {
   return (a != null && !isValidFractionalIndex(a)) ||
     (b != null && !isValidFractionalIndex(b)) ||
@@ -219,7 +219,7 @@ export function generateKeyBetween(
 function generateNKeysBetweenUnsafe(
   a: Uint8Array | null,
   b: Uint8Array | null,
-  n: number
+  n: number,
 ): Uint8Array[] {
   if (n < 1) {
     return [];
@@ -235,7 +235,7 @@ function generateNKeysBetweenUnsafe(
     // Sequential generation - each new key is after the previous one
     return Array.from(
       { length: n },
-      () => (c = generateKeyBetweenUnsafe(c, b))
+      () => (c = generateKeyBetweenUnsafe(c, b)),
     );
   }
 
@@ -246,7 +246,7 @@ function generateNKeysBetweenUnsafe(
     // Then reverse the array to get ascending order
     return Array.from(
       { length: n },
-      () => (c = generateKeyBetweenUnsafe(a, c))
+      () => (c = generateKeyBetweenUnsafe(a, c)),
     ).reverse();
   }
 
@@ -278,7 +278,7 @@ function generateNKeysBetweenUnsafe(
 export function generateNKeysBetween(
   a: Uint8Array | null,
   b: Uint8Array | null,
-  n: number
+  n: number,
 ): Uint8Array[] | undefined {
   return (a != null && !isValidFractionalIndex(a)) ||
     (b != null && !isValidFractionalIndex(b)) ||

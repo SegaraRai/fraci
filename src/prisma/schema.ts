@@ -9,7 +9,7 @@ import type { QualifiedFields } from "./prisma-types.js";
  */
 export type FieldOptions<
   T extends string = string,
-  Mode extends "binary" | "string" = "binary" | "string"
+  Mode extends "binary" | "string" = "binary" | "string",
 > = {
   readonly binary: {
     readonly type: "binary";
@@ -72,7 +72,7 @@ export interface PrismaFraciOptions {
  * @returns The options object with default values applied
  */
 export function definePrismaFraci<const Options extends PrismaFraciOptions>(
-  options: Options
+  options: Options,
 ): Options {
   return options;
 }

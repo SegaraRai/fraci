@@ -18,7 +18,7 @@ const prisma = basePrisma.$extends(
         type: "binary",
       },
     },
-  })
+  }),
 );
 
 const app = new Hono()
@@ -31,7 +31,7 @@ const app = new Hono()
           where: { groupId },
           orderBy: { fi: "asc" },
         })
-      ).map((item) => ({ ...item, fi: Buffer.from(item.fi).toString("hex") }))
+      ).map((item) => ({ ...item, fi: Buffer.from(item.fi).toString("hex") })),
     );
   })
   .get("/groups/:groupId/items.simple", async (c) => {
@@ -41,7 +41,7 @@ const app = new Hono()
         select: { name: true },
         where: { groupId },
         orderBy: { fi: "asc" },
-      })
+      }),
     );
   })
   .post(
@@ -50,13 +50,13 @@ const app = new Hono()
       "json",
       z.object({
         name: z.string(),
-      })
+      }),
     ),
     zValidator(
       "query",
       z.object({
         delay: z.string().optional(),
-      })
+      }),
     ),
     async (c) => {
       const groupId = Number(c.req.param("groupId"));
@@ -80,7 +80,7 @@ const app = new Hono()
             200,
             {
               "Fraci-Retry-Count": String(retryCount),
-            }
+            },
           );
         } catch (error) {
           if (xfi.isIndexConflictError(error)) {
@@ -93,7 +93,7 @@ const app = new Hono()
         }
       }
       return c.json({ error: "Failed to create item (Index Conflict)" }, 500);
-    }
+    },
   )
   .post(
     "/groups/:groupId/items/:itemId/order",
@@ -108,13 +108,13 @@ const app = new Hono()
           before: z.null().optional(),
           after: z.number().int(),
         }),
-      ])
+      ]),
     ),
     zValidator(
       "query",
       z.object({
         delay: z.string().optional(),
-      })
+      }),
     ),
     async (c) => {
       const groupId = Number(c.req.param("groupId"));
@@ -165,7 +165,7 @@ const app = new Hono()
         }
       }
       return c.json({ error: "Failed to update item (Index Conflict)" }, 500);
-    }
+    },
   ) satisfies ServerType;
 
 export default app;

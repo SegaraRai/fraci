@@ -261,7 +261,7 @@ describe("generateNKeysBetween", () => {
           const result = generateKeyBetween(
             keys[keys.length - 1] ?? null,
             null,
-            ...args
+            ...args,
           );
           if (!result) {
             throw new Error("TEST: Unexpected undefined");
@@ -286,7 +286,7 @@ describe("generateNKeysBetween", () => {
         case 2: {
           const targetIndex = Math.max(
             Math.floor(Math.random() * (keys.length - 1)),
-            0
+            0,
           );
           const before = keys[targetIndex];
           const after = keys[targetIndex + 1];
@@ -343,7 +343,9 @@ test("What happens if a malicious user tries to generate long key?", () => {
   ] as const;
 
   let [a, b, c] = generateNKeysBetween(null, null, 3, ...args)!;
-  console.log(`Initial lengths (String): ${a.length}, ${b.length}, ${c.length}`);
+  console.log(
+    `Initial lengths (String): ${a.length}, ${b.length}, ${c.length}`,
+  );
   for (let i = 0; i < 10000; i++) {
     const nextC = generateKeyBetween(a, b, ...args);
     if (!nextC) {

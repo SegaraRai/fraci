@@ -14,7 +14,7 @@ import type { FractionalIndexOf } from "../types.js";
  * @template FI - The specific fractional index type this column will store
  */
 export type DrizzleFraciColumn<
-  FI extends AnyFractionalIndex = AnyFractionalIndex
+  FI extends AnyFractionalIndex = AnyFractionalIndex,
 > = Column<
   ColumnBaseConfig<
     FI extends AnyBinaryFractionalIndex ? "buffer" : "string",
@@ -44,7 +44,7 @@ export interface DrizzleFraciConfig<
     FractionalIndexOf<F>
   > = DrizzleFraciColumn<FractionalIndexOf<F>>,
   Group extends Record<string, Column> = Record<string, Column>,
-  Cursor extends Record<string, Column> = Record<string, Column>
+  Cursor extends Record<string, Column> = Record<string, Column>,
 > {
   /** A fraci instance. */
   readonly fraci: F;

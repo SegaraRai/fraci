@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 export async function collectMigrations(dir: string): Promise<string[]> {
   const migrationSQLFiles = await Array.fromAsync(
-    new Bun.Glob("**/*.sql").scan({ cwd: dir, absolute: true })
+    new Bun.Glob("**/*.sql").scan({ cwd: dir, absolute: true }),
   );
 
   const queries: string[] = [];

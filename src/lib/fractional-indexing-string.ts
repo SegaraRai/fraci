@@ -26,7 +26,7 @@ export function isValidFractionalIndex(
   digBaseForward: readonly string[],
   digBaseReverse: ReadonlyMap<string, number>,
   lenBaseReverse: ReadonlyMap<string, number>,
-  smallestInteger: string
+  smallestInteger: string,
 ): boolean {
   if (!index || index === smallestInteger) {
     // The smallest integer is not a valid fractional index. It must have a fractional part.
@@ -104,7 +104,7 @@ function generateKeyBetweenUnsafe(
   digBaseReverse: ReadonlyMap<string, number>,
   lenBaseForward: ReadonlyMap<number, string>,
   lenBaseReverse: ReadonlyMap<string, number>,
-  smallestInteger: string
+  smallestInteger: string,
 ): string {
   // Strategy: Handle different cases based on bounds
   if (!a) {
@@ -120,7 +120,7 @@ function generateKeyBetweenUnsafe(
       // We can't decrement the integer part further, so we need to use a fractional part
       // that sorts before b's fractional part
       return `${bInt}${ensureNotUndefined(
-        getMidpointFractional("", bFrac, digBaseForward, digBaseReverse)
+        getMidpointFractional("", bFrac, digBaseForward, digBaseReverse),
       )}`;
     }
 
@@ -137,8 +137,8 @@ function generateKeyBetweenUnsafe(
         digBaseForward,
         digBaseReverse,
         lenBaseForward,
-        lenBaseReverse
-      )
+        lenBaseReverse,
+      ),
     ) as string;
 
     // Edge case: If we hit the smallest integer, add the largest digit as fractional part
@@ -160,8 +160,8 @@ function generateKeyBetweenUnsafe(
         digBaseForward,
         digBaseReverse,
         lenBaseForward,
-        lenBaseReverse
-      )
+        lenBaseReverse,
+      ),
     );
 
     if (incremented !== null) {
@@ -174,7 +174,7 @@ function generateKeyBetweenUnsafe(
     // We need to use the fractional part method instead
     // Calculate a fractional part that sorts after a's fractional part
     return `${aInt}${ensureNotUndefined(
-      getMidpointFractional(aFrac, null, digBaseForward, digBaseReverse)
+      getMidpointFractional(aFrac, null, digBaseForward, digBaseReverse),
     )}`;
   }
 
@@ -188,7 +188,7 @@ function generateKeyBetweenUnsafe(
   if (aInt === bInt) {
     // Calculate the midpoint between the two fractional parts
     return `${aInt}${ensureNotUndefined(
-      getMidpointFractional(aFrac, bFrac, digBaseForward, digBaseReverse)
+      getMidpointFractional(aFrac, bFrac, digBaseForward, digBaseReverse),
     )}`;
   }
 
@@ -199,8 +199,8 @@ function generateKeyBetweenUnsafe(
       digBaseForward,
       digBaseReverse,
       lenBaseForward,
-      lenBaseReverse
-    )
+      lenBaseReverse,
+    ),
   );
 
   // Two possible outcomes:
@@ -211,7 +211,7 @@ function generateKeyBetweenUnsafe(
     : // 2. If incrementing a's integer equals b's integer or we can't increment,
       // we need to use a's integer with a fractional part that sorts after a's fractional part
       `${aInt}${ensureNotUndefined(
-        getMidpointFractional(aFrac, null, digBaseForward, digBaseReverse)
+        getMidpointFractional(aFrac, null, digBaseForward, digBaseReverse),
       )}`;
 }
 
@@ -236,7 +236,7 @@ export function generateKeyBetween(
   digBaseReverse: ReadonlyMap<string, number>,
   lenBaseForward: ReadonlyMap<number, string>,
   lenBaseReverse: ReadonlyMap<string, number>,
-  smallestInteger: string
+  smallestInteger: string,
 ): string | undefined {
   return (a != null &&
     !isValidFractionalIndex(
@@ -244,7 +244,7 @@ export function generateKeyBetween(
       digBaseForward,
       digBaseReverse,
       lenBaseReverse,
-      smallestInteger
+      smallestInteger,
     )) ||
     (b != null &&
       !isValidFractionalIndex(
@@ -252,7 +252,7 @@ export function generateKeyBetween(
         digBaseForward,
         digBaseReverse,
         lenBaseReverse,
-        smallestInteger
+        smallestInteger,
       )) ||
     (a != null && b != null && b <= a)
     ? undefined
@@ -263,7 +263,7 @@ export function generateKeyBetween(
         digBaseReverse,
         lenBaseForward,
         lenBaseReverse,
-        smallestInteger
+        smallestInteger,
       );
 }
 
@@ -294,7 +294,7 @@ function generateNKeysBetweenUnsafe(
     ReadonlyMap<string, number>,
     ReadonlyMap<number, string>,
     ReadonlyMap<string, number>,
-    string
+    string,
   ]
 ): string[] {
   if (n < 1) {
@@ -311,7 +311,7 @@ function generateNKeysBetweenUnsafe(
     // Sequential generation - each new key is after the previous one
     return Array.from(
       { length: n },
-      () => (c = generateKeyBetweenUnsafe(c, b, ...args))
+      () => (c = generateKeyBetweenUnsafe(c, b, ...args)),
     );
   }
 
@@ -322,7 +322,7 @@ function generateNKeysBetweenUnsafe(
     // Then reverse the array to get ascending order
     return Array.from(
       { length: n },
-      () => (c = generateKeyBetweenUnsafe(a, c, ...args))
+      () => (c = generateKeyBetweenUnsafe(a, c, ...args)),
     ).reverse();
   }
 
@@ -364,7 +364,7 @@ export function generateNKeysBetween(
   digBaseReverse: ReadonlyMap<string, number>,
   lenBaseForward: ReadonlyMap<number, string>,
   lenBaseReverse: ReadonlyMap<string, number>,
-  smallestInteger: string
+  smallestInteger: string,
 ): string[] | undefined {
   return (a != null &&
     !isValidFractionalIndex(
@@ -372,7 +372,7 @@ export function generateNKeysBetween(
       digBaseForward,
       digBaseReverse,
       lenBaseReverse,
-      smallestInteger
+      smallestInteger,
     )) ||
     (b != null &&
       !isValidFractionalIndex(
@@ -380,7 +380,7 @@ export function generateNKeysBetween(
         digBaseForward,
         digBaseReverse,
         lenBaseReverse,
-        smallestInteger
+        smallestInteger,
       )) ||
     (a != null && b != null && b <= a)
     ? undefined
@@ -392,7 +392,7 @@ export function generateNKeysBetween(
         digBaseReverse,
         lenBaseForward,
         lenBaseReverse,
-        smallestInteger
+        smallestInteger,
       );
 }
 
@@ -409,7 +409,7 @@ export function generateNKeysBetween(
  */
 export function avoidConflictSuffix(
   count: number,
-  digBaseForward: readonly string[]
+  digBaseForward: readonly string[],
 ): string {
   // Use the digit base length as the radix for conversion
   const radix = digBaseForward.length;

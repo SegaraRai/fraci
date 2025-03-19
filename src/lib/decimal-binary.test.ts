@@ -180,7 +180,7 @@ describe("incrementInteger", () => {
     // Multiple carries on negative length
     const multipleCarriesNegative = new Uint8Array([126, 255, 255]);
     const multipleCarriesNegativeIncremented = incrementInteger(
-      multipleCarriesNegative
+      multipleCarriesNegative,
     );
     expect(multipleCarriesNegativeIncremented).toBeDefined();
     expect(toHex(multipleCarriesNegativeIncremented!)).toBe("7f00");
@@ -230,7 +230,7 @@ describe("decrementInteger", () => {
     // Multiple borrows on negative length
     const multipleBorrowsNegative = new Uint8Array([126, 0, 0, 0]);
     const multipleBorrowsNegativeDecremented = decrementInteger(
-      multipleBorrowsNegative
+      multipleBorrowsNegative,
     );
     expect(multipleBorrowsNegativeDecremented).toBeDefined();
     expect(toHex(multipleBorrowsNegativeDecremented!)).toBe("7dffffff");
@@ -294,7 +294,7 @@ describe("getMidpointFractional", () => {
     const longPrefixMidpoint = getMidpointFractional(longPrefixA, longPrefixB);
     expect(longPrefixMidpoint).toBeDefined();
     expect(toHex(longPrefixMidpoint!)).toBe(
-      toHex(new Uint8Array([1, 2, 3, 5]))
+      toHex(new Uint8Array([1, 2, 3, 5])),
     );
 
     // Different lengths

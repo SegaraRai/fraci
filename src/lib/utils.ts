@@ -20,7 +20,7 @@ function splitBase(base: string): string[] {
     // - We need at least 3 characters to calculate the middle of fractional parts.
     // - An extra character provides additional flexibility.
     throw new Error(
-      "Fraci: Base string must have at least 4 unique characters"
+      "Fraci: Base string must have at least 4 unique characters",
     );
   }
 
@@ -31,7 +31,7 @@ function splitBase(base: string): string[] {
     const code = char.charCodeAt(0);
     if (code <= lastCode) {
       throw new Error(
-        "Fraci: Base string characters must be unique and in ascending order"
+        "Fraci: Base string characters must be unique and in ascending order",
       );
     }
     lastCode = code;
@@ -52,7 +52,7 @@ function splitBase(base: string): string[] {
  * @throws {Error} When the base string characters are not unique or not in ascending order (via {@link splitBase})
  */
 export function createDigitBaseMap(
-  base: string
+  base: string,
 ): [forward: readonly string[], reverse: ReadonlyMap<string, number>] {
   // We always convert characters to an array first to ensure consistent splitting behavior.
   const forward = splitBase(base);
@@ -76,10 +76,10 @@ export function createDigitBaseMap(
  * @throws {Error} When the base string characters are not unique or not in ascending order (via {@link splitBase})
  */
 export function createIntegerLengthBaseMap(
-  base: string
+  base: string,
 ): [
   forward: ReadonlyMap<number, string>,
-  reverse: ReadonlyMap<string, number>
+  reverse: ReadonlyMap<string, number>,
 ] {
   // We always convert characters to an array first to ensure consistent splitting behavior.
   const forward = splitBase(base);
@@ -100,7 +100,7 @@ export function createIntegerLengthBaseMap(
           : // For characters in the second half, assign positive values starting from 1
             index - positiveBegin + 1, // This maps to 1, 2, 3, etc. (skipping 0)
         char,
-      ] as const
+      ] as const,
   );
 
   // Create both forward (length → char) and reverse (char → length) maps

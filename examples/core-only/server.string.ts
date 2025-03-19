@@ -32,7 +32,7 @@ const fraciForExampleItem = fraciString({
 const queryUtils = {
   // Find many items with filtering and ordering
   findMany: <
-    S extends Partial<Record<keyof ExampleItem, true>> | undefined = undefined
+    S extends Partial<Record<keyof ExampleItem, true>> | undefined = undefined,
   >(options: {
     where?: (item: ExampleItem) => boolean;
     orderBy?: { field: keyof ExampleItem; direction: "asc" | "desc" };
@@ -189,7 +189,7 @@ const xfi = {
 // Instead, use the built-in unique constraint handling provided by your database or ORM
 function checkIndexConflict(groupId: number, fi: FI): boolean {
   return exampleItems.some(
-    (item) => item.groupId === groupId && item.fi === fi
+    (item) => item.groupId === groupId && item.fi === fi,
   );
 }
 
@@ -201,7 +201,7 @@ const app = new Hono()
         where: (item) => item.groupId === groupId,
         orderBy: { field: "fi", direction: "asc" },
         select: { id: true, name: true, fi: true, groupId: true },
-      })
+      }),
     );
   })
   .get("/groups/:groupId/items.simple", async (c) => {
@@ -211,7 +211,7 @@ const app = new Hono()
         where: (item) => item.groupId === groupId,
         orderBy: { field: "fi", direction: "asc" },
         select: { name: true },
-      })
+      }),
     );
   })
   .post(
@@ -220,13 +220,13 @@ const app = new Hono()
       "json",
       z.object({
         name: z.string(),
-      })
+      }),
     ),
     zValidator(
       "query",
       z.object({
         delay: z.string().optional(),
-      })
+      }),
     ),
     async (c) => {
       const groupId = Number(c.req.param("groupId"));
@@ -264,7 +264,7 @@ const app = new Hono()
         }
       }
       return c.json({ error: "Failed to create item (Index Conflict)" }, 500);
-    }
+    },
   )
   .post(
     "/groups/:groupId/items/:itemId/order",
@@ -279,13 +279,13 @@ const app = new Hono()
           before: z.null().optional(),
           after: z.number().int(),
         }),
-      ])
+      ]),
     ),
     zValidator(
       "query",
       z.object({
         delay: z.string().optional(),
-      })
+      }),
     ),
     async (c) => {
       const groupId = Number(c.req.param("groupId"));
@@ -334,7 +334,7 @@ const app = new Hono()
         }
       }
       return c.json({ error: "Failed to update item (Index Conflict)" }, 500);
-    }
+    },
   ) satisfies ServerType;
 
 export default app;

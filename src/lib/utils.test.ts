@@ -28,21 +28,21 @@ describe("createDigitBaseMap", () => {
   it("should throw an error if the base string is too short", () => {
     const base = "abc";
     expect(() => createDigitBaseMap(base)).toThrow(
-      "Fraci: Base string must have at least 4 unique characters"
+      "Fraci: Base string must have at least 4 unique characters",
     );
   });
 
   it("should throw an error if the base string has duplicated characters", () => {
     const base = "aabc";
     expect(() => createDigitBaseMap(base)).toThrow(
-      "Fraci: Base string characters must be unique and in ascending order"
+      "Fraci: Base string characters must be unique and in ascending order",
     );
   });
 
   it("should throw an error if the base string characters are not in ascending order", () => {
     const base = "abdc";
     expect(() => createDigitBaseMap(base)).toThrow(
-      "Fraci: Base string characters must be unique and in ascending order"
+      "Fraci: Base string characters must be unique and in ascending order",
     );
   });
 });
@@ -83,21 +83,21 @@ describe("createIntegerLengthBaseMap", () => {
   it("should throw an error if the base string is too short", () => {
     const base = "abc";
     expect(() => createIntegerLengthBaseMap(base)).toThrow(
-      "Fraci: Base string must have at least 4 unique characters"
+      "Fraci: Base string must have at least 4 unique characters",
     );
   });
 
   it("should throw an error if the base string has duplicated characters", () => {
     const base = "aabc";
     expect(() => createIntegerLengthBaseMap(base)).toThrow(
-      "Fraci: Base string characters must be unique and in ascending order"
+      "Fraci: Base string characters must be unique and in ascending order",
     );
   });
 
   it("should throw an error if the base string characters are not in ascending order", () => {
     const base = "abdc";
     expect(() => createIntegerLengthBaseMap(base)).toThrow(
-      "Fraci: Base string characters must be unique and in ascending order"
+      "Fraci: Base string characters must be unique and in ascending order",
     );
   });
 });

@@ -17,10 +17,10 @@ export function equity(column: Column, value: unknown) {
   return value != null
     ? eq(column, value)
     : value === null
-    ? // Use `isNull` if value is `null`
-      isNull(column)
-    : // SECURITY: Always return `FALSE` if value is `undefined`, meaning it's missing
-      sql`FALSE`;
+      ? // Use `isNull` if value is `null`
+        isNull(column)
+      : // SECURITY: Always return `FALSE` if value is `undefined`, meaning it's missing
+        sql`FALSE`;
 }
 
 /**

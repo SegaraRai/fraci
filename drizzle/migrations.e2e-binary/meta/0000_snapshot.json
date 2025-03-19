@@ -55,10 +55,7 @@
       "indexes": {
         "group_id_fi_idx": {
           "name": "group_id_fi_idx",
-          "columns": [
-            "group_id",
-            "fi"
-          ],
+          "columns": ["group_id", "fi"],
           "isUnique": true
         }
       },
