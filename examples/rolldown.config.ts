@@ -8,21 +8,69 @@ function dumpSize(size: number): string {
     .padStart(5)} KiB)`;
 }
 
+const aggregated: Record<
+  string,
+  { raw: number; minified: number; gzipped: number }
+> = {};
+
+process.on("exit", () => {
+  const toKiB = (size: number) => (size / 1024).toFixed(2);
+
+  console.log("Bundle sizes:");
+  console.log(
+    "| Integration              | Total Size (minified)     | Total Size (minified + gzipped) |",
+  );
+  console.log(
+    "| ------------------------ | ------------------------- | ------------------------------- |",
+  );
+
+  for (const [integration, integrationId] of [
+    ["Core only", "core"],
+    ["Drizzle ORM", "drizzle"],
+    ["Prisma ORM", "prisma"],
+  ]) {
+    for (const [variant, variantId] of [
+      ["Binary", "binary"],
+      ["String", "string"],
+      ["Both", "all"],
+    ]) {
+      const sizes = aggregated[`${integrationId}.${variantId}`];
+      if (!sizes) {
+        continue;
+      }
+
+      if (integrationId === "core") {
+        console.log(
+          `| **${integration} (${variant})** | ${toKiB(sizes.minified)} KiB | **${toKiB(sizes.gzipped)} KiB** |`,
+        );
+      } else {
+        const coreSize = aggregated[`core.${variantId}`];
+        const minifiedDiff = sizes.minified - coreSize.minified;
+        const gzippedDiff = sizes.gzipped - coreSize.gzipped;
+
+        console.log(
+          `| **${integration} (${variant})** | ${toKiB(sizes.minified)} KiB (Core +${toKiB(minifiedDiff)} KiB) | **${toKiB(sizes.gzipped)} KiB** (Core +${toKiB(gzippedDiff)} KiB) |`,
+        );
+      }
+    }
+  }
+});
+
 export default defineConfig(
   [
-    "core-only/entrypoint.all",
-    "core-only/entrypoint.binary",
-    "core-only/server.string",
-    "drizzle-orm/entrypoint.all",
-    "drizzle-orm/server.binary",
-    "drizzle-orm/server.string",
-    "drizzle-orm-sync/entrypoint.all",
-    "drizzle-orm-sync/server.binary",
-    "drizzle-orm-sync/server.string",
-    "prisma/server.binary",
-    "prisma/server.string",
+    ["core-only/entrypoint.all", "core.all"],
+    ["core-only/entrypoint.binary", "core.binary"],
+    ["core-only/server.string", "core.string"],
+    ["drizzle-orm/entrypoint.all", "drizzle.all"],
+    ["drizzle-orm/server.binary", "drizzle.binary"],
+    ["drizzle-orm/server.string", "drizzle.string"],
+    ["drizzle-orm-sync/entrypoint.all", "drizzle.all"],
+    ["drizzle-orm-sync/server.binary", "drizzle.binary"],
+    ["drizzle-orm-sync/server.string", "drizzle.string"],
+    ["prisma/server.binary", "prisma.all"],
+    ["prisma/server.string", "prisma.all"],
   ].map(
-    (entrypoint): RolldownOptions => ({
+    ([entrypoint, id]): RolldownOptions => ({
       input: `examples/${entrypoint}.ts`,
       external: [
         "bun",
@@ -94,13 +142,25 @@ export default defineConfig(
               source: gzipped as unknown as Uint8Array,
             });
 
+            const rawSize = fraciBundle.code.length;
+            const minifiedSize = minified.code.length;
+            const gzippedSize = gzipped.length;
+
             console.log(
               `Fraci size for ${entrypoint.padEnd(32)}: raw: ${dumpSize(
-                fraciBundle.code.length,
+                rawSize,
               )}, minified: ${dumpSize(
-                minified.code.length,
-              )}, minified + gzipped: ${dumpSize(gzipped.length)}`,
+                minifiedSize,
+              )}, minified + gzipped: ${dumpSize(gzippedSize)}`,
             );
+
+            if ((aggregated[id]?.minified ?? 0) < minifiedSize) {
+              aggregated[id] = {
+                raw: rawSize,
+                minified: minifiedSize,
+                gzipped: gzippedSize,
+              };
+            }
           },
         },
       ],
