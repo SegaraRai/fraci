@@ -40,7 +40,7 @@
     "changeset-version": "changeset version",
     "changeset-publish": "changeset publish",
     "generate-migrations": "bun run scripts/generate-migrations.ts",
-    "bench": "bun run src/lib/fractional-indexing.bench.ts",
+    "bench": "bun run src/lib/fractional-indexing.bench.ts && bun run src/lib/fractional-indexing-binary.bench.ts",
     "build": "tsup && bun run scripts/fix-dts.ts",
     "build-examples": "rolldown -c examples/rolldown.config.ts",
     "build-docs": "typedoc",

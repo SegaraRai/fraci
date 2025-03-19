@@ -1,9 +1,7 @@
-import { BASE62, fraci } from "fraci";
+import { BASE62, fraciBinary, fraciString } from "fraci";
 
 {
-  const fi = fraci({
-    type: "binary",
-  });
+  const fi = fraciBinary();
 
   const [key1] = fi.generateKeyBetween(null, null);
   const [key2] = fi.generateKeyBetween(key1, null);
@@ -15,7 +13,7 @@ import { BASE62, fraci } from "fraci";
 }
 
 {
-  const fi = fraci({
+  const fi = fraciString({
     digitBase: BASE62,
     lengthBase: BASE62,
   });
