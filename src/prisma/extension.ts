@@ -183,7 +183,7 @@ export type FraciForPrisma<
  *
  * @template Options - The options type
  *
- * @example ["article.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ["photo.fi", { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" }] | ...
+ * @example ["article.fi", { group: ["userId"], lengthBase: "0123456789", digitBase: "0123456789" }] | ["photo.fi", { group: ["userId"], lengthBase: "0123456789", digitBase: "0123456789" }] | ...
  */
 type FieldsUnion<Options extends PrismaFraciOptions> = {
   [K in keyof Options["fields"]]: [K, Options["fields"][K]];

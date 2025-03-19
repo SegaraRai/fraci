@@ -9,13 +9,13 @@ test("definePrismaFraci type check", () => {
       fields: {
         "article.fi": {
           group: [],
-          digitBase: BASE36L,
           lengthBase: BASE26L,
+          digitBase: BASE36L,
         },
         "photo.fi": {
           group: [],
-          digitBase: BASE36L,
           lengthBase: BASE26L,
+          digitBase: BASE36L,
         },
       },
     })
@@ -23,13 +23,13 @@ test("definePrismaFraci type check", () => {
     fields: {
       "article.fi": {
         group: [],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
       "photo.fi": {
         group: [],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
     },
   });
@@ -39,8 +39,8 @@ test("definePrismaFraci type check", () => {
       // @ts-expect-error Only existing fields can be specified.
       "notExist.fi": {
         group: [],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
     },
   });
@@ -50,8 +50,8 @@ test("definePrismaFraci type check", () => {
       // @ts-expect-error Only existing fields can be specified.
       "article.notExist": {
         group: [],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
     },
   });
@@ -61,8 +61,8 @@ test("definePrismaFraci type check", () => {
       "article.fi": {
         // @ts-expect-error Only existing fields can be specified.
         group: ["altText"],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
     },
   });
@@ -72,8 +72,8 @@ test("definePrismaFraci type check", () => {
       "article.fi": {
         // @ts-expect-error Only serializable fields can be specified.
         group: ["createdAt"],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
     },
   });
@@ -83,8 +83,8 @@ test("definePrismaFraci type check", () => {
       "article.fi": {
         // @ts-expect-error The fractional index field itself cannot be specified.
         group: ["fi"],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
     },
   });

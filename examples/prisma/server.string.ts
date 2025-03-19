@@ -15,8 +15,8 @@ const prisma = basePrisma.$extends(
     fields: {
       "stringExampleItem.fi": {
         group: ["groupId"],
-        digitBase: BASE62,
         lengthBase: BASE62,
+        digitBase: BASE62,
       },
     },
   })

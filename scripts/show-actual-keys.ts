@@ -14,8 +14,8 @@ import { BASE62, fraciBinary, fraciString } from "fraci";
 
 {
   const fi = fraciString({
-    digitBase: BASE62,
     lengthBase: BASE62,
+    digitBase: BASE62,
   });
 
   const [key1] = fi.generateKeyBetween(null, null);

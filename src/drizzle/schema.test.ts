@@ -25,8 +25,8 @@ describe("defineDrizzleFraci", () => {
 
     // Create a fraci instance
     const testFraci = fraciString({
-      digitBase: BASE36L,
       lengthBase: BASE36L,
+      digitBase: BASE36L,
     });
 
     // Define cursor and group

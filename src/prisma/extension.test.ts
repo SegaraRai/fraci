@@ -16,24 +16,24 @@ const prisma = basePrisma.$extends(
     fields: {
       "article.fi": {
         group: ["userId"],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
       "photo.fi": {
         // `userId` is not necessary in practice; it's just for demonstration.
         group: ["articleId", "userId"],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
       "tagsOnPhotos.tagFI": {
         group: ["photoId"],
-        digitBase: BASE95,
         lengthBase: BASE95,
+        digitBase: BASE95,
       },
       "tagsOnPhotos.photoFI": {
         group: ["tagId"],
-        digitBase: BASE95,
         lengthBase: BASE95,
+        digitBase: BASE95,
       },
     },
   })
@@ -194,8 +194,8 @@ test("should throw error if invalid column specified", () => {
           // @ts-expect-error Only existing fields can be specified.
           "notExist.fi": {
             group: [],
-            digitBase: BASE36L,
             lengthBase: BASE26L,
+            digitBase: BASE36L,
           },
         },
       })
@@ -211,8 +211,8 @@ test("should throw error if invalid column specified", () => {
           // @ts-expect-error Only existing fields can be specified.
           "article.notExist": {
             group: [],
-            digitBase: BASE36L,
             lengthBase: BASE26L,
+            digitBase: BASE36L,
           },
         },
       })
@@ -473,23 +473,23 @@ test("FraciForPrisma", () => {
     fields: {
       "article.fi": {
         group: ["userId"],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
       "photo.fi": {
         group: ["articleId", "userId"],
-        digitBase: BASE36L,
         lengthBase: BASE26L,
+        digitBase: BASE36L,
       },
       "tagsOnPhotos.tagFI": {
         group: ["photoId"],
-        digitBase: BASE95,
         lengthBase: BASE95,
+        digitBase: BASE95,
       },
       "tagsOnPhotos.photoFI": {
         group: ["tagId"],
-        digitBase: BASE95,
         lengthBase: BASE95,
+        digitBase: BASE95,
       },
     },
   });

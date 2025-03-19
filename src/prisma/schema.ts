@@ -5,7 +5,7 @@ import type { QualifiedFields } from "./prisma-types.js";
  *
  * @template T - The type of the name of the group fields
  *
- * @example { group: ["userId", "title"], digitBase: "0123456789", lengthBase: "0123456789" }, where T = "userId" | "title"
+ * @example { group: ["userId", "title"], lengthBase: "0123456789", digitBase: "0123456789" }, where T = "userId" | "title"
  */
 export type FieldOptions<
   T extends string = string,
@@ -26,7 +26,7 @@ export type FieldOptions<
 /**
  * The record of the fractional index fields.
  *
- * @example { "article.fi": { group: ["userId"], digitBase: "0123456789", lengthBase: "0123456789" } }
+ * @example { "article.fi": { group: ["userId"], lengthBase: "0123456789", digitBase: "0123456789" } }
  */
 type FieldOptionsRecord = {
   readonly [Q in QualifiedFields[0]]?:

@@ -21,8 +21,8 @@ describe("drizzleFraciSync with group columns", () => {
 
   // Create fraci instance
   const testFraci = fraciString({
-    digitBase: BASE36L,
     lengthBase: BASE36L,
+    digitBase: BASE36L,
   });
 
   // Define fraci config
@@ -212,8 +212,8 @@ describe("drizzleFraciSync without group columns", () => {
 
   // Create fraci instance
   const noGroupFraci = fraciString({
-    digitBase: BASE36L,
     lengthBase: BASE36L,
+    digitBase: BASE36L,
   });
 
   // Define fraci config with empty group
