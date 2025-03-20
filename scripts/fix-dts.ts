@@ -1,6 +1,11 @@
 import { readFile, writeFile } from "node:fs/promises";
 
-for (const file of ["dist/prisma.d.ts", "dist/prisma.d.cts"]) {
+for (const file of [
+  "dist/prisma.d.ts",
+  "dist/prisma.d.cts",
+  "dist/dev/prisma.d.ts",
+  "dist/dev/prisma.d.cts",
+]) {
   const content = await readFile(file, "utf-8");
   const replaced = content.replace(
     "import { PrismaClient, Prisma } from '@prisma/client/extension.js'",

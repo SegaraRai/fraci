@@ -69,6 +69,12 @@ export function isValidFractionalIndex(index: Uint8Array): boolean {
 function ensureNotUndefined<T>(value: T | undefined): T {
   if (value === undefined) {
     // This should not happen as we should have validated the value before.
+    if (globalThis.__DEV__) {
+      console.error(
+        "Fraci Internal: Unexpected undefined. Please file an issue to report this error.",
+      );
+    }
+
     throw new Error("Fraci Internal: Unexpected undefined");
   }
   return value;

@@ -18,14 +18,26 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
+      "development": {
+        "import": "./dist/dev/index.js",
+        "require": "./dist/dev/index.cjs"
+      },
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./drizzle": {
+      "development": {
+        "import": "./dist/dev/drizzle.js",
+        "require": "./dist/dev/drizzle.cjs"
+      },
       "import": "./dist/drizzle.js",
       "require": "./dist/drizzle.cjs"
     },
     "./prisma": {
+      "development": {
+        "import": "./dist/dev/prisma.js",
+        "require": "./dist/dev/prisma.cjs"
+      },
       "import": "./dist/prisma.js",
       "require": "./dist/prisma.cjs"
     }

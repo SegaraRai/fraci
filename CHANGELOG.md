@@ -142,7 +142,7 @@
 
 ### Minor Changes
 
-- 93c538b: Do not use unique symbol to brand prisma types to avoid TS4058 error.
+- 93c538b: Do not use unique symbol to brand Prisma types to avoid TS4058 error.
 - 082ff42: Remove `__EXAMPLE__` type only hint.
 - 367b8d6: Add caching feature.
 

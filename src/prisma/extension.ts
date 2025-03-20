@@ -273,6 +273,14 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
       // Get the actual model name from Prisma metadata
       const { modelName } = (client as any)[model]?.fields?.[field] ?? {};
       if (!modelName) {
+        if (globalThis.__DEV__) {
+          console.error(`Fraci Prisma: Could not get field information for ${model}.${field}.
+Make sure that
+- The model and field names are correct and exist in the Prisma schema
+- The Prisma client is generated with the correct schema
+- The Prisma version is compatible with the extension`);
+        }
+
         throw new Error(
           `Fraci Prisma: Could not get field information for ${model}.${field}`,
         );
