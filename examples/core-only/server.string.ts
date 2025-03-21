@@ -306,7 +306,7 @@ const app = new Hono()
       }
 
       let retryCount = 0;
-      for (const fi of xfi.generateKeyBetween(indices[0], indices[1])) {
+      for (const fi of xfi.generateKeyBetween(...indices)) {
         try {
           // Check for index conflicts manually
           if (checkIndexConflict(groupId, fi)) {

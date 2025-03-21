@@ -32,6 +32,17 @@ const ERROR_MESSAGE_INVALID_INPUT = "Fraci: Invalid indices provided";
 
 const ERROR_MESSAGE_EXCEEDED_MAX_LENGTH = "Fraci: Exceeded maximum length";
 
+type IndexPairs<T> =
+  | [T | null, T | null]
+  | [T | null, T]
+  | [T | null, null]
+  | [T, T | null]
+  | [T, T]
+  | [T, null]
+  | [null, T | null]
+  | [null, T]
+  | [null, null];
+
 /**
  * Fractional indexing utility that provides methods for generating ordered keys.
  *
@@ -69,6 +80,27 @@ export interface Fraci<B extends FractionalIndexBase, X> {
   ): Generator<FractionalIndex<B, X>, void, unknown>;
 
   /**
+   * Generates a key between two existing keys.
+   * Returns a generator that yields new unique keys between the provided bounds.
+   *
+   * This is an overload to make the spread operator work with conditional tuples.
+   *
+   * @param a - The lower bound key, or null if there is no lower bound
+   * @param b - The upper bound key, or null if there is no upper bound
+   * @param skip - Number of conflict avoidance iterations to skip (default: 0)
+   * @returns A generator yielding fractional index keys
+   * @throws {Error} When invalid input is provided
+   * @throws {Error} When the generated key exceeds the maximum length
+   *
+   * @ignore Documentation should be ignored for this overload but should not affect functionality and Intellisense
+   */
+  generateKeyBetween(
+    ...[a, b, skip]:
+      | [...IndexPairs<FractionalIndex<B, X>>]
+      | [...IndexPairs<FractionalIndex<B, X>>, number]
+  ): Generator<FractionalIndex<B, X>, void, unknown>;
+
+  /**
    * Generates multiple keys evenly distributed between two existing keys.
    * Returns a generator that yields arrays of new unique keys.
    *
@@ -85,6 +117,28 @@ export interface Fraci<B extends FractionalIndexBase, X> {
     b: FractionalIndex<B, X> | null,
     n: number,
     skip?: number,
+  ): Generator<FractionalIndex<B, X>[], void, unknown>;
+
+  /**
+   * Generates multiple keys evenly distributed between two existing keys.
+   * Returns a generator that yields arrays of new unique keys.
+   *
+   * This is an overload to make the spread operator work with conditional tuples.
+   *
+   * @param a - The lower bound key, or null if there is no lower bound
+   * @param b - The upper bound key, or null if there is no upper bound
+   * @param n - Number of keys to generate
+   * @param skip - Number of conflict avoidance iterations to skip (default: 0)
+   * @returns A generator yielding arrays of fractional index keys
+   * @throws {Error} When invalid input is provided
+   * @throws {Error} When the generated keys would exceed the maximum length
+   *
+   * @ignore Documentation should be ignored for this overload but should not affect functionality and Intellisense
+   */
+  generateNKeysBetween(
+    ...[a, b, n, skip]:
+      | [...IndexPairs<FractionalIndex<B, X>>, number]
+      | [...IndexPairs<FractionalIndex<B, X>>, number, number]
   ): Generator<FractionalIndex<B, X>[], void, unknown>;
 }
 

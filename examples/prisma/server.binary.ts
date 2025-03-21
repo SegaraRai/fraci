@@ -137,7 +137,7 @@ const app = new Hono()
       }
 
       let retryCount = 0;
-      for (const fi of xfi.generateKeyBetween(indices[0], indices[1])) {
+      for (const fi of xfi.generateKeyBetween(...indices)) {
         try {
           const updated = await prisma.binaryExampleItem.update({
             // SECURITY: Always filter by group id to prevent cross-reference.

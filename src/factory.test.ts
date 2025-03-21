@@ -6,6 +6,7 @@ import {
   fraciBinary,
   fraciString,
 } from "./factory.js";
+import type { FractionalIndexOf } from "./types.js";
 
 describe("fraciBinary", () => {
   it("should create a binary fractional indexing utility", () => {
@@ -262,6 +263,25 @@ describe("fraci", () => {
     expect(generator.next().done).toBe(false);
     expect(generator.next().done).toBe(false);
     expect(generator.next().done).toBe(true);
+  });
+
+  it("should handle complex tuple types", () => {
+    const indexing = fraci({ lengthBase, digitBase });
+
+    type FI = FractionalIndexOf<typeof indexing>;
+    const indices = [null, null] as
+      | [FI, FI | null]
+      | [FI | null, null]
+      | [null, null];
+    indexing.generateKeyBetween(...indices);
+    indexing.generateKeyBetween(...indices, 1);
+    indexing.generateNKeysBetween(...indices, 3);
+    indexing.generateNKeysBetween(...indices, 3, 1);
+
+    // @ts-expect-error - Should not accept if n is missing
+    indexing.generateNKeysBetween(...indices);
+
+    expect(true).toBe(true);
   });
 });
 
