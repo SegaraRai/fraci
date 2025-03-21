@@ -53,6 +53,8 @@ export interface DrizzleFraciConfig<
   /**
    * The column that stores the fractional index.
    * Must be branded with the fractional index type using `$type<FractionalIndexOf<F>>()`.
+   *
+   * @see {@link FractionalIndexOf}
    */
   readonly column: FraciColumn;
   /** The columns that define the grouping context for the fractional index. */
@@ -66,10 +68,10 @@ export interface DrizzleFraciConfig<
  * This type maps the cursor columns defined in the configuration to their
  * corresponding data types, creating a type-safe cursor object.
  *
- * @template T - The Drizzle fractional indexing configuration
+ * @template Config - The Drizzle fractional indexing configuration
  */
-export type DrizzleFraciCursor<T extends DrizzleFraciConfig> = {
-  [K in keyof T["cursor"]]: T["cursor"][K]["_"]["data"];
+export type DrizzleFraciCursor<Config extends DrizzleFraciConfig> = {
+  [K in keyof Config["cursor"]]: Config["cursor"][K]["_"]["data"];
 };
 
 /**
@@ -77,10 +79,10 @@ export type DrizzleFraciCursor<T extends DrizzleFraciConfig> = {
  * This type maps the group columns defined in the configuration to their
  * corresponding data types, creating a type-safe group object.
  *
- * @template T - The Drizzle fractional indexing configuration
+ * @template Config - The Drizzle fractional indexing configuration
  */
-export type DrizzleFraciGroup<T extends DrizzleFraciConfig> = {
-  [K in keyof T["group"]]: T["group"][K]["_"]["data"];
+export type DrizzleFraciGroup<Config extends DrizzleFraciConfig> = {
+  [K in keyof Config["group"]]: Config["group"][K]["_"]["data"];
 };
 
 /**
@@ -88,7 +90,7 @@ export type DrizzleFraciGroup<T extends DrizzleFraciConfig> = {
  * This type alias extracts the exact fractional index type from the
  * configuration's fraci instance.
  *
- * @template T - The Drizzle fractional indexing configuration
+ * @template Config - The Drizzle fractional indexing configuration
  */
-export type DrizzleFractionalIndex<T extends DrizzleFraciConfig> =
-  FractionalIndexOf<T["fraci"]>;
+export type DrizzleFractionalIndex<Config extends DrizzleFraciConfig> =
+  FractionalIndexOf<Config["fraci"]>;

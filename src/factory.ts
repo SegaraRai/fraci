@@ -88,40 +88,86 @@ export interface Fraci<B extends FractionalIndexBase, X> {
   ): Generator<FractionalIndex<B, X>[], void, unknown>;
 }
 
+/**
+ * Type alias for any {@link Fraci} instance with a binary digit base.
+ *
+ * @see {@link AnyFraci} - A union type of all fractional index types
+ */
 export type AnyBinaryFraci = Fraci<AnyBinaryFractionalIndexBase, any>;
 
+/**
+ * Type alias for any {@link Fraci} instance with a string digit base.
+ *
+ * @see {@link AnyFraci} - A union type of all fractional index types
+ */
 export type AnyStringFraci = Fraci<AnyStringFractionalIndexBase, any>;
 
 /**
- * Type alias for any Fraci instance with any digit base, length base, and brand.
+ * Type alias for any {@link Fraci} instance with any digit base, length base, and brand.
  * This is useful for cases where the specific parameters don't matter.
+ *
+ * @see {@link AnyBinaryFraci} - The type of all binary fractional index types
+ * @see {@link AnyStringFraci} - The type of all string fractional index types
  */
 export type AnyFraci = AnyBinaryFraci | AnyStringFraci;
 
+/**
+ * Base options for fractional indexing.
+ * This is used to define the character sets and types for the fractional index.
+ */
 export type FraciOptionsBase =
   | {
+      /**
+       * The type of the fractional index.
+       * Must be "string" or `undefined` for string fractional indices.
+       */
       readonly type?: "string" | undefined;
+
       /**
        * The character set used for encoding the length of the integer part.
        */
       readonly lengthBase: string;
+
       /**
        * The character set used for representing digits in the fractional index.
        */
       readonly digitBase: string;
     }
-  | { readonly type: "binary" };
+  | {
+      /**
+       * The type of the fractional index.
+       * Must be "binary" for binary fractional indices.
+       */
+      readonly type: "binary";
+    };
 
+/**
+ * Type alias for converting the base options to a more specific type.
+ */
 export type FraciOptionsBaseToBase<B extends FraciOptionsBase> = B extends {
   readonly lengthBase: string;
   readonly digitBase: string;
 }
   ? {
+      /**
+       * The type of the fractional index.
+       */
       readonly type: "string";
+
+      /**
+       * The character set used for encoding the length of the integer part.
+       */
       readonly lengthBase: B["lengthBase"];
+
+      /**
+       * The character set used for representing digits in the fractional index.
+       */
       readonly digitBase: B["digitBase"];
     }
   : {
+      /**
+       * The type of the fractional index.
+       */
       readonly type: "binary";
     };
 
@@ -144,15 +190,29 @@ export type FraciOptions<B extends FraciOptionsBase> = B & {
   readonly maxRetries?: number | undefined;
 };
 
+/**
+ * Type alias for binary fractional indexing options.
+ */
 export type BinaryFraciOptions = FraciOptions<{ readonly type: "binary" }>;
 
+/**
+ * Type alias for string fractional indexing options.
+ */
 export type StringFraciOptions = FraciOptions<{
   readonly type?: "string" | undefined;
   readonly lengthBase: string;
   readonly digitBase: string;
 }>;
 
-type BrandableOptions<T, X> = T & { readonly brand?: X | undefined };
+/**
+ * Type alias to represent options that can be branded.
+ */
+type BrandableOptions<T, X> = T & {
+  /**
+   * The brand type for the fractional index.
+   */
+  readonly brand?: X | undefined;
+};
 
 /**
  * Cache for storing computed values to improve performance.
@@ -161,7 +221,7 @@ type BrandableOptions<T, X> = T & { readonly brand?: X | undefined };
 export type FraciCache = Map<string, unknown> & { readonly __fraci__: never };
 
 /**
- * Creates a new empty cache for storing computed values in fractional indexing operations.
+ * Creates a new empty {@link FraciCache} for storing computed values in string-based fractional indexing operations.
  * Using a cache can improve initialization performance when repeatedly using the same base configurations.
  *
  * @returns A new empty FraciCache instance
@@ -169,8 +229,8 @@ export type FraciCache = Map<string, unknown> & { readonly __fraci__: never };
  * @example
  * ```typescript
  * const cache = createFraciCache();
- * const fraci1 = fraciString({ lengthBase: "abcdefghij", digitBase: "0123456789" }, cache);
- * const fraci2 = fraciString({ lengthBase: "abcdefghij", digitBase: "0123456789" }, cache);
+ * const fraci1 = fraciString({ brand: "a", lengthBase: "abcdefghij", digitBase: "0123456789" }, cache);
+ * const fraci2 = fraciString({ brand: "b", lengthBase: "abcdefghij", digitBase: "0123456789" }, cache);
  * // Both instances will share cached computations
  * ```
  */
@@ -247,6 +307,11 @@ File an issue if you use the library correctly and still encounter this error.`,
  * // Generate a key between key1 and key2
  * const [key3] = binaryFraci.generateKeyBetween(key1, key2);
  * ```
+ *
+ * @see {@link Fraci} - The main fractional indexing utility type
+ * @see {@link BinaryFraciOptions} - The options for the binary fractional indexing utility
+ * @see {@link fraci} - The unified factory function for creating fractional indexing utilities
+ * @see {@link fraciString} - The factory function for creating string-based fractional indexing utilities
  */
 export function fraciBinary<const X = unknown>({
   maxLength = DEFAULT_MAX_LENGTH,
@@ -334,6 +399,12 @@ export function fraciBinary<const X = unknown>({
  * // Generate a key between key1 and key2
  * const [key3] = decimalFraci.generateKeyBetween(key1, key2);
  * ```
+ *
+ * @see {@link Fraci} - The main fractional indexing utility type
+ * @see {@link StringFraciOptions} - The options for the string fractional indexing utility
+ * @see {@link FraciCache} - The cache for storing computed values
+ * @see {@link fraci} - The unified factory function for creating fractional indexing utilities
+ * @see {@link fraciBinary} - The factory function for creating binary-based fractional indexing utilities
  */
 export function fraciString<
   const B extends StringFraciOptions,
@@ -438,7 +509,7 @@ export function fraciString<
  * **We recommend using {@link fraciBinary} or {@link fraciString} directly to reduce bundle size whenever possible.**
  *
  * Creates a fractional indexing utility with the specified configuration.
- * This is the main factory function for creating a Fraci instance that can generate
+ * This is the main factory function for creating a {@link Fraci} instance that can generate
  * fractional indices between existing values.
  *
  * @template B - The type of the base characters

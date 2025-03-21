@@ -6,7 +6,7 @@ import type { PrismaClientKnownRequestError } from "@prisma/client/runtime/libra
 const PRISMA_CONFLICT_CODE = "P2002";
 
 /**
- * `PrismaClientKnownRequestError` of the conflict error.
+ * {@link PrismaClientKnownRequestError} of the conflict error.
  */
 export type PrismaClientConflictError = PrismaClientKnownRequestError & {
   code: typeof PRISMA_CONFLICT_CODE;

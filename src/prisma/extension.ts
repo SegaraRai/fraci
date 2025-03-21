@@ -8,6 +8,7 @@ import {
   fraciBinary,
   fraciString,
   type AnyFraci,
+  type Fraci,
 } from "../factory.js";
 import type { AnyFractionalIndex, FractionalIndex } from "../lib/types.js";
 import type { FraciOf } from "../types.js";
@@ -25,7 +26,7 @@ import type {
   QueryArgs,
   StringModelFieldName,
 } from "./prisma-types.js";
-import type { FieldOptions, PrismaFraciOptions } from "./schema.js";
+import type { PrismaFraciFieldOptions, PrismaFraciOptions } from "./schema.js";
 
 /**
  * A brand for Prisma models and fields.
@@ -39,15 +40,22 @@ type PrismaBrand<Model extends string, Field extends string> = {
 
 /**
  * A tuple of two fractional indices, used for generating a new index between them.
+ *
+ * @template FI - The fractional index type
  */
 type Indices<FI extends AnyFractionalIndex> = [a: FI | null, b: FI | null];
 
 /**
- * `Fraci` with some additional methods for Prisma.
+ * Type representing the enhanced fractional indexing utility for Prisma ORM.
+ * This type extends the base fractional indexing utility with additional methods for retrieving indices.
+ *
+ * This is an internal type used to define the methods for the Prisma extension.
  *
  * @template Model - The model name
  * @template Where - The type of the required fields for the `where` argument of the `findMany` method
  * @template FI - The fractional index type
+ *
+ * @see {@link Fraci} - The base fractional indexing utility type
  */
 type FraciForPrismaInternal<
   Model extends ModelKey,
@@ -64,7 +72,7 @@ type FraciForPrismaInternal<
   /**
    * Retrieves the existing indices to generate a new fractional index for the item after the specified item.
    *
-   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the {@link PrismaFraciFieldOptions.group group} property of the field options.
    * @param cursor - The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the first item.
    * @param client - The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the item after the specified item, or `undefined` if the item specified by the `cursor` does not exist.
@@ -84,7 +92,7 @@ type FraciForPrismaInternal<
   /**
    * Retrieves the existing indices to generate a new fractional index for the item before the specified item.
    *
-   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the {@link PrismaFraciFieldOptions.group group} property of the field options.
    * @param cursor - The cursor (selector) of the item. If `null`, this method returns the indices to generate a new fractional index for the last item.
    * @param client - The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the item before the specified item, or `undefined` if the item specified by the `cursor` does not exist.
@@ -103,9 +111,9 @@ type FraciForPrismaInternal<
   };
   /**
    * Retrieves the existing indices to generate a new fractional index for the first item.
-   * Equivalent to `indicesForAfter(where, null, client)`.
+   * Equivalent to {@link FraciForPrismaInternal.indicesForAfter `indicesForAfter(where, null, client)`}.
    *
-   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the {@link PrismaFraciOptions.group group} property of the field options.
    * @param client - The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the first item.
    */
@@ -115,9 +123,9 @@ type FraciForPrismaInternal<
   ): Promise<Indices<FI>>;
   /**
    * Retrieves the existing indices to generate a new fractional index for the last item.
-   * Equivalent to `indicesForBefore(where, null, client)`.
+   * Equivalent to {@link FraciForPrismaInternal.indicesForBefore `indicesForBefore(where, null, client)`}.
    *
-   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the `group` property of the field options.
+   * @param where - The `where` argument of the `findMany` method. Must have the fields specified in the {@link PrismaFraciOptions.group group} property of the field options.
    * @param client - The Prisma client to use. Should be specified when using transactions. If not specified, the client used to create the extension is used.
    * @returns The indices to generate a new fractional index for the last item.
    */
@@ -128,14 +136,17 @@ type FraciForPrismaInternal<
 };
 
 /**
- * `Fraci` with some additional methods for Prisma.
+ * Type representing the enhanced fractional indexing utility for Prisma ORM.
+ * This type extends the base fractional indexing utility with additional methods for retrieving indices.
  *
  * @template Options - The field options type
  * @template Model - The model name
  * @template Field - The field name
+ *
+ * @see {@link Fraci} - The main fractional indexing utility type
  */
 type FraciForPrismaByFieldOptions<
-  Options extends FieldOptions,
+  Options extends PrismaFraciFieldOptions,
   Model extends ModelKey,
   Field extends BinaryModelFieldName<Model> | StringModelFieldName<Model>,
 > = FraciForPrismaInternal<
@@ -164,22 +175,25 @@ type FraciForPrismaByFieldOptions<
 >;
 
 /**
- * `Fraci` with some additional methods for Prisma.
+ * Type representing the enhanced fractional indexing utility for Prisma ORM.
+ * This type extends the base fractional indexing utility with additional methods for retrieving indices.
  *
  * @template Options - The options type
  * @template QualifiedField - The qualified field name
+ *
+ * @see {@link Fraci} - The main fractional indexing utility type
  */
 export type FraciForPrisma<
   Options extends PrismaFraciOptions,
   QualifiedField extends keyof Options["fields"],
-> = Options["fields"][QualifiedField] extends FieldOptions
+> = Options["fields"][QualifiedField] extends PrismaFraciFieldOptions
   ? QualifiedField extends `${infer M}.${infer F}`
     ? FraciForPrismaByFieldOptions<Options["fields"][QualifiedField], M, F>
     : never
   : never;
 
 /**
- * A union of the pairs of the key and value of the `fields` property of the options.
+ * A union of the pairs of the key and value of the {@link PrismaFraciOptions.fields fields} property of the options.
  *
  * @template Options - The options type
  *
@@ -201,7 +215,7 @@ type PerModelFieldInfo<Options extends PrismaFraciOptions> = {
       | StringModelFieldName<M> as `${M}.${F}` extends FieldsUnion<Options>[0]
       ? F
       : never]: {
-      readonly helper: Options["fields"][`${M}.${F}`] extends FieldOptions
+      readonly helper: Options["fields"][`${M}.${F}`] extends PrismaFraciFieldOptions
         ? FraciForPrismaByFieldOptions<Options["fields"][`${M}.${F}`], M, F>
         : never;
     };
@@ -232,7 +246,7 @@ export type PrismaFraciExtension<Options extends PrismaFraciOptions> = {
 };
 
 /**
- * `AnyFraci` for Prisma.
+ * {@link AnyFraci} for Prisma.
  */
 type AnyFraciForPrisma = FraciForPrismaInternal<
   string,
@@ -249,6 +263,8 @@ type AnyFraciForPrisma = FraciForPrismaInternal<
  * @returns The Prisma extension.
  * @throws {Error} When field information for a specified model.field cannot be retrieved
  * @throws {Error} When the digit or length base strings are invalid
+ *
+ * @see {@link FraciForPrisma} - The enhanced fractional indexing utility for Prisma ORM
  */
 export function prismaFraci<const Options extends PrismaFraciOptions>({
   fields,
@@ -265,7 +281,7 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
     // Process each field configuration from the options
     for (const [modelAndField, config] of Object.entries(fields) as [
       string,
-      FieldOptions,
+      PrismaFraciFieldOptions,
     ][]) {
       // Split the "model.field" string into separate parts
       const [model, field] = modelAndField.split(".", 2) as [ModelKey, string];

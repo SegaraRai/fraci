@@ -4,6 +4,7 @@ import type { PgDatabase } from "drizzle-orm/pg-core";
 import type { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
 import type { AnyFractionalIndex as AFI } from "../lib/types.js";
 import { equity, OPERATORS } from "./common.js";
+import type { drizzleFraciSync, FraciForDrizzleSync } from "./runtime-sync.js";
 import type {
   DrizzleFraciConfig,
   DrizzleFraciCursor,
@@ -117,7 +118,7 @@ async function indicesFor(
 
 /**
  * Retrieves indices for positioning an item after a specified cursor.
- * This is a wrapper around the `indicesFor` function with `reverse` set to false.
+ * This is a wrapper around the {@link indicesFor} function with `reverse` set to false.
  *
  * @param client - The Drizzle database client
  * @param config - The fractional indexing configuration
@@ -136,7 +137,7 @@ function indicesForAfter(
 
 /**
  * Retrieves indices for positioning an item before a specified cursor.
- * This is a wrapper around the `indicesFor` function with `reverse` set to true.
+ * This is a wrapper around the {@link indicesFor} function with `reverse` set to true.
  *
  * @param client - The Drizzle database client
  * @param config - The fractional indexing configuration
@@ -153,69 +154,88 @@ function indicesForBefore(
   return indicesFor(client, config, group, cursor, true);
 }
 
-export type FraciForDrizzle<T extends DrizzleFraciConfig> = T["fraci"] & {
-  /**
-   * Returns the indices to calculate the new index of the item to be inserted after the cursor.
-   *
-   * @param group - A record of the columns that uniquely identifies the group.
-   * @param cursor - A record of the cursor row columns that uniquely identifies the item within a group. If `null`, this function returns the indices to calculate the new index of the first item in the group.
-   * @returns The indices to calculate the new index of the item to be inserted after the cursor.
-   */
-  readonly indicesForAfter: {
-    (
-      group: DrizzleFraciGroup<T>,
-      cursor: DrizzleFraciCursor<T>,
-    ): Promise<
-      [DrizzleFractionalIndex<T>, DrizzleFractionalIndex<T> | null] | undefined
-    >;
-    (
-      group: DrizzleFraciGroup<T>,
-      cursor: null,
-    ): Promise<[null, DrizzleFractionalIndex<T> | null]>;
+/**
+ * Type representing the enhanced fractional indexing utility for Drizzle ORM with asynchronous database engine.
+ * This type extends the base fractional indexing utility with additional
+ * methods for retrieving indices based on asynchronous database queries.
+ *
+ * @template Config - The type of the fractional indexing configuration
+ *
+ * @see {@link drizzleFraci} - The main function to create an instance of this type
+ * @see {@link FraciForDrizzleSync} - The synchronous version of this type
+ */
+export type FraciForDrizzle<Config extends DrizzleFraciConfig> =
+  Config["fraci"] & {
+    /**
+     * Returns the indices to calculate the new index of the item to be inserted after the cursor.
+     *
+     * @param group - A record of the columns that uniquely identifies the group.
+     * @param cursor - A record of the cursor row columns that uniquely identifies the item within a group. If `null`, this function returns the indices to calculate the new index of the first item in the group.
+     * @returns The indices to calculate the new index of the item to be inserted after the cursor.
+     */
+    readonly indicesForAfter: {
+      (
+        group: DrizzleFraciGroup<Config>,
+        cursor: DrizzleFraciCursor<Config>,
+      ): Promise<
+        | [
+            DrizzleFractionalIndex<Config>,
+            DrizzleFractionalIndex<Config> | null,
+          ]
+        | undefined
+      >;
+      (
+        group: DrizzleFraciGroup<Config>,
+        cursor: null,
+      ): Promise<[null, DrizzleFractionalIndex<Config> | null]>;
+    };
+
+    /**
+     * Returns the indices to calculate the new index of the item to be inserted before the cursor.
+     *
+     * @param group - A record of the columns that uniquely identifies the group.
+     * @param cursor - A record of the cursor row columns that uniquely identifies the item within a group. If `null`, this function returns the indices to calculate the new index of the last item in the group.
+     * @returns The indices to calculate the new index of the item to be inserted before the cursor.
+     */
+    readonly indicesForBefore: {
+      (
+        group: DrizzleFraciGroup<Config>,
+        cursor: DrizzleFraciCursor<Config>,
+      ): Promise<
+        | [
+            DrizzleFractionalIndex<Config> | null,
+            DrizzleFractionalIndex<Config>,
+          ]
+        | undefined
+      >;
+      (
+        group: DrizzleFraciGroup<Config>,
+        cursor: null,
+      ): Promise<[DrizzleFractionalIndex<Config> | null, null]>;
+    };
+
+    /**
+     * Returns the indices to calculate the new index of the first item in the group.
+     * Identical to {@link FraciForDrizzle.indicesForAfter `indicesForAfter(null, group)`}.
+     *
+     * @param group - A record of the columns that uniquely identifies the group.
+     * @returns The indices to calculate the new index of the first item in the group.
+     */
+    readonly indicesForFirst: (
+      group: DrizzleFraciGroup<Config>,
+    ) => Promise<[null, DrizzleFractionalIndex<Config> | null]>;
+
+    /**
+     * Returns the indices to calculate the new index of the last item in the group.
+     * Identical to {@link FraciForDrizzle.indicesForBefore `indicesForBefore(null, group)`}.
+     *
+     * @param group - A record of the columns that uniquely identifies the group.
+     * @returns The indices to calculate the new index of the last item in the group.
+     */
+    readonly indicesForLast: (
+      group: DrizzleFraciGroup<Config>,
+    ) => Promise<[DrizzleFractionalIndex<Config> | null, null]>;
   };
-
-  /**
-   * Returns the indices to calculate the new index of the item to be inserted before the cursor.
-   *
-   * @param group - A record of the columns that uniquely identifies the group.
-   * @param cursor - A record of the cursor row columns that uniquely identifies the item within a group. If `null`, this function returns the indices to calculate the new index of the last item in the group.
-   * @returns The indices to calculate the new index of the item to be inserted before the cursor.
-   */
-  readonly indicesForBefore: {
-    (
-      group: DrizzleFraciGroup<T>,
-      cursor: DrizzleFraciCursor<T>,
-    ): Promise<
-      [DrizzleFractionalIndex<T> | null, DrizzleFractionalIndex<T>] | undefined
-    >;
-    (
-      group: DrizzleFraciGroup<T>,
-      cursor: null,
-    ): Promise<[DrizzleFractionalIndex<T> | null, null]>;
-  };
-
-  /**
-   * Returns the indices to calculate the new index of the first item in the group.
-   * Identical to `indicesForAfter(null, group)`.
-   *
-   * @param group - A record of the columns that uniquely identifies the group.
-   * @returns The indices to calculate the new index of the first item in the group.
-   */
-  readonly indicesForFirst: (
-    group: DrizzleFraciGroup<T>,
-  ) => Promise<[null, DrizzleFractionalIndex<T> | null]>;
-
-  /**
-   * Returns the indices to calculate the new index of the last item in the group.
-   * Identical to `indicesForBefore(null, group)`.
-   *
-   * @param group - A record of the columns that uniquely identifies the group.
-   * @returns The indices to calculate the new index of the last item in the group.
-   */
-  readonly indicesForLast: (
-    group: DrizzleFraciGroup<T>,
-  ) => Promise<[DrizzleFractionalIndex<T> | null, null]>;
-};
 
 /**
  * Creates an asynchronous fractional indexing utility for Drizzle ORM.
@@ -223,7 +243,7 @@ export type FraciForDrizzle<T extends DrizzleFraciConfig> = T["fraci"] & {
  * methods for retrieving indices based on asynchronous database queries.
  *
  * This is the asynchronous version that works with all supported database engines.
- * For Bun SQLite, use the `drizzleFraciSync` function.
+ * For Bun SQLite, use the {@link drizzleFraciSync} function.
  * The API is identical except that methods return Promises instead of direct values.
  *
  * @template Config - The type of the fractional indexing configuration
@@ -235,7 +255,7 @@ export type FraciForDrizzle<T extends DrizzleFraciConfig> = T["fraci"] & {
  * @example
  * ```typescript
  * const db = drizzle(connection);
- * const taskFraci = drizzleFraciSync(db, defineDrizzleFraci({
+ * const taskFraci = drizzleFraci(db, defineDrizzleFraci({
  *   fraciString({ lengthBase: BASE62, digitBase: BASE62 }),
  *   tasks,
  *   tasks.position,
@@ -248,6 +268,8 @@ export type FraciForDrizzle<T extends DrizzleFraciConfig> = T["fraci"] & {
  * const [a, b] = await taskFraci.indicesForFirst({ userId: 123 });
  * const [newPosition] = taskFraci.generateKeyBetween(a, b);
  * ```
+ *
+ * @see {@link drizzleFraciSync} - The synchronous version of this function
  */
 export function drizzleFraci<Config extends DrizzleFraciConfig>(
   client: SupportedDrizzleDatabase,
