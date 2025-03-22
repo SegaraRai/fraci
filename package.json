@@ -68,21 +68,21 @@
     "@prisma/client": "^6.5.0",
     "@types/bun": "latest",
     "drizzle-kit": "^0.30.5",
-    "drizzle-orm": "^0.40.1",
+    "drizzle-orm": "^0.41.0",
     "esbuild": "^0.25.1",
-    "hono": "^4.7.4",
+    "hono": "^4.7.5",
     "mitata": "^1.0.34",
     "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prisma": "^6.5.0",
     "rolldown": "^1.0.0-beta.6",
     "tsup": "^8.4.0",
-    "typedoc": "^0.28.0",
+    "typedoc": "^0.28.1",
     "typescript": "^5.8.2",
     "zod": "^3.24.2"
   },
   "peerDependencies": {
-    "drizzle-orm": ">= 0.30.0 < 0.41.0",
+    "drizzle-orm": ">= 0.30.0 < 0.42.0",
     "@prisma/client": "^5.0.0 || ^6.0.0"
   },
   "peerDependenciesMeta": {

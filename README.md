@@ -755,7 +755,7 @@ If you're seeing TypeScript errors related to fractional indices:
 
 - Ensure you're using the correct branded type for each column
 - Check that you're passing the correct parameters to `fraci()`
-- Ensure your ORM version is compatible with your fraci version (Drizzle ORM v0.30.x - v0.40.x and Prisma v5.x or v6.x required) and that the integration is correctly configured
+- Ensure your ORM version is compatible with your fraci version (Drizzle ORM v0.30.x - v0.41.x and Prisma v5.x or v6.x required) and that the integration is correctly configured
 
 ### Runtime Errors
 
