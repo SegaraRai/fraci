@@ -13,6 +13,9 @@
     "text",
     "typescript"
   ],
+  "headings": {
+    "readme": false
+  },
   "hostedBaseUrl": "https://segararai.github.io/fraci/",
   "useHostedBaseUrlForAbsoluteLinks": true,
   "favicon": "public/favicon.svg",
