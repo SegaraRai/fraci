@@ -7,6 +7,10 @@
     "./src/drizzle.ts",
     "./src/prisma.ts"
   ],
+  "projectDocuments": [
+    "CHANGELOG.md",
+    "LICENSE.md"
+  ],
   "highlightLanguages": [
     "prisma",
     "shell",
@@ -19,6 +23,9 @@
   "hostedBaseUrl": "https://segararai.github.io/fraci/",
   "useHostedBaseUrlForAbsoluteLinks": true,
   "favicon": "public/favicon.svg",
+  "navigation": {
+    "includeFolders": false
+  },
   "navigationLinks": {
     "GitHub": "https://github.com/SegaraRai/fraci",
     "npm": "https://www.npmjs.com/package/fraci"
