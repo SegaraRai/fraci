@@ -782,7 +782,7 @@ If you encounter runtime errors:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/SegaraRai/fraci/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/SegaraRai/fraci?tab=MIT-1-ov-file) file for details.
 
 ## Credits
 
