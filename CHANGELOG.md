@@ -1,5 +1,17 @@
 # fraci
 
+## 0.16.0
+
+### Minor Changes
+
+- 4dfa326: Added development build.
+- 6e3a866: Added overloads for `generateKeyBetween` and `generateNKeysBetween` to make the spread operator work with conditional tuples.
+
+### Patch Changes
+
+- 78a2622: Support Drizzle ORM v0.41.
+- df19427: Exported some Prisma types.
+
 ## 0.15.0
 
 ### Minor Changes
