@@ -1,10 +1,20 @@
 {
   "$schema": "https://typedoc.org/schema.json",
   "out": "typedoc",
-  "entryPoints": ["./src/index.ts", "./src/drizzle.ts", "./src/prisma.ts"],
-  "highlightLanguages": ["prisma", "shell", "text", "typescript"],
+  "entryPoints": [
+    "./src/index.ts",
+    "./src/drizzle.ts",
+    "./src/prisma.ts"
+  ],
+  "highlightLanguages": [
+    "prisma",
+    "shell",
+    "text",
+    "typescript"
+  ],
   "hostedBaseUrl": "https://segararai.github.io/fraci/",
   "useHostedBaseUrlForAbsoluteLinks": true,
+  "favicon": "public/favicon.svg",
   "navigationLinks": {
     "GitHub": "https://github.com/SegaraRai/fraci",
     "npm": "https://www.npmjs.com/package/fraci"
