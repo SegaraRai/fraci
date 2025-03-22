@@ -12,6 +12,7 @@
     "prisma-extension"
   ],
   "repository": "https://github.com/SegaraRai/fraci.git",
+  "homepage": "https://segararai.github.io/fraci/",
   "type": "module",
   "module": "dist/index.js",
   "main": "dist/index.cjs",
