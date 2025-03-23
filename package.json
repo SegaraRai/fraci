@@ -5,11 +5,18 @@
   "author": "SegaraRai",
   "license": "MIT",
   "keywords": [
+    "fractional-index",
     "fractional-indexing",
+    "fractional",
+    "index",
+    "indexing",
+    "order",
+    "ordering",
     "drizzle",
     "drizzle-orm",
     "prisma",
-    "prisma-extension"
+    "prisma-extension",
+    "prisma-orm"
   ],
   "repository": "https://github.com/SegaraRai/fraci.git",
   "homepage": "https://segararai.github.io/fraci/",
