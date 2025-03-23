@@ -227,7 +227,7 @@ export const fiArticles = defineDrizzleFraci(
 >
 > **Using Binary Fractional Index with Drizzle ORM**
 >
-> For more efficient storage and processing, you can use the binary-based fractional index:
+> For more efficient storage and processing, you can use the binary-encoded fractional index:
 >
 > ```typescript
 > import {

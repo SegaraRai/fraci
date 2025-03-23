@@ -1,3 +1,17 @@
+import type {
+  BASE10,
+  BASE16L,
+  BASE16U,
+  BASE26L,
+  BASE26U,
+  BASE36L,
+  BASE36U,
+  BASE52,
+  BASE62,
+  BASE64URL,
+  BASE88,
+  BASE95,
+} from "./bases.js";
 import { concat } from "./lib/decimal-binary.js";
 import { getSmallestInteger } from "./lib/decimal-string.js";
 import {
@@ -46,8 +60,12 @@ type IndexPairs<T> =
 /**
  * Fractional indexing utility that provides methods for generating ordered keys.
  *
- * @template B - The type of the base characters
+ * @template B - The base configuration defining the encoding strategy
  * @template X - The brand type for the fractional index
+ *
+ * @see {@link fraci} - The unified factory function for creating fractional indexing utilities
+ * @see {@link fraciBinary} - The factory function for creating binary-based fractional indexing utilities
+ * @see {@link fraciString} - The factory function for creating string-based fractional indexing utilities
  */
 export interface Fraci<B extends FractionalIndexBase, X> {
   /**
@@ -145,14 +163,18 @@ export interface Fraci<B extends FractionalIndexBase, X> {
 /**
  * Type alias for any {@link Fraci} instance with a binary digit base.
  *
+ * @see {@link Fraci} - The main fractional indexing utility type
  * @see {@link AnyFraci} - A union type of all fractional index types
+ * @see {@link AnyStringFraci} - The type of all string fractional index types
  */
 export type AnyBinaryFraci = Fraci<AnyBinaryFractionalIndexBase, any>;
 
 /**
  * Type alias for any {@link Fraci} instance with a string digit base.
  *
+ * @see {@link Fraci} - The main fractional indexing utility type
  * @see {@link AnyFraci} - A union type of all fractional index types
+ * @see {@link AnyBinaryFraci} - The type of all binary fractional index types
  */
 export type AnyStringFraci = Fraci<AnyStringFractionalIndexBase, any>;
 
@@ -160,6 +182,7 @@ export type AnyStringFraci = Fraci<AnyStringFractionalIndexBase, any>;
  * Type alias for any {@link Fraci} instance with any digit base, length base, and brand.
  * This is useful for cases where the specific parameters don't matter.
  *
+ * @see {@link Fraci} - The main fractional indexing utility type
  * @see {@link AnyBinaryFraci} - The type of all binary fractional index types
  * @see {@link AnyStringFraci} - The type of all string fractional index types
  */
@@ -167,36 +190,62 @@ export type AnyFraci = AnyBinaryFraci | AnyStringFraci;
 
 /**
  * Base options for fractional indexing.
- * This is used to define the character sets and types for the fractional index.
+ *
+ * This type serves as the base type for the `B` template parameter in the {@link Fraci} type,
+ * defining the encoding strategy used by the index.
+ *
+ * @see {@link FraciOptions} - The main configuration options for fractional indexing
+ * @see {@link FraciOptionsBaseToBase} - The type alias for converting options to a more specific type
  */
 export type FraciOptionsBase =
   | {
       /**
-       * The type of the fractional index.
+       * The type discriminator identifying this as a string fractional index configuration.
+       *
        * Must be "string" or `undefined` for string fractional indices.
        */
       readonly type?: "string" | undefined;
 
       /**
        * The character set used for encoding the length of the integer part.
+       *
+       * This determines what characters are used to represent the length of the integer
+       * portion of the fractional index. Characters must be in ascending lexicographic order.
+       *
+       * The first character of a fractional index comes from this character set.
+       *
+       * @see {@link BASE10}, {@link BASE16L}, {@link BASE16U}, {@link BASE26L}, {@link BASE26U}, {@link BASE36L}, {@link BASE36U}, {@link BASE52}, {@link BASE62}, {@link BASE64URL}, {@link BASE88}, {@link BASE95}
        */
       readonly lengthBase: string;
 
       /**
        * The character set used for representing digits in the fractional index.
+       *
+       * These characters form the ordered set used to encode the actual index values,
+       * and must be in ascending lexicographic order.
+       *
+       * The second and all subsequent characters of a fractional index come from this character set.
+       *
+       * @see {@link BASE10}, {@link BASE16L}, {@link BASE16U}, {@link BASE26L}, {@link BASE26U}, {@link BASE36L}, {@link BASE36U}, {@link BASE52}, {@link BASE62}, {@link BASE64URL}, {@link BASE88}, {@link BASE95}
        */
       readonly digitBase: string;
     }
   | {
       /**
-       * The type of the fractional index.
+       * The type discriminator identifying this as a binary fractional index configuration.
+       *
        * Must be "binary" for binary fractional indices.
        */
       readonly type: "binary";
     };
 
 /**
- * Type alias for converting the base options to a more specific type.
+ * Type alias for converting the options to a more specific type.
+ *
+ * @template B - The base configuration defining the encoding strategy
+ *
+ * @see {@link FraciOptionsBase} - The base options for fractional indexing
+ * @see {@link FractionalIndexBase} - The base configuration for fractional indices
  */
 export type FraciOptionsBaseToBase<B extends FraciOptionsBase> = B extends {
   readonly lengthBase: string;
@@ -204,31 +253,50 @@ export type FraciOptionsBaseToBase<B extends FraciOptionsBase> = B extends {
 }
   ? {
       /**
-       * The type of the fractional index.
+       * The type discriminator identifying this as a string fractional index configuration.
        */
       readonly type: "string";
 
       /**
        * The character set used for encoding the length of the integer part.
+       *
+       * This determines what characters are used to represent the length of the integer
+       * portion of the fractional index. Characters must be in ascending lexicographic order.
+       *
+       * The first character of a fractional index comes from this character set.
+       *
+       * @see {@link BASE10}, {@link BASE16L}, {@link BASE16U}, {@link BASE26L}, {@link BASE26U}, {@link BASE36L}, {@link BASE36U}, {@link BASE52}, {@link BASE62}, {@link BASE64URL}, {@link BASE88}, {@link BASE95}
        */
       readonly lengthBase: B["lengthBase"];
 
       /**
        * The character set used for representing digits in the fractional index.
+       *
+       * These characters form the ordered set used to encode the actual index values,
+       * and must be in ascending lexicographic order.
+       *
+       * The second and all subsequent characters of a fractional index come from this character set.
+       *
+       * @see {@link BASE10}, {@link BASE16L}, {@link BASE16U}, {@link BASE26L}, {@link BASE26U}, {@link BASE36L}, {@link BASE36U}, {@link BASE52}, {@link BASE62}, {@link BASE64URL}, {@link BASE88}, {@link BASE95}
        */
       readonly digitBase: B["digitBase"];
     }
   : {
       /**
-       * The type of the fractional index.
+       * The type discriminator identifying this as a binary fractional index configuration.
        */
       readonly type: "binary";
     };
 
 /**
- * Configuration options for creating a fractional indexing utility.
+ * Configuration options for creating fractional indexing utilities.
  *
- * @template B - The type of the base characters
+ * @template B - The base configuration defining the encoding strategy
+ *
+ * @see {@link fraci} - The unified factory function for creating fractional indexing utilities
+ * @see {@link FraciOptionsBase} - The base options for fractional indexing
+ * @see {@link BinaryFraciOptions} - The options for binary fractional indexing
+ * @see {@link StringFraciOptions} - The options for string fractional indexing
  */
 export type FraciOptions<B extends FraciOptionsBase> = B & {
   /**
@@ -245,21 +313,72 @@ export type FraciOptions<B extends FraciOptionsBase> = B & {
 };
 
 /**
- * Type alias for binary fractional indexing options.
+ * Base configuration for creating string-based fractional indexing utilities.
+ *
+ * Defines the configuration for fractional indices represented using binary encoding,
+ * where indices are stored as byte arrays (`Uint8Array`).
+ *
+ * Binary indices generally provide more compact storage and efficient comparison operations
+ * compared to string-based alternatives.
+ *
+ * @see {@link FraciOptions} - The main configuration options for fractional indexing
+ * @see {@link StringFraciOptions} - The options for string fractional indexing
  */
-export type BinaryFraciOptions = FraciOptions<{ readonly type: "binary" }>;
+export type BinaryFraciOptions = FraciOptions<{
+  /**
+   * The type discriminator identifying this as a binary fractional index configuration.
+   */
+  readonly type: "binary";
+}>;
 
 /**
- * Type alias for string fractional indexing options.
+ * Base configuration for creating string-based fractional indexing utilities.
+ *
+ * Defines the configuration for fractional indices represented using string encoding,
+ * where indices are stored as human-readable strings using specified character sets.
+ *
+ * String indices are useful when human readability or sortability in standard string
+ * contexts (like databases) is required.
+ *
+ * @see {@link FraciOptions} - The main configuration options for fractional indexing
+ * @see {@link BinaryFraciOptions} - The options for binary fractional indexing
  */
 export type StringFraciOptions = FraciOptions<{
+  /**
+   * The type discriminator identifying this as a string fractional index configuration.
+   */
   readonly type?: "string" | undefined;
+
+  /**
+   * The character set used for encoding the length of the integer part.
+   *
+   * This determines what characters are used to represent the length of the integer
+   * portion of the fractional index. Characters must be in ascending lexicographic order.
+   *
+   * The first character of a fractional index comes from this character set.
+   *
+   * @see {@link BASE10}, {@link BASE16L}, {@link BASE16U}, {@link BASE26L}, {@link BASE26U}, {@link BASE36L}, {@link BASE36U}, {@link BASE52}, {@link BASE62}, {@link BASE64URL}, {@link BASE88}, {@link BASE95}
+   */
   readonly lengthBase: string;
+
+  /**
+   * The character set used for representing digits in the fractional index.
+   *
+   * These characters form the ordered set used to encode the actual index values,
+   * and must be in ascending lexicographic order.
+   *
+   * The second and all subsequent characters of a fractional index come from this character set.
+   *
+   * @see {@link BASE10}, {@link BASE16L}, {@link BASE16U}, {@link BASE26L}, {@link BASE26U}, {@link BASE36L}, {@link BASE36U}, {@link BASE52}, {@link BASE62}, {@link BASE64URL}, {@link BASE88}, {@link BASE95}
+   */
   readonly digitBase: string;
 }>;
 
 /**
  * Type alias to represent options that can be branded.
+ *
+ * @template T - The base options type
+ * @template X - The brand type
  */
 type BrandableOptions<T, X> = T & {
   /**
@@ -271,6 +390,8 @@ type BrandableOptions<T, X> = T & {
 /**
  * Cache for storing computed values to improve performance.
  * Uses a branded type pattern to prevent accidental misuse.
+ *
+ * @see {@link createFraciCache} - Function to create a new cache
  */
 export type FraciCache = Map<string, unknown> & { readonly __fraci__: never };
 
@@ -429,7 +550,7 @@ export function fraciBinary<const X = unknown>({
 /**
  * Creates a string-based fractional indexing utility with the specified configuration.
  *
- * @template B - The type of the base characters
+ * @template B - The base configuration defining the character sets
  * @template X - The brand type for the fractional index
  *
  * @param options - Configuration options for the fractional indexing utility
@@ -566,7 +687,7 @@ export function fraciString<
  * This is the main factory function for creating a {@link Fraci} instance that can generate
  * fractional indices between existing values.
  *
- * @template B - The type of the base characters
+ * @template B - The base configuration defining the encoding strategy
  * @template X - The brand type for the fractional index
  *
  * @param options - Configuration options for the fractional indexing utility
@@ -590,6 +711,10 @@ export function fraciString<
  * // Generate a key between key1 and key2
  * const [key3] = decimalFraci.generateKeyBetween(key1, key2);
  * ```
+ *
+ * @see {@link Fraci} - The main fractional indexing utility type
+ * @see {@link fraciBinary} - The factory function for creating binary-based fractional indexing utilities
+ * @see {@link fraciString} - The factory function for creating string-based fractional indexing utilities
  */
 export function fraci<const B extends FraciOptionsBase, const X = unknown>(
   options: FraciOptions<B> | (FraciOptions<B> & { readonly brand: X }),
