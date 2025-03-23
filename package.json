@@ -1,7 +1,7 @@
 {
   "name": "fraci",
   "version": "0.16.0",
-  "description": "A comprehensive library for fractional indexing, offering a strongly typed API and seamless ORM integrations.",
+  "description": "Fractional indexing that's robust, performant, and secure, with first-class support for Drizzle ORM and Prisma ORM.",
   "author": "SegaraRai",
   "license": "MIT",
   "keywords": [

@@ -2,13 +2,11 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-SegaraRai/fraci-181717?logo=github)](https://github.com/SegaraRai/fraci) [![npm](https://img.shields.io/npm/v/fraci)](https://www.npmjs.com/package/fraci) [![Build Status](https://img.shields.io/github/actions/workflow/status/SegaraRai/fraci/publish.yml)](https://github.com/SegaraRai/fraci/actions) [![MIT License](https://img.shields.io/github/license/SegaraRai/fraci)](https://github.com/SegaraRai/fraci?tab=MIT-1-ov-file) [![API Documentation](https://img.shields.io/badge/docs-online-blue)](https://segararai.github.io/fraci)
 
-<center>
+<p align="center">
+  <img src="https://segararai.github.io/fraci/fraci.svg" alt="Fraci Logo" width="100%" />
+</p>
 
-![Fraci Logo](https://segararai.github.io/fraci/fraci.svg)
-
-</center>
-
-A comprehensive library for [fractional indexing](https://www.figma.com/blog/realtime-editing-of-ordered-sequences/), offering a strongly typed API and seamless ORM integrations.
+**Fractional indexing that's robust, performant, and secure, with first-class support for Drizzle ORM and Prisma ORM.**
 
 **What is fractional indexing?** It's a technique for maintaining ordered lists in collaborative environments without requiring reindexing. This allows for efficient insertions, deletions, and reordering operations, making it ideal for applications with ordered data such as task lists, kanban boards, or document outlines.
 
