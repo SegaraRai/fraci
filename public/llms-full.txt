@@ -34,9 +34,15 @@ Synchronous API of Drizzle ORM is only for Bun SQLite, which is the only DB engi
 #### Schema Definition
 
 ```typescript
+import {
+  blob,
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 import { fraciBinary, type FractionalIndexOf } from "fraci";
 import { defineDrizzleFraci } from "fraci/drizzle";
-import { sqliteTable, integer, text, blob } from "drizzle-orm/sqlite-core";
 
 // Create a binary fraci instance
 const tasksFraci = fraciBinary({
@@ -74,9 +80,9 @@ export const fiTasks = defineDrizzleFraci(
 #### Example Usage
 
 ```typescript
+import { and, eq } from "drizzle-orm";
 import { drizzleFraci } from "fraci/drizzle";
-import { tasks, fiTasks } from "./schema";
-import { eq, and } from "drizzle-orm";
+import { fiTasks, tasks } from "./schema";
 
 // Define a function to check for index conflicts
 // TODO: You have to update this function by yourself, since the error message is not consistent across different databases
@@ -155,9 +161,14 @@ async function moveTask() {
 #### Schema Definition
 
 ```typescript
+import {
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 import { BASE62, fraciString, type FractionalIndexOf } from "fraci";
 import { defineDrizzleFraci } from "fraci/drizzle";
-import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
 
 // Create a string-based fraci instance
 const tasksFraci = fraciString({
@@ -195,9 +206,9 @@ export const fiTasks = defineDrizzleFraci(
 #### Example Usage
 
 ```typescript
+import { and, asc, eq } from "drizzle-orm";
 import { drizzleFraci } from "fraci/drizzle";
-import { tasks, fiTasks } from "./schema";
-import { eq, and, asc } from "drizzle-orm";
+import { fiTasks, tasks } from "./schema";
 
 // Define a function to check for index conflicts
 // TODO: You have to update this function by yourself, since the error message is not consistent across different databases
@@ -255,7 +266,7 @@ async function listTasks() {
 model Task {
   id Int @id @default(autoincrement())
   title String
-  fi Bytes  // Binary Fractional Index
+  fi Bytes // Binary Fractional Index
   userId Int
   user User @relation(fields: [userId], references: [id])
 
@@ -352,7 +363,7 @@ async function moveTask() {
 model Task {
   id Int @id @default(autoincrement())
   title String
-  fi String  // String Fractional Index
+  fi String // String Fractional Index
   userId Int
   user User @relation(fields: [userId], references: [id])
 
@@ -432,7 +443,7 @@ async function listTasks() {
 #### Binary-based Fractional Indexing
 
 ```typescript
-import { fraciBinary, type FractionalIndexOf } from "fraci";
+import { fraciBinary } from "fraci";
 
 const fraci = fraciBinary({
   brand: "my.fi", // Brand for type safety
@@ -444,7 +455,7 @@ const fraci = fraciBinary({
 #### String-based Fractional Indexing
 
 ```typescript
-import { BASE62, fraciString, type FractionalIndexOf } from "fraci";
+import { BASE62, fraciString } from "fraci";
 
 const fraci = fraciString({
   brand: "my.fi", // Brand for type safety
@@ -494,7 +505,6 @@ const indices = await fi.indicesForFirst(group); // Get indices for first positi
 const indices = await fi.indicesForLast(group); // Get indices for last position
 const indices = await fi.indicesForBefore(group, cursor); // Get indices for before item
 const indices = await fi.indicesForAfter(group, cursor); // Get indices for after item
-const indices = await fi.indicesForBetween(group, cursor1, cursor2); // Get indices between items
 
 // Generate keys
 for (const fi of fi.generateKeyBetween(a, b, skip)) {
@@ -537,7 +547,6 @@ const indices = await fi.indicesForFirst(group);
 const indices = await fi.indicesForLast(group);
 const indices = await fi.indicesForBefore(group, cursor);
 const indices = await fi.indicesForAfter(group, cursor);
-const indices = await fi.indicesForBetween(group, cursor1, cursor2);
 
 // Generate keys
 for (const fi of fi.generateKeyBetween(a, b, skip)) {
