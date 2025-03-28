@@ -382,13 +382,15 @@ function appendTask() {
 // List all tasks in order
 function listTasks() {
   // Note: No await needed for synchronous API
-  return db
-    .select()
-    .from(tasks)
-    .where(eq(tasks.userId, 1))
-    // To sort by fractional index, just use the `ORDER BY` clause
-    .orderBy(asc(tasks.fi))
-    .all();
+  return (
+    db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.userId, 1))
+      // To sort by fractional index, just use the `ORDER BY` clause
+      .orderBy(asc(tasks.fi))
+      .all()
+  );
 }
 ```
 
@@ -635,11 +637,20 @@ const fiConfig = defineDrizzleFraci(
 // Get helper
 const fi = drizzleFraci(db, fiConfig);
 
+// or for synchronous database (only for Bun SQLite)
+const fiSync = drizzleFraciSync(db, fiConfig);
+
 // Methods
 const indices = await fi.indicesForFirst(group); // Get indices for first position
 const indices = await fi.indicesForLast(group); // Get indices for last position
 const indices = await fi.indicesForBefore(group, cursor); // Get indices for before item
 const indices = await fi.indicesForAfter(group, cursor); // Get indices for after item
+
+// or for synchronous API
+const indices = fiSync.indicesForFirst(group);
+const indices = fiSync.indicesForLast(group);
+const indices = fiSync.indicesForBefore(group, cursor);
+const indices = fiSync.indicesForAfter(group, cursor);
 
 // Generate keys
 for (const fi of fi.generateKeyBetween(a, b, skip)) {
