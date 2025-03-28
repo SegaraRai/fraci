@@ -156,6 +156,86 @@ async function moveTask() {
 }
 ```
 
+#### Example Usage (Synchronous API)
+
+```typescript
+import { and, eq } from "drizzle-orm";
+import { drizzleFraciSync } from "fraci/drizzle";
+import { fiTasks, tasks } from "./schema";
+
+// Define a function to check for index conflicts
+function isIndexConflictError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.includes("UNIQUE constraint failed:") &&
+    error.message.includes(".fi")
+  );
+}
+
+// Get the helper object with synchronous API (only for Bun SQLite)
+const tfi = drizzleFraciSync(db, fiTasks);
+
+// Create a new task at the end of the list
+function appendTask() {
+  // Note: No await needed for synchronous API
+  const indices = tfi.indicesForLast({ userId: 1 });
+
+  for (const fi of tfi.generateKeyBetween(...indices)) {
+    try {
+      return db
+        .insert(tasks)
+        .values({ title: "New Task", fi, userId: 1 })
+        .returning()
+        .get();
+    } catch (error) {
+      if (isIndexConflictError(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("Failed to generate a new fractional index.");
+}
+
+// Move task 3 to position after task 4
+function moveTask() {
+  // Note: No await needed for synchronous API
+  const indices = tfi.indicesForAfter({ userId: 1 }, { id: 4 });
+  if (!indices) {
+    throw new Error("Task 4 does not exist or does not belong to user 1.");
+  }
+
+  for (const fi of tfi.generateKeyBetween(...indices)) {
+    try {
+      const result = db
+        .update(tasks)
+        .set({ fi })
+        .where(
+          and(
+            eq(tasks.id, 3),
+            eq(tasks.userId, 1), // IMPORTANT: Always filter by group columns
+          ),
+        )
+        .returning()
+        .get();
+
+      if (!result) {
+        throw new Error("Task 3 does not exist or does not belong to user 1.");
+      }
+      return result;
+    } catch (error) {
+      if (isIndexConflictError(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("Failed to generate a new fractional index.");
+}
+```
+
 ### With Drizzle ORM (String-based)
 
 #### Schema Definition
@@ -248,6 +328,61 @@ async function appendTask() {
 // List all tasks in order
 async function listTasks() {
   return await db
+    .select()
+    .from(tasks)
+    .where(eq(tasks.userId, 1))
+    // To sort by fractional index, just use the `ORDER BY` clause
+    .orderBy(asc(tasks.fi))
+    .all();
+}
+```
+
+#### Example Usage (Synchronous API)
+
+```typescript
+import { and, asc, eq } from "drizzle-orm";
+import { drizzleFraciSync } from "fraci/drizzle";
+import { fiTasks, tasks } from "./schema";
+
+// Define a function to check for index conflicts
+function isIndexConflictError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.includes("UNIQUE constraint failed:") &&
+    error.message.includes(".fi")
+  );
+}
+
+// Get the helper object with synchronous API (only for Bun SQLite)
+const tfi = drizzleFraciSync(db, fiTasks);
+
+// Create a new task at the end of the list
+function appendTask() {
+  // Note: No await needed for synchronous API
+  const indices = tfi.indicesForLast({ userId: 1 });
+
+  for (const fi of tfi.generateKeyBetween(...indices)) {
+    try {
+      return db
+        .insert(tasks)
+        .values({ title: "New Task", fi, userId: 1 })
+        .returning()
+        .get();
+    } catch (error) {
+      if (isIndexConflictError(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("Failed to generate a new fractional index.");
+}
+
+// List all tasks in order
+function listTasks() {
+  // Note: No await needed for synchronous API
+  return db
     .select()
     .from(tasks)
     .where(eq(tasks.userId, 1))
