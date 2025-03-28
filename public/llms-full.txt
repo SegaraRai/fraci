@@ -575,20 +575,20 @@ if (fi.isIndexConflictError(error)) {
 
 Fractional indexing allows for inserting items between existing items without reindexing:
 
-### String-based Example (with BASE62)
-
-```text
-A (index: "V0") --- B (index: "V1")
-                 |
-                 +--- New Item (index: "V0V")
-```
-
 ### Binary-based Example
 
 ```text
 A (index: [0x80, 0x00]) --- B (index: [0x80, 0x01])
                          |
                          +--- New Item (index: [0x80, 0x00, 0x80])
+```
+
+### String-based Example (with BASE62)
+
+```text
+A (index: "V0") --- B (index: "V1")
+                 |
+                 +--- New Item (index: "V0V")
 ```
 
 ## Performance Optimization
