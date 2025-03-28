@@ -1,3 +1,7 @@
 {
-  "svg.preview.background": "transparent"
+  "svg.preview.background": "transparent",
+  "files.associations": {
+    "llms.txt": "markdown",
+    "llms-full.txt": "markdown"
+  }
 }

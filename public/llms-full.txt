@@ -1,0 +1,596 @@
+# Fraci - Fractional Indexing
+
+> Fraci is a TypeScript library that provides robust, performant, and secure fractional indexing with first-class support for Drizzle ORM and Prisma ORM. Fractional indexing is a technique for maintaining ordered lists in collaborative environments without requiring reindexing, allowing for efficient insertions, deletions, and reordering operations.
+
+## Core Features
+
+- **Fractional indexing** with arbitrary base characters
+- **Binary-based fractional indexing** - More efficient storage and processing using `Uint8Array`
+- **ORM integrations** - First-class support for Drizzle ORM and Prisma ORM with human-friendly and strongly typed APIs
+- **Regeneration on conflict** - Automatic regeneration of fractional indices on conflict
+- **TypeScript support** - Strongly typed APIs with branded types for added protection
+- **High performance** - Optimized for performance with minimal overhead
+- **Smaller bundle size** - Fully tree-shakable
+- **Zero dependencies** - No dependencies, not even on Node.js
+
+## Installation
+
+```shell
+npm install fraci
+# or
+yarn add fraci
+# or
+pnpm add fraci
+# or
+bun add fraci
+```
+
+## Usage Examples
+
+Synchronous API of Drizzle ORM is only for Bun SQLite, which is the only DB engine that has a synchronous API.
+
+### With Drizzle ORM (Binary-based)
+
+#### Schema Definition
+
+```typescript
+import { fraciBinary, type FractionalIndexOf } from "fraci";
+import { defineDrizzleFraci } from "fraci/drizzle";
+import { sqliteTable, integer, text, blob } from "drizzle-orm/sqlite-core";
+
+// Create a binary fraci instance
+const tasksFraci = fraciBinary({
+  brand: "tasks.fi",
+});
+
+// Define your table with a binary fractional index column
+// This is a SQLite example. You have to change column types according to your database.
+export const tasks = sqliteTable(
+  "tasks",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    title: text("title").notNull(),
+    fi: blob("fi", { mode: "buffer" })
+      .notNull()
+      .$type<FractionalIndexOf<typeof tasksFraci>>(),
+    userId: integer("user_id").notNull(),
+  },
+  (t) => [
+    // IMPORTANT: This compound unique index is necessary for both uniqueness and performance
+    uniqueIndex("tasks_user_id_fi_idx").on(t.userId, t.fi),
+  ],
+);
+
+// Define the fractional index configuration
+export const fiTasks = defineDrizzleFraci(
+  tasksFraci, // Fraci instance
+  tasks, // Table
+  tasks.fi, // Fractional index column
+  { userId: tasks.userId }, // Group (columns that uniquely identify the group)
+  { id: tasks.id }, // Cursor (columns that uniquely identify the row within a group)
+);
+```
+
+#### Example Usage
+
+```typescript
+import { drizzleFraci } from "fraci/drizzle";
+import { tasks, fiTasks } from "./schema";
+import { eq, and } from "drizzle-orm";
+
+// Define a function to check for index conflicts
+// TODO: You have to update this function by yourself, since the error message is not consistent across different databases
+function isIndexConflictError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.includes("UNIQUE constraint failed:") &&
+    error.message.includes(".fi")
+  );
+}
+
+// Get the helper object
+const tfi = drizzleFraci(db, fiTasks);
+
+// Create a new task at the end of the list
+async function appendTask() {
+  const indices = await tfi.indicesForLast({ userId: 1 });
+
+  for (const fi of tfi.generateKeyBetween(...indices)) {
+    try {
+      return await db
+        .insert(tasks)
+        .values({ title: "New Task", fi, userId: 1 })
+        .returning()
+        .get();
+    } catch (error) {
+      if (isIndexConflictError(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("Failed to generate a new fractional index.");
+}
+
+// Move task 3 to position after task 4
+async function moveTask() {
+  const indices = await tfi.indicesForAfter({ userId: 1 }, { id: 4 });
+  if (!indices) {
+    throw new Error("Task 4 does not exist or does not belong to user 1.");
+  }
+
+  for (const fi of tfi.generateKeyBetween(...indices)) {
+    try {
+      const result = await db
+        .update(tasks)
+        .set({ fi })
+        .where(
+          and(
+            eq(tasks.id, 3),
+            eq(tasks.userId, 1), // IMPORTANT: Always filter by group columns
+          ),
+        )
+        .returning()
+        .get();
+
+      if (!result) {
+        throw new Error("Task 3 does not exist or does not belong to user 1.");
+      }
+      return result;
+    } catch (error) {
+      if (isIndexConflictError(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("Failed to generate a new fractional index.");
+}
+```
+
+### With Drizzle ORM (String-based)
+
+#### Schema Definition
+
+```typescript
+import { BASE62, fraciString, type FractionalIndexOf } from "fraci";
+import { defineDrizzleFraci } from "fraci/drizzle";
+import { sqliteTable, integer, text } from "drizzle-orm/sqlite-core";
+
+// Create a string-based fraci instance
+const tasksFraci = fraciString({
+  brand: "tasks.fi",
+  lengthBase: BASE62,
+  digitBase: BASE62,
+});
+
+// Define your table with a string fractional index column
+// This is a SQLite example. You have to change column types according to your database.
+export const tasks = sqliteTable(
+  "tasks",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    title: text("title").notNull(),
+    fi: text("fi").notNull().$type<FractionalIndexOf<typeof tasksFraci>>(),
+    userId: integer("user_id").notNull(),
+  },
+  (t) => [
+    // IMPORTANT: This compound unique index is necessary for both uniqueness and performance
+    uniqueIndex("tasks_user_id_fi_idx").on(t.userId, t.fi),
+  ],
+);
+
+// Define the fractional index configuration
+export const fiTasks = defineDrizzleFraci(
+  tasksFraci, // Fraci instance
+  tasks, // Table
+  tasks.fi, // Fractional index column
+  { userId: tasks.userId }, // Group (columns that uniquely identify the group)
+  { id: tasks.id }, // Cursor (columns that uniquely identify the row within a group)
+);
+```
+
+#### Example Usage
+
+```typescript
+import { drizzleFraci } from "fraci/drizzle";
+import { tasks, fiTasks } from "./schema";
+import { eq, and, asc } from "drizzle-orm";
+
+// Define a function to check for index conflicts
+// TODO: You have to update this function by yourself, since the error message is not consistent across different databases
+function isIndexConflictError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.includes("UNIQUE constraint failed:") &&
+    error.message.includes(".fi")
+  );
+}
+
+// Get the helper object
+const tfi = drizzleFraci(db, fiTasks);
+
+// Create a new task at the end of the list
+async function appendTask() {
+  const indices = await tfi.indicesForLast({ userId: 1 });
+
+  for (const fi of tfi.generateKeyBetween(...indices)) {
+    try {
+      return await db
+        .insert(tasks)
+        .values({ title: "New Task", fi, userId: 1 })
+        .returning()
+        .get();
+    } catch (error) {
+      if (isIndexConflictError(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("Failed to generate a new fractional index.");
+}
+
+// List all tasks in order
+async function listTasks() {
+  return await db
+    .select()
+    .from(tasks)
+    .where(eq(tasks.userId, 1))
+    // To sort by fractional index, just use the `ORDER BY` clause
+    .orderBy(asc(tasks.fi))
+    .all();
+}
+```
+
+### With Prisma ORM (Binary-based)
+
+#### Schema Definition
+
+```prisma
+// schema.prisma
+model Task {
+  id Int @id @default(autoincrement())
+  title String
+  fi Bytes  // Binary Fractional Index
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+
+  // IMPORTANT: This compound unique index is necessary for both uniqueness and performance
+  @@unique([userId, fi])
+}
+```
+
+#### Example Usage
+
+```typescript
+import { PrismaClient } from "@prisma/client";
+import { prismaFraci } from "fraci/prisma";
+
+// Configure the Prisma extension
+const prisma = new PrismaClient().$extends(
+  prismaFraci({
+    fields: {
+      // Define the binary fractional index column
+      "task.fi": {
+        group: ["userId"], // Group columns
+        type: "binary", // Specify binary type
+      },
+    },
+    maxRetries: 5, // Maximum retries on conflict
+    maxLength: 50, // Maximum length to prevent attacks
+  }),
+);
+
+// Get the helper object
+const tfi = prisma.task.fraci("fi");
+
+// Create a new task at the end of the list
+async function appendTask() {
+  const indices = await tfi.indicesForLast({ userId: 1 });
+
+  for (const fi of tfi.generateKeyBetween(...indices)) {
+    try {
+      return await prisma.task.create({
+        data: {
+          title: "New Task",
+          fi,
+          userId: 1,
+        },
+      });
+    } catch (error) {
+      if (tfi.isIndexConflictError(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("Failed to generate a new fractional index.");
+}
+
+// Move task 3 to position after task 4
+async function moveTask() {
+  const indices = await tfi.indicesForAfter({ userId: 1 }, { id: 4 });
+  if (!indices) {
+    throw new Error("Task 4 does not exist or does not belong to user 1.");
+  }
+
+  for (const fi of tfi.generateKeyBetween(...indices)) {
+    try {
+      await prisma.task.update({
+        where: {
+          id: 3,
+          userId: 1, // IMPORTANT: Always filter by group columns
+        },
+        data: {
+          fi,
+        },
+      });
+      return;
+    } catch (error) {
+      if (tfi.isIndexConflictError(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("Failed to generate a new fractional index.");
+}
+```
+
+### With Prisma ORM (String-based)
+
+#### Schema Definition
+
+```prisma
+// schema.prisma
+model Task {
+  id Int @id @default(autoincrement())
+  title String
+  fi String  // String Fractional Index
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+
+  // IMPORTANT: This compound unique index is necessary for both uniqueness and performance
+  @@unique([userId, fi])
+}
+```
+
+#### Example Usage
+
+```typescript
+import { PrismaClient } from "@prisma/client";
+import { BASE62 } from "fraci";
+import { prismaFraci } from "fraci/prisma";
+
+// Configure the Prisma extension
+const prisma = new PrismaClient().$extends(
+  prismaFraci({
+    fields: {
+      // Define the string fractional index column
+      "task.fi": {
+        group: ["userId"], // Group columns
+        digitBase: BASE62, // Determines the radix of the fractional index
+        lengthBase: BASE62, // Used to represent the length of the integer part
+      },
+    },
+    maxRetries: 5, // Maximum retries on conflict
+    maxLength: 50, // Maximum length to prevent attacks
+  }),
+);
+
+// Get the helper object
+const tfi = prisma.task.fraci("fi");
+
+// Create a new task at the end of the list
+async function appendTask() {
+  const indices = await tfi.indicesForLast({ userId: 1 });
+
+  for (const fi of tfi.generateKeyBetween(...indices)) {
+    try {
+      return await prisma.task.create({
+        data: {
+          title: "New Task",
+          fi,
+          userId: 1,
+        },
+      });
+    } catch (error) {
+      if (tfi.isIndexConflictError(error)) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error("Failed to generate a new fractional index.");
+}
+
+// List all tasks in order
+async function listTasks() {
+  return await prisma.task.findMany({
+    where: {
+      userId: 1,
+    },
+    // To sort by fractional index, just use the `orderBy` property
+    orderBy: {
+      fi: "asc",
+    },
+  });
+}
+```
+
+## API Documentation
+
+### Core API
+
+#### Binary-based Fractional Indexing
+
+```typescript
+import { fraciBinary, type FractionalIndexOf } from "fraci";
+
+const fraci = fraciBinary({
+  brand: "my.fi", // Brand for type safety
+  maxRetries: 5, // Maximum retries on conflict (default: 5)
+  maxLength: 50, // Maximum length to prevent attacks (default: 50)
+});
+```
+
+#### String-based Fractional Indexing
+
+```typescript
+import { BASE62, fraciString, type FractionalIndexOf } from "fraci";
+
+const fraci = fraciString({
+  brand: "my.fi", // Brand for type safety
+  lengthBase: BASE62, // Base for length encoding
+  digitBase: BASE62, // Base for digit encoding
+  maxRetries: 5, // Maximum retries on conflict (default: 5)
+  maxLength: 50, // Maximum length to prevent attacks (default: 50)
+});
+```
+
+#### Available Base Constants
+
+- `BASE10`: Decimal digits (0-9)
+- `BASE16L`: Lowercase hexadecimal (0-9, a-f)
+- `BASE16U`: Uppercase hexadecimal (0-9, A-F)
+- `BASE26L`: Lowercase alphabets (a-z)
+- `BASE26U`: Uppercase alphabets (A-Z)
+- `BASE36L`: Lowercase alphanumeric characters (0-9, a-z)
+- `BASE36U`: Uppercase alphanumeric characters (0-9, A-Z)
+- `BASE52`: Alphabets (A-Z, a-z)
+- `BASE62`: Alphanumeric characters (0-9, A-Z, a-z)
+- `BASE64URL`: Characters used in Base64 URL encoding (0-9, A-Z, a-z, -, \_)
+- `BASE88`: HTML safe characters
+- `BASE95`: All printable ASCII characters (excluding control chars and newlines)
+
+Recommended for string-based fractional indexing: `BASE62`, `BASE88`, `BASE95`.
+
+### Drizzle ORM Integration
+
+```typescript
+import { defineDrizzleFraci, drizzleFraci } from "fraci/drizzle";
+
+// Define configuration
+const fiConfig = defineDrizzleFraci(
+  fraci, // Fraci instance
+  table, // Table
+  table.fi, // Fractional index column
+  { groupId: table.groupId }, // Group columns
+  { id: table.id }, // Cursor columns
+);
+
+// Get helper
+const fi = drizzleFraci(db, fiConfig);
+
+// Methods
+const indices = await fi.indicesForFirst(group); // Get indices for first position
+const indices = await fi.indicesForLast(group); // Get indices for last position
+const indices = await fi.indicesForBefore(group, cursor); // Get indices for before item
+const indices = await fi.indicesForAfter(group, cursor); // Get indices for after item
+const indices = await fi.indicesForBetween(group, cursor1, cursor2); // Get indices between items
+
+// Generate keys
+for (const fi of fi.generateKeyBetween(a, b, skip)) {
+  // Use fi
+}
+
+// Generate multiple keys
+for (const keys of fi.generateNKeysBetween(a, b, count, skip)) {
+  // Use keys
+}
+```
+
+### Prisma ORM Integration
+
+```typescript
+import { prismaFraci } from "fraci/prisma";
+
+// Configure extension
+const prisma = new PrismaClient().$extends(
+  prismaFraci({
+    fields: {
+      "model.column": {
+        group: ["groupColumn"],
+        digitBase: BASE62, // For string-based
+        lengthBase: BASE62, // For string-based
+        // OR
+        type: "binary", // For binary-based
+      },
+    },
+    maxRetries: 5,
+    maxLength: 50,
+  }),
+);
+
+// Get helper
+const fi = prisma.model.fraci("column");
+
+// Methods (same as Drizzle ORM)
+const indices = await fi.indicesForFirst(group);
+const indices = await fi.indicesForLast(group);
+const indices = await fi.indicesForBefore(group, cursor);
+const indices = await fi.indicesForAfter(group, cursor);
+const indices = await fi.indicesForBetween(group, cursor1, cursor2);
+
+// Generate keys
+for (const fi of fi.generateKeyBetween(a, b, skip)) {
+  // Use fi
+}
+
+// Generate multiple keys
+for (const keys of fi.generateNKeysBetween(a, b, count, skip)) {
+  // Use keys
+}
+
+// Check for conflicts
+if (fi.isIndexConflictError(error)) {
+  // Handle conflict
+}
+```
+
+## Security Considerations
+
+- **Never accept user input directly as a fractional index**. Use the ORM integrations to safely query indices.
+- **Always filter by group columns** when updating items to prevent cross-group operations.
+- Fraci uses **branded types** to prevent confusion between fractional indices from different columns.
+- Fraci includes a configurable **maxLength parameter** (default: 50) to prevent index expansion attacks.
+
+## How It Works
+
+Fractional indexing allows for inserting items between existing items without reindexing:
+
+### String-based Example (with BASE62)
+
+```text
+A (index: "V0") --- B (index: "V1")
+                 |
+                 +--- New Item (index: "V0V")
+```
+
+### Binary-based Example
+
+```text
+A (index: [0x80, 0x00]) --- B (index: [0x80, 0x01])
+                         |
+                         +--- New Item (index: [0x80, 0x00, 0x80])
+```
+
+## Performance Optimization
+
+- Use **binary-based fractional indexing** for better performance and smaller storage
+- Create **compound indices** (`[groupId, fi]`) for optimal query performance
+- Use **larger character sets** (BASE62, BASE95) for shorter indices in string-based indexing
+- Implement **index skipping** for collision avoidance in concurrent environments
+
+## Resources
+
+- [GitHub Repository](https://github.com/SegaraRai/fraci)
+- [API Documentation](https://segararai.github.io/fraci/)
+- [NPM Package](https://www.npmjs.com/package/fraci)

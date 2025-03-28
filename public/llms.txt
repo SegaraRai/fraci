@@ -1,0 +1,42 @@
+# Fraci - Fractional Indexing
+
+> Fraci is a TypeScript library that provides robust, performant, and secure fractional indexing with first-class support for Drizzle ORM and Prisma ORM. Fractional indexing allows maintaining ordered lists without requiring reindexing when items are inserted or moved.
+
+Fraci offers both string-based and binary-based fractional indexing implementations, with the binary version providing better performance and smaller storage requirements. The library includes first-class integrations for Drizzle ORM and Prisma ORM with strongly typed APIs.
+
+## Features
+
+- String-based and binary-based fractional indexing
+- ORM integrations for Drizzle and Prisma
+- Automatic conflict resolution
+- TypeScript support with branded types
+- Zero dependencies
+
+## Examples
+
+Synchronous API of Drizzle ORM is only for Bun SQLite, which is the only DB engine that has a synchronous API.
+
+- With Drizzle ORM (Binary-based):
+
+  - [Schema Definition](https://raw.githubusercontent.com/SegaraRai/fraci/refs/heads/main/drizzle/schema.e2e-binary.ts)
+  - [Example Usage](https://raw.githubusercontent.com/SegaraRai/fraci/refs/heads/main/examples/drizzle-orm/server.binary.ts)
+  - [Example Usage (Synchronous API)](https://raw.githubusercontent.com/SegaraRai/fraci/refs/heads/main/examples/drizzle-orm-sync/server.binary.ts)
+
+- With Drizzle ORM (String-based):
+
+  - [Schema Definition](https://raw.githubusercontent.com/SegaraRai/fraci/refs/heads/main/drizzle/schema.e2e-string.ts)
+  - [Example Usage](https://raw.githubusercontent.com/SegaraRai/fraci/refs/heads/main/examples/drizzle-orm/server.string.ts)
+  - [Example Usage (Synchronous API)](https://raw.githubusercontent.com/SegaraRai/fraci/refs/heads/main/examples/drizzle-orm-sync/server.string.ts)
+
+- With Prisma ORM:
+
+  - [Schema Definition](https://raw.githubusercontent.com/SegaraRai/fraci/refs/heads/main/prisma/schema.prisma)
+  - [Example Usage (Binary-based)](https://github.com/SegaraRai/fraci/raw/refs/heads/main/examples/prisma/server.binary.ts)
+  - [Example Usage (String-based)](https://github.com/SegaraRai/fraci/raw/refs/heads/main/examples/prisma/server.string.ts)
+
+## Resources
+
+- [GitHub Repository](https://github.com/SegaraRai/fraci)
+- [API Documentation](https://segararai.github.io/fraci/)
+- [NPM Package](https://www.npmjs.com/package/fraci)
+- [Full Documentation](./llms-full.txt)
