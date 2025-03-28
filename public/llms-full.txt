@@ -623,7 +623,11 @@ Recommended for string-based fractional indexing: `BASE62`, `BASE88`, `BASE95`.
 ### Drizzle ORM Integration
 
 ```typescript
-import { defineDrizzleFraci, drizzleFraci } from "fraci/drizzle";
+import {
+  defineDrizzleFraci,
+  drizzleFraci,
+  drizzleFraciSync,
+} from "fraci/drizzle";
 
 // Define configuration
 const fiConfig = defineDrizzleFraci(
