@@ -601,5 +601,5 @@ A (index: "V0") --- B (index: "V1")
 ## Resources
 
 - [GitHub Repository](https://github.com/SegaraRai/fraci)
-- [API Documentation](https://segararai.github.io/fraci/)
+- [API Documentation](https://fraci.roundtrip.dev/)
 - [NPM Package](https://www.npmjs.com/package/fraci)

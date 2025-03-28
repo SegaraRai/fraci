@@ -37,6 +37,6 @@ Synchronous API of Drizzle ORM is only for Bun SQLite, which is the only DB engi
 ## Resources
 
 - [GitHub Repository](https://github.com/SegaraRai/fraci)
-- [API Documentation](https://segararai.github.io/fraci/)
+- [API Documentation](https://fraci.roundtrip.dev/)
 - [NPM Package](https://www.npmjs.com/package/fraci)
 - [Full Documentation](./llms-full.txt)

@@ -1,9 +1,9 @@
 # Fraci - Fractional Indexing
 
-[![GitHub](https://img.shields.io/badge/GitHub-SegaraRai/fraci-181717?logo=github)](https://github.com/SegaraRai/fraci) [![npm](https://img.shields.io/npm/v/fraci)](https://www.npmjs.com/package/fraci) [![Build Status](https://img.shields.io/github/actions/workflow/status/SegaraRai/fraci/publish.yml)](https://github.com/SegaraRai/fraci/actions) [![MIT License](https://img.shields.io/github/license/SegaraRai/fraci)](https://github.com/SegaraRai/fraci?tab=MIT-1-ov-file) [![API Documentation](https://img.shields.io/badge/docs-online-blue)](https://segararai.github.io/fraci/) [![llms.txt](https://img.shields.io/badge/docs-llms.txt-blue)](https://segararai.github.io/fraci/llms.txt) [![llms-full.txt](https://img.shields.io/badge/docs-llms--full.txt-blue)](https://segararai.github.io/fraci/llms-full.txt)
+[![GitHub](https://img.shields.io/badge/GitHub-SegaraRai/fraci-181717?logo=github)](https://github.com/SegaraRai/fraci) [![npm](https://img.shields.io/npm/v/fraci)](https://www.npmjs.com/package/fraci) [![Build Status](https://img.shields.io/github/actions/workflow/status/SegaraRai/fraci/publish.yml)](https://github.com/SegaraRai/fraci/actions) [![MIT License](https://img.shields.io/github/license/SegaraRai/fraci)](https://github.com/SegaraRai/fraci?tab=MIT-1-ov-file) [![API Documentation](https://img.shields.io/badge/docs-online-blue)](https://fraci.roundtrip.dev/) [![llms.txt](https://img.shields.io/badge/docs-llms.txt-blue)](https://fraci.roundtrip.dev/llms.txt) [![llms-full.txt](https://img.shields.io/badge/docs-llms--full.txt-blue)](https://fraci.roundtrip.dev/llms-full.txt)
 
 <p align="center">
-  <img src="https://segararai.github.io/fraci/fraci.svg" alt="Fraci Logo" width="100%" />
+  <img src="https://fraci.roundtrip.dev/fraci.svg" alt="Fraci Logo" width="100%" />
 </p>
 
 **Fractional indexing that's robust, performant, and secure, with first-class support for Drizzle ORM and Prisma ORM.**

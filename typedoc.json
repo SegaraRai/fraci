@@ -20,7 +20,8 @@
   "headings": {
     "readme": false
   },
-  "hostedBaseUrl": "https://segararai.github.io/fraci/",
+  "cname": "fraci.roundtrip.dev",
+  "hostedBaseUrl": "https://fraci.roundtrip.dev/",
   "useHostedBaseUrlForAbsoluteLinks": true,
   "favicon": "public/favicon.svg",
   "navigation": {
