@@ -10,6 +10,7 @@ import {
   type AnyFraci,
   type Fraci,
 } from "../factory.js";
+import { FraciError } from "../lib/errors.js";
 import type { AnyFractionalIndex, FractionalIndex } from "../lib/types.js";
 import type { FraciOf } from "../types.js";
 import {
@@ -261,10 +262,11 @@ type AnyFraciForPrisma = FraciForPrismaInternal<
  *
  * @param options - The options for the fractional indexing extension
  * @returns The Prisma extension.
- * @throws {Error} When field information for a specified model.field cannot be retrieved
- * @throws {Error} When the digit or length base strings are invalid
+ * @throws {FraciError} Throws a {@link FraciError} when field information for a specified model.field cannot be retrieved
+ * @throws {FraciError} Throws a {@link FraciError} when the digit or length base strings are invalid
  *
  * @see {@link FraciForPrisma} - The enhanced fractional indexing utility for Prisma ORM
+ * @see {@link FraciError} - The custom error class for the Fraci library
  */
 export function prismaFraci<const Options extends PrismaFraciOptions>({
   fields,
@@ -290,15 +292,16 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
       const { modelName } = (client as any)[model]?.fields?.[field] ?? {};
       if (!modelName) {
         if (globalThis.__DEV__) {
-          console.error(`Fraci Prisma: Could not get field information for ${model}.${field}.
+          console.error(`FraciError: [INITIALIZATION_FAILED] Could not get field information for ${model}.${field}.
 Make sure that
 - The model and field names are correct and exist in the Prisma schema
 - The Prisma client is generated with the correct schema
 - The Prisma version is compatible with the extension`);
         }
 
-        throw new Error(
-          `Fraci Prisma: Could not get field information for ${model}.${field}`,
+        throw new FraciError(
+          "INITIALIZATION_FAILED",
+          `Could not get field information for ${model}.${field}`,
         );
       }
 

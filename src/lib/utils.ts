@@ -1,3 +1,8 @@
+import { FraciError, type FraciErrorCode } from "./errors.js";
+
+const ERROR_CODE_INITIALIZATION_FAILED =
+  "INITIALIZATION_FAILED" satisfies FraciErrorCode;
+
 /**
  * Splits a base string into an array of characters and validates it.
  * This function ensures the base string meets the requirements:
@@ -6,8 +11,10 @@
  *
  * @param base - The base string to split and validate
  * @returns An array of characters from the base string
- * @throws {Error} When the base string has fewer than 4 unique characters
- * @throws {Error} When the base string characters are not unique or not in ascending order
+ * @throws {FraciError} Throws a {@link FraciError} when the base string has fewer than 4 unique characters
+ * @throws {FraciError} Throws a {@link FraciError} when the base string characters are not unique or not in ascending order
+ *
+ * @see {@link FraciError} - The custom error class for the Fraci library
  */
 function splitBase(base: string): string[] {
   // Intentionally not using a spread operator to ensure consistent splitting behavior.
@@ -19,8 +26,9 @@ function splitBase(base: string): string[] {
     // - We need at least 2 characters to represent +1 and -1 in integer length bases.
     // - We need at least 3 characters to calculate the middle of fractional parts.
     // - An extra character provides additional flexibility.
-    throw new Error(
-      "Fraci: Base string must have at least 4 unique characters",
+    throw new FraciError(
+      ERROR_CODE_INITIALIZATION_FAILED,
+      "Base string must have at least 4 unique characters",
     );
   }
 
@@ -30,8 +38,9 @@ function splitBase(base: string): string[] {
   for (const char of forward) {
     const code = char.charCodeAt(0);
     if (code <= lastCode) {
-      throw new Error(
-        "Fraci: Base string characters must be unique and in ascending order",
+      throw new FraciError(
+        ERROR_CODE_INITIALIZATION_FAILED,
+        "Base string characters must be unique and in ascending order",
       );
     }
     lastCode = code;
@@ -48,8 +57,10 @@ function splitBase(base: string): string[] {
  *
  * @param base - The base string containing unique characters in ascending order
  * @returns A tuple containing the forward array and reverse map
- * @throws {Error} When the base string has fewer than 4 unique characters (via {@link splitBase})
- * @throws {Error} When the base string characters are not unique or not in ascending order (via {@link splitBase})
+ * @throws {FraciError} Throws a {@link FraciError} when the base string has fewer than 4 unique characters (via {@link splitBase})
+ * @throws {FraciError} Throws a {@link FraciError} when the base string characters are not unique or not in ascending order (via {@link splitBase})
+ *
+ * @see {@link FraciError} - The custom error class for the Fraci library
  */
 export function createDigitBaseMap(
   base: string,
@@ -72,8 +83,10 @@ export function createDigitBaseMap(
  *
  * @param base - The base string containing unique characters in ascending order
  * @returns A tuple containing the forward map (length → char) and reverse map (char → length)
- * @throws {Error} When the base string has fewer than 4 unique characters (via {@link splitBase})
- * @throws {Error} When the base string characters are not unique or not in ascending order (via {@link splitBase})
+ * @throws {FraciError} Throws a {@link FraciError} when the base string has fewer than 4 unique characters (via {@link splitBase})
+ * @throws {FraciError} Throws a {@link FraciError} when the base string characters are not unique or not in ascending order (via {@link splitBase})
+ *
+ * @see {@link FraciError} - The custom error class for the Fraci library
  */
 export function createIntegerLengthBaseMap(
   base: string,

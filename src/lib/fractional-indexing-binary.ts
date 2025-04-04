@@ -8,6 +8,7 @@ import {
   isSmallestInteger,
   splitParts,
 } from "./decimal-binary.js";
+import { FraciError } from "./errors.js";
 
 /**
  * Converts a Node.js Buffer to a Uint8Array if necessary.
@@ -64,18 +65,20 @@ export function isValidFractionalIndex(index: Uint8Array): boolean {
  *
  * @param value - The value to check
  * @returns The original value if it's not undefined
- * @throws {Error} When the value is undefined (internal error)
+ * @throws {FraciError} Throws a {@link FraciError} when the value is undefined (internal error)
+ *
+ * @see {@link FraciError} - The custom error class for the Fraci library
  */
 function ensureNotUndefined<T>(value: T | undefined): T {
   if (value === undefined) {
     // This should not happen as we should have validated the value before.
     if (globalThis.__DEV__) {
       console.error(
-        "Fraci Internal: Unexpected undefined. Please file an issue to report this error.",
+        "FraciError: [INTERNAL_ERROR] Unexpected undefined. Please file an issue to report this error.",
       );
     }
 
-    throw new Error("Fraci Internal: Unexpected undefined");
+    throw new FraciError("INTERNAL_ERROR", "Unexpected undefined");
   }
   return value;
 }
