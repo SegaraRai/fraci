@@ -8,6 +8,7 @@
  * - `INTERNAL_ERROR`: Indicates an internal error in the library. Please file an issue if you see this.
  * - `INVALID_FRACTIONAL_INDEX`: Indicates that an invalid fractional index was provided to `generateKeyBetween` or `generateNKeysBetween` functions.
  * - `MAX_LENGTH_EXCEEDED`: Indicates that the maximum length of the generated key was exceeded.
+ * - `MAX_RETRIES_EXCEEDED`: Indicates that the maximum number of retries was exceeded when generating a key.
  *
  * @see {@link FraciError} - The custom error class for the Fraci library
  */
@@ -15,7 +16,8 @@ export type FraciErrorCode =
   | "INITIALIZATION_FAILED"
   | "INTERNAL_ERROR"
   | "INVALID_FRACTIONAL_INDEX"
-  | "MAX_LENGTH_EXCEEDED";
+  | "MAX_LENGTH_EXCEEDED"
+  | "MAX_RETRIES_EXCEEDED";
 
 /**
  * Custom error class for the Fraci library.
@@ -91,6 +93,7 @@ export function isFraciError(error: unknown): error is FraciError {
  * } catch (error) {
  *   switch (getFraciErrorCode(error)) {
  *     case "MAX_LENGTH_EXCEEDED":
+ *     case "MAX_RETRIES_EXCEEDED":
  *       // Handle specific error case
  *       break;
  *

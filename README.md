@@ -270,6 +270,7 @@ export const fiArticles = defineDrizzleFraci(
 #### 2. CRUD operations with Drizzle ORM
 
 ```typescript
+import { getFraciErrorCode } from "fraci";
 import { drizzleFraci } from "fraci/drizzle";
 // Or import `drizzleFraciSync` if you're using synchronous database (i.e. Bun SQLite)
 import { articles, fiArticles } from "./schema";
@@ -299,28 +300,41 @@ async function append() {
   //                                         ^ Specify all group columns
 
   // Generate a new fractional index and handle conflicts
-  for (const fi of afi.generateKeyBetween(...indices)) {
-    try {
-      return await db
-        .insert(articles)
-        .values({
-          title: "Hello, world!",
-          content: "This is a test article.",
-          fi,
-          userId: 1,
-        })
-        .returning()
-        .get();
-    } catch (error) {
-      if (isIndexConflictError(error)) {
-        // Conflict occurred - regenerate and try again
-        continue;
+  try {
+    for (const fi of afi.generateKeyBetween(...indices)) {
+      try {
+        return await db
+          .insert(articles)
+          .values({
+            title: "Hello, world!",
+            content: "This is a test article.",
+            fi,
+            userId: 1,
+          })
+          .returning()
+          .get();
+      } catch (error) {
+        if (isIndexConflictError(error)) {
+          // Conflict occurred - regenerate and try again
+          continue;
+        }
+        throw error;
       }
-      throw error;
+    }
+
+    // Unreachable code, as the `generateKeyBetween` function throws a `MAX_RETRIES_EXCEEDED` error before this point
+  } catch (error) {
+    const code = getFraciErrorCode(error);
+    if (code === "MAX_LENGTH_EXCEEDED") {
+      throw new HTTPError(500, "Cannot add more items to this group.");
+    }
+    if (code === "MAX_RETRIES_EXCEEDED") {
+      throw new HTTPError(
+        503,
+        "Too many concurrent requests. Please try again.",
+      );
     }
   }
-
-  throw new Error("Failed to generate a new fractional index.");
 }
 
 /**
@@ -348,36 +362,40 @@ async function move() {
     throw new Error("Article 4 does not exist or does not belong to user 1.");
   }
 
-  for (const fi of afi.generateKeyBetween(...indices)) {
-    try {
-      const result = await db
-        .update(articles)
-        .set({ fi })
-        .where(
-          and(
-            eq(articles.id, 3),
-            eq(articles.userId, 1), // IMPORTANT: Always filter by group columns
-          ),
-        )
-        .returning()
-        .get();
+  try {
+    for (const fi of afi.generateKeyBetween(...indices)) {
+      try {
+        const result = await db
+          .update(articles)
+          .set({ fi })
+          .where(
+            and(
+              eq(articles.id, 3),
+              eq(articles.userId, 1), // IMPORTANT: Always filter by group columns
+            ),
+          )
+          .returning()
+          .get();
 
-      if (!result) {
-        throw new Error(
-          "Article 3 does not exist or does not belong to user 1.",
-        );
+        if (!result) {
+          throw new Error(
+            "Article 3 does not exist or does not belong to user 1.",
+          );
+        }
+        return result;
+      } catch (error) {
+        if (isIndexConflictError(error)) {
+          // Conflict occurred - regenerate and try again
+          continue;
+        }
+        throw error;
       }
-      return result;
-    } catch (error) {
-      if (isIndexConflictError(error)) {
-        // Conflict occurred - regenerate and try again
-        continue;
-      }
-      throw error;
     }
-  }
 
-  throw new Error("Failed to generate a new fractional index.");
+    // Unreachable code, as the `generateKeyBetween` function throws a `MAX_RETRIES_EXCEEDED` error before this point
+  } catch (error) {
+    // TODO: Error handling
+  }
 }
 
 /**
@@ -389,6 +407,68 @@ async function remove() {
   await db.delete(articles).where(eq(articles.id, 3));
 }
 ```
+
+> [!TIP]
+> Due to limitations of TypeScript, code after a loop that iterates over an infinite generator will not be inferred to be unreachable, even though it is. We recommend using a wrapper function like the one below, which incorporates common error handling.
+>
+> ```typescript
+> async function withKeyBetween<T, FI extends AnyFractionalIndex>(
+>   generator: Generator<FI, never, unknown>,
+>   callback: (fi: FI) => Promise<T>,
+> ): Promise<T> {
+>   try {
+>     for (const fi of generator) {
+>       try {
+>         return await callback(fi);
+>       } catch (error) {
+>         if (isIndexConflictError(error)) {
+>           // Conflict occurred - regenerate and try again
+>           continue;
+>         }
+>         throw error;
+>       }
+>     }
+>
+>     // Unreachable code, as the `generateKeyBetween` function throws a `MAX_RETRIES_EXCEEDED` error before this point
+>     throw 1; // To make TypeScript happy
+>   } catch (error) {
+>     const code = getFraciErrorCode(error);
+>     if (code === "MAX_LENGTH_EXCEEDED") {
+>       throw new HTTPError(500, "Cannot add more items to this group.");
+>     }
+>     if (code === "MAX_RETRIES_EXCEEDED") {
+>       throw new HTTPError(
+>         503,
+>         "Too many concurrent requests. Please try again.",
+>       );
+>     }
+>     throw error;
+>   }
+> }
+>
+> // Example usage
+> const indices = await afi.indicesForAfter({ userId: 1 }, { id: 4 });
+> if (!indices) {
+>   throw new Error("Article 4 does not exist or does not belong to user 1.");
+> }
+>
+> const result = await withKeyBetween(
+>   afi.generateKeyBetween(...indices),
+>   async (fi) => {
+>     return await db
+>       .update(articles)
+>       .set({ fi })
+>       .where(
+>         and(
+>           eq(articles.id, 3),
+>           eq(articles.userId, 1), // IMPORTANT: Always filter by group columns
+>         ),
+>       )
+>       .returning()
+>       .get();
+>   },
+> );
+> ```
 
 ### With Prisma ORM
 
@@ -494,27 +574,40 @@ async function append() {
   const indices = await afi.indicesForLast({ userId: 1 });
   //                                         ^ Specify all group columns
 
-  // Generate a new fractional index and handle conflicts
-  for (const fi of afi.generateKeyBetween(...indices)) {
-    try {
-      return await prisma.article.create({
-        data: {
-          title: "Hello, world!",
-          content: "This is a test article.",
-          fi,
-          userId: 1,
-        },
-      });
-    } catch (error) {
-      if (afi.isIndexConflictError(error)) {
-        // Conflict occurred - regenerate and try again
-        continue;
+  try {
+    // Generate a new fractional index and handle conflicts
+    for (const fi of afi.generateKeyBetween(...indices)) {
+      try {
+        return await prisma.article.create({
+          data: {
+            title: "Hello, world!",
+            content: "This is a test article.",
+            fi,
+            userId: 1,
+          },
+        });
+      } catch (error) {
+        if (afi.isIndexConflictError(error)) {
+          // Conflict occurred - regenerate and try again
+          continue;
+        }
+        throw error;
       }
-      throw error;
+    }
+
+    // Unreachable code, as the `generateKeyBetween` function throws a `MAX_RETRIES_EXCEEDED` error before this point
+  } catch (error) {
+    const code = getFraciErrorCode(error);
+    if (code === "MAX_LENGTH_EXCEEDED") {
+      throw new HTTPError(500, "Cannot add more items to this group.");
+    }
+    if (code === "MAX_RETRIES_EXCEEDED") {
+      throw new HTTPError(
+        503,
+        "Too many concurrent requests. Please try again.",
+      );
     }
   }
-
-  throw new Error("Failed to generate a new fractional index.");
 }
 
 /**
@@ -544,37 +637,41 @@ async function move() {
     throw new Error("Article 4 does not exist or does not belong to user 1.");
   }
 
-  for (const fi of afi.generateKeyBetween(...indices)) {
-    try {
-      await prisma.article.update({
-        where: {
-          id: 3,
-          userId: 1, // IMPORTANT: Always filter by group columns
-        },
-        data: {
-          fi,
-        },
-      });
-      return;
-    } catch (error) {
-      if (afi.isIndexConflictError(error)) {
-        // Conflict occurred - regenerate and try again
-        continue;
-      }
+  try {
+    for (const fi of afi.generateKeyBetween(...indices)) {
+      try {
+        await prisma.article.update({
+          where: {
+            id: 3,
+            userId: 1, // IMPORTANT: Always filter by group columns
+          },
+          data: {
+            fi,
+          },
+        });
+        return;
+      } catch (error) {
+        if (afi.isIndexConflictError(error)) {
+          // Conflict occurred - regenerate and try again
+          continue;
+        }
 
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2025"
-      ) {
-        throw new Error(
-          "Article 3 does not exist or does not belong to user 1.",
-        );
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2025"
+        ) {
+          throw new Error(
+            "Article 3 does not exist or does not belong to user 1.",
+          );
+        }
+        throw error;
       }
-      throw error;
     }
-  }
 
-  throw new Error("Failed to generate a new fractional index.");
+    // Unreachable code, as the `generateKeyBetween` function throws a `MAX_RETRIES_EXCEEDED` error before this point
+  } catch (error) {
+    // TODO: Error handling
+  }
 }
 
 /**
@@ -589,6 +686,68 @@ async function remove() {
   });
 }
 ```
+
+> [!TIP]
+> Due to limitations of TypeScript, code after a loop that iterates over an infinite generator will not be inferred to be unreachable, even though it is. We recommend using a wrapper function like the one below, which incorporates common error handling.
+>
+> ```typescript
+> async function withKeyBetween<T, FI extends AnyFractionalIndex>(
+>   generator: Generator<FI, never, unknown>,
+>   isIndexConflictError: (error: unknown) => boolean,
+>   callback: (fi: FI) => Promise<T>,
+> ): Promise<T> {
+>   try {
+>     for (const fi of generator) {
+>       try {
+>         return await callback(fi);
+>       } catch (error) {
+>         if (isIndexConflictError(error)) {
+>           // Conflict occurred - regenerate and try again
+>           continue;
+>         }
+>         throw error;
+>       }
+>     }
+>
+>     // Unreachable code, as the `generateKeyBetween` function throws a `MAX_RETRIES_EXCEEDED` error before this point
+>     throw 1; // To make TypeScript happy
+>   } catch (error) {
+>     const code = getFraciErrorCode(error);
+>     if (code === "MAX_LENGTH_EXCEEDED") {
+>       throw new HTTPError(500, "Cannot add more items to this group.");
+>     }
+>     if (code === "MAX_RETRIES_EXCEEDED") {
+>       throw new HTTPError(
+>         503,
+>         "Too many concurrent requests. Please try again.",
+>       );
+>     }
+>     throw error;
+>   }
+> }
+>
+> // Example usage
+> const indices = await afi.indicesForAfter({ userId: 1 }, { id: 4 });
+> if (!indices) {
+>   throw new Error("Article 4 does not exist or does not belong to user 1.");
+> }
+>
+> const result = await withKeyBetween(
+>   afi.generateKeyBetween(...indices),
+>   afi.isIndexConflictError,
+>   async (fi) => {
+>     return await prisma.article.update({
+>       where: {
+>         id: 3,
+>         userId: 1, // IMPORTANT: Always filter by group columns
+>       },
+>       data: {
+>         fi,
+>       },
+>     });
+>   },
+> );
+> ```
 
 ## How It Works
 
@@ -706,20 +865,24 @@ if (!indices) {
 
 // Skip a random number of indices
 const skipCount = Math.floor(Math.random() * 10); // Skip 0-9 indices
-for (const fi of afi.generateKeyBetween(...indices, skipCount)) {
-  try {
-    await db.insert(items).values({ title: "New Item", fi, userId: 1 });
-    return; // Success
-  } catch (error) {
-    if (isIndexConflictError(error)) {
-      // Still need conflict resolution
-      continue;
+try {
+  for (const fi of afi.generateKeyBetween(...indices, skipCount)) {
+    try {
+      await db.insert(items).values({ title: "New Item", fi, userId: 1 });
+      return; // Success
+    } catch (error) {
+      if (isIndexConflictError(error)) {
+        // Still need conflict resolution
+        continue;
+      }
+      throw error;
     }
-    throw error;
   }
-}
 
-throw new Error("Failed to generate a new fractional index.");
+  // Unreachable code, as the `generateKeyBetween` function throws a `MAX_RETRIES_EXCEEDED` error before this point
+} catch (error) {
+  // TODO: Error handling
+}
 ```
 
 This approach:
@@ -768,6 +931,9 @@ If you encounter runtime errors:
 - `[MAX_LENGTH_EXCEEDED] Exceeded maximum length`
   - **Cause:** A generated fractional index has exceeded the configured maximum length (default: 50).
   - **Solution:** Increase the `maxLength` parameter when creating your fraci instance. This could also indicate an index expansion attack, so review your security measures.
+- `[MAX_RETRIES_EXCEEDED] Exceeded maximum retries`
+  - **Cause:** The maximum number of retries on conflict has been exceeded (default: 5).
+  - **Solution:** Implement the [skipping indices for collision avoidance](#skipping-indices-for-collision-avoidance) technique to reduce conflicts. You can also increase the `maxRetries` parameter when creating your fraci instance.
 - `[INVALID_FRACTIONAL_INDEX] Invalid indices provided`
   - **Cause:** Invalid fractional indices were provided to key generation functions.
   - **Solution:** Ensure you're using fractional indices generated by the same fraci instance with the same configuration. Make sure you have not mixed up the items in different groups, and that the first argument item in a group is before the second argument item. File an issue if you use the library correctly and still encounter this error.

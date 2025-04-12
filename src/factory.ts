@@ -51,6 +51,10 @@ const ERROR_CODE_EXCEEDED_MAX_LENGTH =
   "MAX_LENGTH_EXCEEDED" satisfies FraciErrorCode;
 const ERROR_MESSAGE_EXCEEDED_MAX_LENGTH = "Exceeded maximum length";
 
+const ERROR_CODE_EXCEEDED_MAX_RETRIES =
+  "MAX_RETRIES_EXCEEDED" satisfies FraciErrorCode;
+const ERROR_MESSAGE_EXCEEDED_MAX_RETRIES = "Exceeded maximum retries";
+
 type IndexPairs<T> =
   | [T | null, T | null]
   | [T | null, T]
@@ -102,7 +106,7 @@ export interface Fraci<B extends FractionalIndexBase, X> {
     a: FractionalIndex<B, X> | null,
     b: FractionalIndex<B, X> | null,
     skip?: number,
-  ): Generator<FractionalIndex<B, X>, void, unknown>;
+  ): Generator<FractionalIndex<B, X>, never, unknown>;
 
   /**
    * Generates a key between two existing keys.
@@ -125,7 +129,7 @@ export interface Fraci<B extends FractionalIndexBase, X> {
     ...[a, b, skip]:
       | [...IndexPairs<FractionalIndex<B, X>>]
       | [...IndexPairs<FractionalIndex<B, X>>, number]
-  ): Generator<FractionalIndex<B, X>, void, unknown>;
+  ): Generator<FractionalIndex<B, X>, never, unknown>;
 
   /**
    * Generates multiple keys evenly distributed between two existing keys.
@@ -146,7 +150,7 @@ export interface Fraci<B extends FractionalIndexBase, X> {
     b: FractionalIndex<B, X> | null,
     n: number,
     skip?: number,
-  ): Generator<FractionalIndex<B, X>[], void, unknown>;
+  ): Generator<FractionalIndex<B, X>[], never, unknown>;
 
   /**
    * Generates multiple keys evenly distributed between two existing keys.
@@ -170,7 +174,7 @@ export interface Fraci<B extends FractionalIndexBase, X> {
     ...[a, b, n, skip]:
       | [...IndexPairs<FractionalIndex<B, X>>, number]
       | [...IndexPairs<FractionalIndex<B, X>>, number, number]
-  ): Generator<FractionalIndex<B, X>[], void, unknown>;
+  ): Generator<FractionalIndex<B, X>[], never, unknown>;
 }
 
 /**
@@ -538,6 +542,12 @@ export function fraciBinary<const X = unknown>({
         }
         yield value as F;
       }
+
+      // If we reach here, it means we exceeded the maximum retries
+      throw new FraciError(
+        ERROR_CODE_EXCEEDED_MAX_RETRIES,
+        ERROR_MESSAGE_EXCEEDED_MAX_RETRIES,
+      );
     },
     *generateNKeysBetween(a: F | null, b: F | null, n: number, skip = 0) {
       // Generate n base keys between a and b (without conflict avoidance)
@@ -568,6 +578,12 @@ export function fraciBinary<const X = unknown>({
         }
         yield base.map((v) => concat(v, suffix) as F);
       }
+
+      // If we reach here, it means we exceeded the maximum retries
+      throw new FraciError(
+        ERROR_CODE_EXCEEDED_MAX_RETRIES,
+        ERROR_MESSAGE_EXCEEDED_MAX_RETRIES,
+      );
     },
   };
 }
@@ -675,6 +691,12 @@ export function fraciString<
         }
         yield value as F;
       }
+
+      // If we reach here, it means we exceeded the maximum retries
+      throw new FraciError(
+        ERROR_CODE_EXCEEDED_MAX_RETRIES,
+        ERROR_MESSAGE_EXCEEDED_MAX_RETRIES,
+      );
     },
     *generateNKeysBetween(a: F | null, b: F | null, n: number, skip = 0) {
       // Generate n base keys between a and b (without conflict avoidance)
@@ -714,6 +736,12 @@ export function fraciString<
         }
         yield base.map((v) => `${v}${suffix}` as F);
       }
+
+      // If we reach here, it means we exceeded the maximum retries
+      throw new FraciError(
+        ERROR_CODE_EXCEEDED_MAX_RETRIES,
+        ERROR_MESSAGE_EXCEEDED_MAX_RETRIES,
+      );
     },
   };
 }

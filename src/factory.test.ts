@@ -201,7 +201,7 @@ describe("fraci", () => {
       "55001" as any,
       "55002" as any,
     );
-    expect(() => generator.next()).toThrow("Fraci: Exceeded maximum length");
+    expect(() => generator.next()).toThrow("Exceeded maximum length");
   });
 
   it("should throw an error if an invalid input is provided", () => {
@@ -212,14 +212,14 @@ describe("fraci", () => {
     });
 
     const generator1 = indexing.generateKeyBetween("" as any, "550" as any);
-    expect(() => generator1.next()).toThrow("Fraci: Invalid indices provided");
+    expect(() => generator1.next()).toThrow("Invalid indices provided");
 
     const generator2 = indexing.generateNKeysBetween(
       "550" as any,
       "55a" as any,
       2,
     );
-    expect(() => generator2.next()).toThrow("Fraci: Invalid indices provided");
+    expect(() => generator2.next()).toThrow("Invalid indices provided");
   });
 
   it("should handle skip parameter", () => {
@@ -239,7 +239,7 @@ describe("fraci", () => {
     expect(generator2.next().value).not.toBeUndefined();
   });
 
-  it("should stop generation when reached maxRetries", () => {
+  it("should throw an error if reached maxRetries", () => {
     const indexing = fraci({
       lengthBase,
       digitBase,
@@ -249,10 +249,10 @@ describe("fraci", () => {
     expect(generator.next().done).toBe(false);
     expect(generator.next().done).toBe(false);
     expect(generator.next().done).toBe(false);
-    expect(generator.next().done).toBe(true);
+    expect(() => generator.next()).toThrow("Exceeded maximum retries");
   });
 
-  it("should stop generation when reached maxRetries (with skip)", () => {
+  it("should throw an error if reached maxRetries (with skip)", () => {
     const indexing = fraci({
       lengthBase,
       digitBase,
@@ -262,7 +262,7 @@ describe("fraci", () => {
     expect(generator.next().done).toBe(false);
     expect(generator.next().done).toBe(false);
     expect(generator.next().done).toBe(false);
-    expect(generator.next().done).toBe(true);
+    expect(() => generator.next()).toThrow("Exceeded maximum retries");
   });
 
   it("should handle complex tuple types", () => {

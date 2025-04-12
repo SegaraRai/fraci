@@ -200,9 +200,7 @@ test("should throw error if invalid column specified", () => {
         },
       }),
     ),
-  ).toThrowError(
-    "Fraci Prisma: Could not get field information for notExist.fi",
-  );
+  ).toThrow("Could not get field information for notExist.fi");
 
   expect(() =>
     basePrisma.$extends(
@@ -217,9 +215,7 @@ test("should throw error if invalid column specified", () => {
         },
       }),
     ),
-  ).toThrowError(
-    "Fraci Prisma: Could not get field information for article.notExist",
-  );
+  ).toThrow("Could not get field information for article.notExist");
 });
 
 describe("basic", () => {
