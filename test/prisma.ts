@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { env } from "bun";
+import { webcrypto as crypto } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { collectMigrations } from "./common.js";
 

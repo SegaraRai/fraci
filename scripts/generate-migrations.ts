@@ -1,4 +1,5 @@
 import { $, env } from "bun";
+import { webcrypto as crypto } from "node:crypto";
 
 // Prisma doesn't support in-memory SQLite databases, so we use a random file name.
 env["PRISMA_DB_URL"] = `file:temp/${crypto.randomUUID()}.db?mode=memory`;
