@@ -1,5 +1,12 @@
 # fraci
 
+## 0.17.0
+
+### Minor Changes
+
+- 48a2ec2: Added custom error class.
+- 82808da: Throws an error when the maximum number of retries is exceeded to allow consistent error handling.
+
 ## 0.16.0
 
 ### Minor Changes
