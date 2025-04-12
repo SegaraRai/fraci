@@ -102,7 +102,7 @@ See the detailed examples below for more information.
 | -------------------- | ------------------------------------- | ---------------------------------------- |
 | **Storage**          | Stored as text strings                | Stored as binary data (`Uint8Array`)     |
 | **Performance**      | Good                                  | Better (faster comparisons, less memory) |
-| **Bundle Size**      | 2.03 KiB (Core-only, gzipped)         | 1.52 KiB (Core-only, gzipped)            |
+| **Bundle Size**      | 2.06 KiB (Core-only, gzipped)         | 1.55 KiB (Core-only, gzipped)            |
 | **Database Column**  | `text` or `varchar`                   | `blob` or `bytea`                        |
 | **Visual Debugging** | Easier (human-readable)               | Harder (requires conversion)             |
 | **Configuration**    | Requires `digitBase` and `lengthBase` | Simpler configuration                    |
@@ -114,13 +114,13 @@ Run `bun run build-examples` to see the bundle sizes for each example.
 
 | Integration              | Total Size (minified)     | Total Size (minified + gzipped) |
 | ------------------------ | ------------------------- | ------------------------------- |
-| **Core only (Binary)**   | 3.40 KiB                  | **1.52 KiB**                    |
-| **Core only (String)**   | 4.76 KiB                  | **2.03 KiB**                    |
-| **Core only (Both)**     | 7.82 KiB                  | **2.98 KiB**                    |
-| **Drizzle ORM (Binary)** | 4.46 KiB (Core +1.06 KiB) | **1.98 KiB** (Core +0.46 KiB)   |
-| **Drizzle ORM (String)** | 5.83 KiB (Core +1.07 KiB) | **2.47 KiB** (Core +0.44 KiB)   |
-| **Drizzle ORM (Both)**   | 8.85 KiB (Core +1.03 KiB) | **3.43 KiB** (Core +0.44 KiB)   |
-| **Prisma ORM (Both)**    | 9.17 KiB (Core +1.35 KiB) | **3.60 KiB** (Core +0.62 KiB)   |
+| **Core only (Binary)**   | 3.49 KiB                  | **1.55 KiB**                    |
+| **Core only (String)**   | 4.85 KiB                  | **2.06 KiB**                    |
+| **Core only (Both)**     | 7.95 KiB                  | **3.02 KiB**                    |
+| **Drizzle ORM (Binary)** | 4.55 KiB (Core +1.06 KiB) | **2.01 KiB** (Core +0.46 KiB)   |
+| **Drizzle ORM (String)** | 5.92 KiB (Core +1.07 KiB) | **2.50 KiB** (Core +0.44 KiB)   |
+| **Drizzle ORM (Both)**   | 8.98 KiB (Core +1.03 KiB) | **3.45 KiB** (Core +0.44 KiB)   |
+| **Prisma ORM (Both)**    | 9.29 KiB (Core +1.35 KiB) | **3.63 KiB** (Core +0.62 KiB)   |
 
 ## Security Considerations
 
