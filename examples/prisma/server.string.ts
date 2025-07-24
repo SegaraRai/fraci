@@ -5,7 +5,7 @@ import { BASE62 } from "fraci";
 import { prismaFraci } from "fraci/prisma";
 import { Hono } from "hono";
 import * as z from "zod";
-import { Prisma } from "../../prisma/client";
+import { Prisma } from "../../prisma/client/client.js";
 import { setupPrisma } from "../../test/prisma.js";
 import type { ServerType } from "../common/server-base.js";
 

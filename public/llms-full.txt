@@ -416,7 +416,7 @@ model Task {
 
 ```typescript
 import { prismaFraci } from "fraci/prisma";
-import { PrismaClient } from "./path/to/your/prisma/client"; // Adjust the import path as needed
+import { PrismaClient } from "./path/to/your/prisma/client.js"; // Adjust the import path as needed
 
 // Configure the Prisma extension
 const prisma = new PrismaClient().$extends(
@@ -516,7 +516,7 @@ model Task {
 ```typescript
 import { BASE62 } from "fraci";
 import { prismaFraci } from "fraci/prisma";
-import { PrismaClient } from "./path/to/your/prisma/client";
+import { PrismaClient } from "./path/to/your/prisma/client.js";
 
 // Configure the Prisma extension
 const prisma = new PrismaClient().$extends(

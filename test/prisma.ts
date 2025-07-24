@@ -1,7 +1,7 @@
 import { env } from "bun";
 import { webcrypto as crypto } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { PrismaClient } from "../prisma/client";
+import { PrismaClient } from "../prisma/client/client.js";
 import { collectMigrations } from "./common.js";
 
 const migrationQueries = await collectMigrations(

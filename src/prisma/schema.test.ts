@@ -2,7 +2,7 @@
 import { expect, test } from "bun:test";
 import { BASE26L, BASE36L } from "fraci";
 import { definePrismaFraci } from "fraci/prisma";
-import { PrismaClient } from "../../prisma/client";
+import { PrismaClient } from "../../prisma/client/client.js";
 
 test("definePrismaFraci type check", () => {
   expect(

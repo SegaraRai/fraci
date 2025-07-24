@@ -8,7 +8,7 @@ The type definition for `PrismaClient` is no longer imported from `@prisma/clien
 
 ```diff
   import { definePrismaFraci, prismaFraci } from "fraci/prisma";
-  import { PrismaClient } from "./path/to/your/prisma/client"; // Adjust the import path to your Prisma client
+  import { PrismaClient } from "./path/to/your/prisma/client.js"; // Adjust the import path to your Prisma client
 
   const baseClient = new PrismaClient();
 

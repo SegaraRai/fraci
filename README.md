@@ -513,7 +513,7 @@ model Article {
 ```typescript
 import { BASE62 } from "fraci";
 import { prismaFraci } from "fraci/prisma";
-import { PrismaClient } from "./path/to/your/prisma/client"; // Adjust the import path as needed
+import { PrismaClient } from "./path/to/your/prisma/client.js"; // Adjust the import path as needed
 
 const prisma = new PrismaClient().$extends(
   prismaFraci(PrismaClient, {
@@ -541,7 +541,7 @@ const prisma = new PrismaClient().$extends(
 >
 > ```typescript
 > import { prismaFraci } from "fraci/prisma";
-> import { PrismaClient } from "./path/to/your/prisma/client";
+> import { PrismaClient } from "./path/to/your/prisma/client.js";
 >
 > const prisma = new PrismaClient().$extends(
 >   prismaFraci(PrismaClient, {

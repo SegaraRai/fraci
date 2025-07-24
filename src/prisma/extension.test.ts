@@ -5,7 +5,7 @@ import {
   prismaFraci,
   type FraciForPrisma,
 } from "fraci/prisma";
-import { PrismaClient } from "../../prisma/client";
+import { PrismaClient } from "../../prisma/client/client.js";
 import { setupPrisma } from "../../test/prisma.js";
 
 function markAsUsed<X>(): void {
