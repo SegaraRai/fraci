@@ -82,24 +82,33 @@ export type PrismaFraciFieldOptions<
 /**
  * The record of the fractional index fields.
  *
+ * @template Client - The Prisma client type
+ *
  * @example { "article.fi": { group: ["userId"], lengthBase: "0123456789", digitBase: "0123456789" } }
  *
  * @see {@link PrismaFraciFieldOptions} - The unified type for fractional index field options
  * @see {@link PrismaFraciOptions} - The options for the fractional indexing extension
  */
-export type PrismaFraciFieldOptionsRecord = {
-  readonly [Q in QualifiedFields[0]]?:
+export type PrismaFraciFieldOptionsRecord<Client> = {
+  readonly [Q in QualifiedFields<Client>[0]]?:
     | PrismaFraciFieldOptions<
-        Extract<QualifiedFields, [Q, any, any]>[1],
-        Extract<QualifiedFields, [Q, any, any]>[2]
+        Extract<QualifiedFields<Client>, [Q, any, any]>[1],
+        Extract<QualifiedFields<Client>, [Q, any, any]>[2]
       >
     | undefined;
 };
 
 /**
  * The options for the fractional indexing extension.
+ *
+ * @template Client - The Prisma client type
+ *
+ * @example { fields: { "article.fi": { group: ["userId"], lengthBase: "0123456789", digitBase: "0123456789" } } }
+ *
+ * @see {@link PrismaFraciFieldOptions} - The unified type for fractional index field options
+ * @see {@link PrismaFraciFieldOptionsRecord} - The record of the fractional index fields
  */
-export interface PrismaFraciOptions {
+export interface PrismaFraciOptions<Client> {
   /**
    * The maximum number of retries to generate a fractional index.
    *
@@ -117,7 +126,7 @@ export interface PrismaFraciOptions {
   /**
    * The fractional index fields.
    */
-  readonly fields: PrismaFraciFieldOptionsRecord;
+  readonly fields: PrismaFraciFieldOptionsRecord<Client>;
 }
 
 /**
@@ -125,12 +134,21 @@ export interface PrismaFraciOptions {
  * This function defines the options for integrating fractional indexing
  * into a Prisma schema, including field configurations and performance settings.
  *
+ * @template Client - The Prisma client type
  * @template Options - The options type
  *
+ * @param _clientOrConstructor - The Prisma client or constructor. Only used for type inference and not used at runtime.
  * @param options - The options for the fractional indexing extension
  * @returns The options object with default values applied
  */
-export function definePrismaFraci<const Options extends PrismaFraciOptions>(
+export function definePrismaFraci<
+  Client,
+  const Options extends PrismaFraciOptions<Client>,
+>(
+  _clientOrConstructor:
+    | (new (...args: any) => Client)
+    | ((...args: any) => Client)
+    | Client,
   options: Options,
 ): Options {
   return options;

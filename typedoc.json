@@ -2,21 +2,9 @@
   "$schema": "https://typedoc.org/schema.json",
   "name": "Fraci",
   "out": "typedoc",
-  "entryPoints": [
-    "./src/index.ts",
-    "./src/drizzle.ts",
-    "./src/prisma.ts"
-  ],
-  "projectDocuments": [
-    "CHANGELOG.md",
-    "LICENSE.md"
-  ],
-  "highlightLanguages": [
-    "prisma",
-    "shell",
-    "text",
-    "typescript"
-  ],
+  "entryPoints": ["./src/index.ts", "./src/drizzle.ts", "./src/prisma.ts"],
+  "projectDocuments": ["CHANGELOG.md", "LICENSE.md"],
+  "highlightLanguages": ["prisma", "shell", "text", "typescript"],
   "headings": {
     "readme": false
   },

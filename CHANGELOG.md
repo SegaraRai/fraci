@@ -23,27 +23,23 @@
 
 ### Minor Changes
 
-- 9bc7f1d: Implementated Binary Fractional Indexing.
+- 9bc7f1d: Implemented Binary Fractional Indexing.
 
   Added support for binary-based fractional indices using `Uint8Array` for more efficient storage and operations. This implementation provides:
-
   - Improved performance with optimized binary operations for generating and comparing indices
   - Enhanced memory efficiency for applications handling large numbers of indices
   - Specialized factory functions for creating binary or string-based indices
 
   New Features:
-
   - Added `fraciBinary` and `fraciString` factory functions for creating specialized fractional indexing utilities
   - Added `base` and `brand` properties to `Fraci` for better type safety and runtime information
   - Enhanced validation and error handling for binary fractional indices
 
   Breaking Changes:
-
   - **Template Parameter Signature**: Changed template parameter signature for `fraci`, `Fraci`, and `FractionalIndex` types
   - **Removed Properties**: Removed `digitBase` and `lengthBase` properties from `Fraci`
 
   Added comprehensive type system with clear separation between binary and string-based indices:
-
   - `AnyFractionalIndex`, `AnyBinaryFractionalIndex`, `AnyStringFractionalIndex`
   - `AnyFractionalIndexBase`, `AnyBinaryFractionalIndexBase`, `AnyStringFractionalIndexBase`
   - `AnyFraci`, `AnyBinaryFraci`, `AnyStringFraci`
@@ -65,7 +61,6 @@
 ### Minor Changes
 
 - b0c4151: Enhanced error handling:
-
   - Added "Fraci" prefix to error messages to make it easier to identify the source of the error
   - Added comprehensive "Runtime Errors" section to the documentation with detailed information about each error message
   - Provided clear causes and solutions for each error message to improve troubleshooting experience
@@ -75,20 +70,17 @@
 ### Minor Changes
 
 - 6451d6a: **BREAKING CHANGE**: Renamed base constants for better consistency and clarity:
-
   - `BASE16` -> `BASE16L` (lowercase hex digits)
   - `BASE26` -> `BASE26L` (lowercase alphabets)
   - `BASE36` -> `BASE36L` (lowercase alphanumeric)
   - `BASE64` -> `BASE64URL` (URL-safe Base64 characters)
 
   Added new complementary constants:
-
   - `BASE16U` (uppercase hex digits)
 
   The naming convention now uses `L` suffix for lowercase and `U` suffix for uppercase variants.
 
 - 1ba4bab: **BREAKING CHANGE**: Renamed Prisma integration function and type for better consistency with other database integrations:
-
   - `fraciExtension` -> `prismaFraci` - The main function for creating Prisma extensions
   - `FraciExtensionOptions` ->`PrismaFraciOptions` - The options interface for configuration
 
@@ -169,7 +161,7 @@
 
 ### Minor Changes
 
-- d46c49a: **BREAKING CHANGE** Renamed methods and types.
+- d46c49a: **BREAKING CHANGE**: Renamed methods and types.
 - c0a5d80: Support transaction.
 
 ### Patch Changes
@@ -186,7 +178,7 @@
 
 ### Minor Changes
 
-- 364b106: **BREAKING CHANGE:** Removed result extension.
+- 364b106: **BREAKING CHANGE**: Removed result extension.
 
 ## 0.3.0
 

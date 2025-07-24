@@ -2,10 +2,11 @@
 import { expect, test } from "bun:test";
 import { BASE26L, BASE36L } from "fraci";
 import { definePrismaFraci } from "fraci/prisma";
+import { PrismaClient } from "../../prisma/client";
 
 test("definePrismaFraci type check", () => {
   expect(
-    definePrismaFraci({
+    definePrismaFraci(PrismaClient, {
       fields: {
         "article.fi": {
           group: [],
@@ -34,7 +35,7 @@ test("definePrismaFraci type check", () => {
     },
   });
 
-  definePrismaFraci({
+  definePrismaFraci(PrismaClient, {
     fields: {
       // @ts-expect-error Only existing fields can be specified.
       "notExist.fi": {
@@ -45,7 +46,7 @@ test("definePrismaFraci type check", () => {
     },
   });
 
-  definePrismaFraci({
+  definePrismaFraci(PrismaClient, {
     fields: {
       // @ts-expect-error Only existing fields can be specified.
       "article.notExist": {
@@ -56,7 +57,7 @@ test("definePrismaFraci type check", () => {
     },
   });
 
-  definePrismaFraci({
+  definePrismaFraci(PrismaClient, {
     fields: {
       "article.fi": {
         // @ts-expect-error Only existing fields can be specified.
@@ -67,7 +68,7 @@ test("definePrismaFraci type check", () => {
     },
   });
 
-  definePrismaFraci({
+  definePrismaFraci(PrismaClient, {
     fields: {
       "article.fi": {
         // @ts-expect-error Only serializable fields can be specified.
@@ -78,7 +79,7 @@ test("definePrismaFraci type check", () => {
     },
   });
 
-  definePrismaFraci({
+  definePrismaFraci(PrismaClient, {
     fields: {
       "article.fi": {
         // @ts-expect-error The fractional index field itself cannot be specified.

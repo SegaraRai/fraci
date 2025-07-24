@@ -1,17 +1,17 @@
 /* A simple example of using Fraci with Prisma ORM. */
 
 import { zValidator } from "@hono/zod-validator";
-import { Prisma } from "@prisma/client";
 import { prismaFraci } from "fraci/prisma";
 import { Hono } from "hono";
 import { Buffer } from "node:buffer";
 import * as z from "zod";
+import { Prisma } from "../../prisma/client";
 import { setupPrisma } from "../../test/prisma.js";
 import type { ServerType } from "../common/server-base.js";
 
 const basePrisma = await setupPrisma();
 const prisma = basePrisma.$extends(
-  prismaFraci({
+  prismaFraci(basePrisma, {
     fields: {
       "binaryExampleItem.fi": {
         group: ["groupId"],

@@ -114,13 +114,13 @@ Run `bun run build-examples` to see the bundle sizes for each example.
 
 | Integration              | Total Size (minified)     | Total Size (minified + gzipped) |
 | ------------------------ | ------------------------- | ------------------------------- |
-| **Core only (Binary)**   | 3.49 KiB                  | **1.55 KiB**                    |
-| **Core only (String)**   | 4.85 KiB                  | **2.06 KiB**                    |
-| **Core only (Both)**     | 7.95 KiB                  | **3.02 KiB**                    |
-| **Drizzle ORM (Binary)** | 4.55 KiB (Core +1.06 KiB) | **2.01 KiB** (Core +0.46 KiB)   |
-| **Drizzle ORM (String)** | 5.92 KiB (Core +1.07 KiB) | **2.50 KiB** (Core +0.44 KiB)   |
-| **Drizzle ORM (Both)**   | 8.98 KiB (Core +1.03 KiB) | **3.45 KiB** (Core +0.44 KiB)   |
-| **Prisma ORM (Both)**    | 9.29 KiB (Core +1.35 KiB) | **3.63 KiB** (Core +0.62 KiB)   |
+| **Core only (Binary)**   | 3.50 KiB                  | **1.56 KiB**                    |
+| **Core only (String)**   | 4.86 KiB                  | **2.07 KiB**                    |
+| **Core only (Both)**     | 7.96 KiB                  | **3.02 KiB**                    |
+| **Drizzle ORM (Binary)** | 4.56 KiB (Core +1.06 KiB) | **2.01 KiB** (Core +0.46 KiB)   |
+| **Drizzle ORM (String)** | 5.93 KiB (Core +1.07 KiB) | **2.51 KiB** (Core +0.44 KiB)   |
+| **Drizzle ORM (Both)**   | 8.99 KiB (Core +1.03 KiB) | **3.46 KiB** (Core +0.44 KiB)   |
+| **Prisma ORM (Both)**    | 9.30 KiB (Core +1.35 KiB) | **3.64 KiB** (Core +0.62 KiB)   |
 
 ## Security Considerations
 
@@ -511,12 +511,14 @@ model Article {
 #### 2. Configure the Prisma extension
 
 ```typescript
-import { PrismaClient } from "@prisma/client";
 import { BASE62 } from "fraci";
 import { prismaFraci } from "fraci/prisma";
+import { PrismaClient } from "./path/to/your/prisma/client"; // Adjust the import path as needed
 
 const prisma = new PrismaClient().$extends(
-  prismaFraci({
+  prismaFraci(PrismaClient, {
+    //        ^ Here, you have to pass a PrismaClient constructor or instance to help TypeScript
+    //          infer the types correctly. The passed value is NOT used at runtime.
     fields: {
       // Define the fractional index column (table.column)
       "article.fi": {
@@ -538,11 +540,11 @@ const prisma = new PrismaClient().$extends(
 > To configure the Prisma extension for binary fractional indexing:
 >
 > ```typescript
-> import { PrismaClient } from "@prisma/client";
 > import { prismaFraci } from "fraci/prisma";
+> import { PrismaClient } from "./path/to/your/prisma/client";
 >
 > const prisma = new PrismaClient().$extends(
->   prismaFraci({
+>   prismaFraci(PrismaClient, {
 >     fields: {
 >       // Define the binary fractional index column
 >       "article.fi": {

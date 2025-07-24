@@ -1,5 +1,3 @@
-// Import `@prisma/client/extension.js` instead of `@prisma/client` to prevent types in `PrismaClient` from being extracted in the return type of the `prismaFraci` function.
-// In `@prisma/client/extension.js`, `PrismaClient` is exported as `any`, which is not usable by users, so the import destination is modified to `@prisma/client` in post-processing.
 import { Prisma } from "@prisma/client/extension.js";
 import {
   createFraciCache,
@@ -20,7 +18,6 @@ import {
 import { EXTENSION_NAME } from "./constants.js";
 import type {
   AllModelFieldName,
-  AnyPrismaClient,
   BinaryModelFieldName,
   ModelKey,
   ModelScalarPayload,
@@ -28,6 +25,8 @@ import type {
   StringModelFieldName,
 } from "./prisma-types.js";
 import type { PrismaFraciFieldOptions, PrismaFraciOptions } from "./schema.js";
+
+type AnyPrismaClient = any;
 
 /**
  * A brand for Prisma models and fields.
@@ -52,6 +51,7 @@ type Indices<FI extends AnyFractionalIndex> = [a: FI | null, b: FI | null];
  *
  * This is an internal type used to define the methods for the Prisma extension.
  *
+ * @template Client - The Prisma client type
  * @template Model - The model name
  * @template Where - The type of the required fields for the `where` argument of the `findMany` method
  * @template FI - The fractional index type
@@ -59,7 +59,8 @@ type Indices<FI extends AnyFractionalIndex> = [a: FI | null, b: FI | null];
  * @see {@link Fraci} - The base fractional indexing utility type
  */
 type FraciForPrismaInternal<
-  Model extends ModelKey,
+  Client,
+  Model extends ModelKey<Client>,
   Where,
   FI extends AnyFractionalIndex,
 > = FraciOf<FI> & {
@@ -80,14 +81,14 @@ type FraciForPrismaInternal<
    */
   indicesForAfter: {
     (
-      where: Where & QueryArgs<Model>["where"],
-      cursor: QueryArgs<Model>["cursor"],
-      client?: AnyPrismaClient,
+      where: Where & QueryArgs<Client, Model>["where"],
+      cursor: QueryArgs<Client, Model>["cursor"],
+      client?: Client,
     ): Promise<Indices<FI> | undefined>;
     (
-      where: Where & QueryArgs<Model>["where"],
+      where: Where & QueryArgs<Client, Model>["where"],
       cursor: null,
-      client?: AnyPrismaClient,
+      client?: Client,
     ): Promise<Indices<FI>>;
   };
   /**
@@ -100,14 +101,14 @@ type FraciForPrismaInternal<
    */
   indicesForBefore: {
     (
-      where: Where & QueryArgs<Model>["where"],
-      cursor: QueryArgs<Model>["cursor"],
-      client?: AnyPrismaClient,
+      where: Where & QueryArgs<Client>["where"],
+      cursor: QueryArgs<Client>["cursor"],
+      client?: Client,
     ): Promise<Indices<FI> | undefined>;
     (
-      where: Where & QueryArgs<Model>["where"],
+      where: Where & QueryArgs<Client>["where"],
       cursor: null,
-      client?: AnyPrismaClient,
+      client?: Client,
     ): Promise<Indices<FI>>;
   };
   /**
@@ -119,8 +120,8 @@ type FraciForPrismaInternal<
    * @returns The indices to generate a new fractional index for the first item.
    */
   indicesForFirst(
-    where: Where & QueryArgs<Model>["where"],
-    client?: AnyPrismaClient,
+    where: Where & QueryArgs<Client, Model>["where"],
+    client?: Client,
   ): Promise<Indices<FI>>;
   /**
    * Retrieves the existing indices to generate a new fractional index for the last item.
@@ -131,8 +132,8 @@ type FraciForPrismaInternal<
    * @returns The indices to generate a new fractional index for the last item.
    */
   indicesForLast(
-    where: Where & QueryArgs<Model>["where"],
-    client?: AnyPrismaClient,
+    where: Where & QueryArgs<Client, Model>["where"],
+    client?: Client,
   ): Promise<Indices<FI>>;
 };
 
@@ -140,6 +141,7 @@ type FraciForPrismaInternal<
  * Type representing the enhanced fractional indexing utility for Prisma ORM.
  * This type extends the base fractional indexing utility with additional methods for retrieving indices.
  *
+ * @template Client - The Prisma client type
  * @template Options - The field options type
  * @template Model - The model name
  * @template Field - The field name
@@ -147,16 +149,20 @@ type FraciForPrismaInternal<
  * @see {@link Fraci} - The main fractional indexing utility type
  */
 type FraciForPrismaByFieldOptions<
+  Client,
   Options extends PrismaFraciFieldOptions,
-  Model extends ModelKey,
-  Field extends BinaryModelFieldName<Model> | StringModelFieldName<Model>,
+  Model extends ModelKey<Client>,
+  Field extends
+    | BinaryModelFieldName<Client, Model>
+    | StringModelFieldName<Client, Model>,
 > = FraciForPrismaInternal<
+  Client,
   Model,
   Pick<
-    ModelScalarPayload<Model>,
-    Extract<Options["group"][number], AllModelFieldName<Model>>
+    ModelScalarPayload<Client, Model>,
+    Extract<Options["group"][number], AllModelFieldName<Client, Model>>
   >,
-  Field extends BinaryModelFieldName<Model>
+  Field extends BinaryModelFieldName<Client, Model>
     ? Options extends { readonly type: "binary" }
       ? FractionalIndex<Options, PrismaBrand<Model, Field>>
       : never
@@ -179,45 +185,71 @@ type FraciForPrismaByFieldOptions<
  * Type representing the enhanced fractional indexing utility for Prisma ORM.
  * This type extends the base fractional indexing utility with additional methods for retrieving indices.
  *
+ * @template Client - The Prisma client type
  * @template Options - The options type
  * @template QualifiedField - The qualified field name
  *
  * @see {@link Fraci} - The main fractional indexing utility type
  */
 export type FraciForPrisma<
-  Options extends PrismaFraciOptions,
+  Client,
+  Options extends PrismaFraciOptions<Client>,
   QualifiedField extends keyof Options["fields"],
 > = Options["fields"][QualifiedField] extends PrismaFraciFieldOptions
-  ? QualifiedField extends `${infer M}.${infer F}`
-    ? FraciForPrismaByFieldOptions<Options["fields"][QualifiedField], M, F>
+  ? QualifiedField extends `${infer M extends ModelKey<Client>}.${infer F}`
+    ? F extends BinaryModelFieldName<Client, M>
+      ? FraciForPrismaByFieldOptions<
+          Client,
+          Options["fields"][QualifiedField],
+          M,
+          F
+        >
+      : F extends StringModelFieldName<Client, M>
+        ? FraciForPrismaByFieldOptions<
+            Client,
+            Options["fields"][QualifiedField],
+            M,
+            F
+          >
+        : never
     : never
   : never;
 
 /**
  * A union of the pairs of the key and value of the {@link PrismaFraciOptions.fields fields} property of the options.
  *
+ * @template Client - The Prisma client type
  * @template Options - The options type
  *
  * @example ["article.fi", { group: ["userId"], lengthBase: "0123456789", digitBase: "0123456789" }] | ["photo.fi", { group: ["userId"], lengthBase: "0123456789", digitBase: "0123456789" }] | ...
  */
-type FieldsUnion<Options extends PrismaFraciOptions> = {
+type FieldsUnion<Client, Options extends PrismaFraciOptions<Client>> = {
   [K in keyof Options["fields"]]: [K, Options["fields"][K]];
 }[keyof Options["fields"]];
 
 /**
  * The field information for each model.
  *
+ * @template Client - The Prisma client type
  * @template Options - The options type
  */
-type PerModelFieldInfo<Options extends PrismaFraciOptions> = {
-  [M in ModelKey]: {
+type PerModelFieldInfo<Client, Options extends PrismaFraciOptions<Client>> = {
+  [M in ModelKey<Client>]: {
     [F in
-      | BinaryModelFieldName<M>
-      | StringModelFieldName<M> as `${M}.${F}` extends FieldsUnion<Options>[0]
+      | BinaryModelFieldName<Client, M>
+      | StringModelFieldName<Client, M> as `${M}.${F}` extends FieldsUnion<
+      Client,
+      Options
+    >[0]
       ? F
       : never]: {
       readonly helper: Options["fields"][`${M}.${F}`] extends PrismaFraciFieldOptions
-        ? FraciForPrismaByFieldOptions<Options["fields"][`${M}.${F}`], M, F>
+        ? FraciForPrismaByFieldOptions<
+            Client,
+            Options["fields"][`${M}.${F}`],
+            M,
+            F
+          >
         : never;
     };
   };
@@ -226,30 +258,39 @@ type PerModelFieldInfo<Options extends PrismaFraciOptions> = {
 /**
  * [model component](https://www.prisma.io/docs/orm/prisma-client/client-extensions/model) of the Prisma extension.
  *
+ * @template Client - The Prisma client type
  * @template Options - The options type
  */
-type PrismaFraciExtensionModel<Options extends PrismaFraciOptions> = {
-  [M in keyof PerModelFieldInfo<Options>]: {
-    fraci<F extends keyof PerModelFieldInfo<Options>[M]>(
+type PrismaFraciExtensionModel<
+  Client,
+  Options extends PrismaFraciOptions<Client>,
+> = {
+  [M in keyof PerModelFieldInfo<Client, Options>]: {
+    fraci<F extends keyof PerModelFieldInfo<Client, Options>[M]>(
       field: F,
-    ): PerModelFieldInfo<Options>[M][F]["helper"];
+    ): PerModelFieldInfo<Client, Options>[M][F]["helper"];
   };
 };
 
 /**
  * The type of our Prisma extension.
  *
+ * @template Client - The Prisma client type
  * @template Options - The options type
  */
-export type PrismaFraciExtension<Options extends PrismaFraciOptions> = {
+export type PrismaFraciExtension<
+  Client,
+  Options extends PrismaFraciOptions<Client>,
+> = {
   name: typeof EXTENSION_NAME;
-  model: PrismaFraciExtensionModel<Options>;
+  model: PrismaFraciExtensionModel<Client, Options>;
 };
 
 /**
  * {@link AnyFraci} for Prisma.
  */
 type AnyFraciForPrisma = FraciForPrismaInternal<
+  any,
   string,
   any,
   AnyFractionalIndex
@@ -258,8 +299,10 @@ type AnyFraciForPrisma = FraciForPrismaInternal<
 /**
  * Creates a Prisma extension for fractional indexing.
  *
+ * @template Client - The Prisma client type
  * @template Options - The options type
  *
+ * @param _clientOrConstructor - The Prisma client or constructor. Only used for type inference and not used at runtime.
  * @param options - The options for the fractional indexing extension
  * @returns The Prisma extension.
  * @throws {FraciError} Throws a {@link FraciError} when field information for a specified model.field cannot be retrieved
@@ -268,11 +311,20 @@ type AnyFraciForPrisma = FraciForPrismaInternal<
  * @see {@link FraciForPrisma} - The enhanced fractional indexing utility for Prisma ORM
  * @see {@link FraciError} - The custom error class for the Fraci library
  */
-export function prismaFraci<const Options extends PrismaFraciOptions>({
-  fields,
-  maxLength = DEFAULT_MAX_LENGTH,
-  maxRetries = DEFAULT_MAX_RETRIES,
-}: Options) {
+export function prismaFraci<
+  Client,
+  const Options extends PrismaFraciOptions<Client>,
+>(
+  _clientOrConstructor:
+    | (new (...args: any) => Client)
+    | ((...args: any) => Client)
+    | Client,
+  {
+    fields,
+    maxLength = DEFAULT_MAX_LENGTH,
+    maxRetries = DEFAULT_MAX_RETRIES,
+  }: Options,
+) {
   return Prisma.defineExtension((client) => {
     // Create a shared cache for better performance across multiple fields
     const cache = createFraciCache();
@@ -286,7 +338,10 @@ export function prismaFraci<const Options extends PrismaFraciOptions>({
       PrismaFraciFieldOptions,
     ][]) {
       // Split the "model.field" string into separate parts
-      const [model, field] = modelAndField.split(".", 2) as [ModelKey, string];
+      const [model, field] = modelAndField.split(".", 2) as [
+        ModelKey<Client>,
+        string,
+      ];
 
       // Get the actual model name from Prisma metadata
       const { modelName } = (client as any)[model]?.fields?.[field] ?? {};
@@ -406,10 +461,13 @@ Make sure that
     }
 
     // Create the extension model object that will be attached to each Prisma model
-    const extensionModel = Object.create(null) as Record<ModelKey, unknown>;
+    const extensionModel = Object.create(null) as Record<
+      ModelKey<Client>,
+      unknown
+    >;
 
     // Iterate through all models in the Prisma client
-    for (const model of Object.keys(client) as ModelKey[]) {
+    for (const model of Object.keys(client) as ModelKey<Client>[]) {
       // Skip internal Prisma properties that start with $ or _
       if (model.startsWith("$") || model.startsWith("_")) {
         continue;
@@ -428,6 +486,6 @@ Make sure that
     return client.$extends({
       name: EXTENSION_NAME,
       model: extensionModel,
-    } as unknown as PrismaFraciExtension<Options>);
+    } as unknown as PrismaFraciExtension<Client, Options>);
   });
 }

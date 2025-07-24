@@ -1,5 +1,3 @@
-// Note that this test needs the package to be built before running and type checking.
-import { PrismaClient } from "@prisma/client";
 import { beforeAll, describe, expect, test } from "bun:test";
 import { BASE26L, BASE36L, BASE95, type FractionalIndexOf } from "fraci";
 import {
@@ -7,12 +5,18 @@ import {
   prismaFraci,
   type FraciForPrisma,
 } from "fraci/prisma";
+import { PrismaClient } from "../../prisma/client";
 import { setupPrisma } from "../../test/prisma.js";
+
+function markAsUsed<X>(): void {
+  // @ts-expect-error This is a dummy function to ensure the type is used.
+  let _x: X | undefined;
+}
 
 const basePrisma = await setupPrisma();
 
 const prisma = basePrisma.$extends(
-  prismaFraci({
+  prismaFraci(basePrisma, {
     fields: {
       "article.fi": {
         group: ["userId"],
@@ -189,7 +193,7 @@ beforeAll(async () => {
 test("should throw error if invalid column specified", () => {
   expect(() =>
     basePrisma.$extends(
-      prismaFraci({
+      prismaFraci(basePrisma, {
         fields: {
           // @ts-expect-error Only existing fields can be specified.
           "notExist.fi": {
@@ -204,7 +208,7 @@ test("should throw error if invalid column specified", () => {
 
   expect(() =>
     basePrisma.$extends(
-      prismaFraci({
+      prismaFraci(basePrisma, {
         fields: {
           // @ts-expect-error Only existing fields can be specified.
           "article.notExist": {
@@ -465,7 +469,7 @@ test("custom client", async () => {
 });
 
 test("FraciForPrisma", () => {
-  const definition = definePrismaFraci({
+  const definition = definePrismaFraci(basePrisma, {
     fields: {
       "article.fi": {
         group: ["userId"],
@@ -490,19 +494,34 @@ test("FraciForPrisma", () => {
     },
   });
 
-  type AFraci = FraciForPrisma<typeof definition, "article.fi">;
+  type AFraci = FraciForPrisma<
+    typeof basePrisma,
+    typeof definition,
+    "article.fi"
+  >;
   type AFI = FractionalIndexOf<AFraci>;
   let afi: AFI | undefined;
 
-  type B = FraciForPrisma<typeof definition, "photo.fi">;
+  type B = FraciForPrisma<typeof basePrisma, typeof definition, "photo.fi">;
   type BFI = FractionalIndexOf<B>;
   let bfi: BFI | undefined;
 
-  // @ts-expect-error `article.content` is not defined in `fields`
-  type Error1 = FraciForPrisma<typeof definition, "article.content">;
+  type Error1 = FraciForPrisma<
+    typeof basePrisma,
+    typeof definition,
+    // @ts-expect-error `article.content` is not defined in `fields`
+    "article.content"
+  >;
 
-  // @ts-expect-error `article.inExistent` is not defined in `fields`
-  type Error2 = FraciForPrisma<typeof definition, "article.inExistent">;
+  type Error2 = FraciForPrisma<
+    typeof basePrisma,
+    typeof definition,
+    // @ts-expect-error `article.inExistent` is not defined in `fields`
+    "article.inExistent"
+  >;
+
+  markAsUsed<Error1>();
+  markAsUsed<Error2>();
 
   // @ts-expect-error afi and bfi are not compatible
   expect(afi).toBe(bfi);

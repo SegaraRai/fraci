@@ -1,5 +1,3 @@
-import type { PrismaClientKnownRequestError } from "@prisma/client/runtime/library.js";
-
 /**
  * The Prisma conflict error code.
  */
@@ -8,7 +6,8 @@ const PRISMA_CONFLICT_CODE = "P2002";
 /**
  * {@link PrismaClientKnownRequestError} of the conflict error.
  */
-export type PrismaClientConflictError = PrismaClientKnownRequestError & {
+export type PrismaClientConflictError = {
+  name: "PrismaClientKnownRequestError";
   code: typeof PRISMA_CONFLICT_CODE;
   meta: { modelName: string; target: string[] };
 };
@@ -32,7 +31,7 @@ export function isIndexConflictError(
   return (
     error instanceof Error &&
     error.name === "PrismaClientKnownRequestError" &&
-    (error as PrismaClientKnownRequestError).code === PRISMA_CONFLICT_CODE && // P2002 is the Prisma code for unique constraint violations
+    (error as any).code === PRISMA_CONFLICT_CODE && // P2002 is the Prisma code for unique constraint violations
     (error as any).meta?.modelName === modelName && // Check if the error is for the correct model
     Array.isArray((error as any).meta?.target) && // Check if the target field is specified
     (error as any).meta.target.includes(field) // Check if the target includes our fractional index field
