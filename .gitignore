@@ -1,8 +1,9 @@
+.claude
 .tsup
 
 node_modules
 
-prisma/client
+**/prisma/client
 
 dist
 typedoc

@@ -19,7 +19,7 @@ jobs:
           bun-version: latest
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --linker=isolated
 
       - name: Build
         run: bun run build
