@@ -1,0 +1,93 @@
+{
+  "name": "fraci",
+  "version": "0.17.0",
+  "description": "Fractional indexing that's robust, performant, and secure, with first-class support for Drizzle ORM and Prisma ORM.",
+  "keywords": [
+    "drizzle",
+    "drizzle-orm",
+    "fractional",
+    "fractional-index",
+    "fractional-indexing",
+    "index",
+    "indexing",
+    "order",
+    "ordering",
+    "prisma",
+    "prisma-extension",
+    "prisma-orm"
+  ],
+  "homepage": "https://fraci.roundtrip.dev/",
+  "license": "MIT",
+  "author": "SegaraRai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SegaraRai/fraci.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": {
+        "import": "./dist/dev/index.js",
+        "require": "./dist/dev/index.cjs"
+      },
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./drizzle": {
+      "development": {
+        "import": "./dist/dev/drizzle.js",
+        "require": "./dist/dev/drizzle.cjs"
+      },
+      "import": "./dist/drizzle.js",
+      "require": "./dist/drizzle.cjs"
+    },
+    "./prisma": {
+      "development": {
+        "import": "./dist/dev/prisma.js",
+        "require": "./dist/dev/prisma.cjs"
+      },
+      "import": "./dist/prisma.js",
+      "require": "./dist/prisma.cjs"
+    }
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@hono/zod-validator": "^0.9.0",
+    "@libsql/client": "^0.17.4",
+    "@prisma/adapter-libsql": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "@types/bun": "^1.3.14",
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2",
+    "esbuild": "^0.28.1",
+    "hono": "^4.12.32",
+    "mitata": "^1.0.34",
+    "prisma": "^7.9.1",
+    "rolldown": "^1.2.1",
+    "tsup": "^8.5.1",
+    "typedoc": "^0.28.20",
+    "typescript": "^6.0.3",
+    "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "@prisma/client": "^5.0.0 || ^6.0.0 || ^7.0.0",
+    "drizzle-orm": ">= 0.30.0 < 1.0.0 || ^1.0.0-0"
+  },
+  "peerDependenciesMeta": {
+    "drizzle-orm": {
+      "optional": true
+    },
+    "@prisma/client": {
+      "optional": true
+    }
+  }
+}

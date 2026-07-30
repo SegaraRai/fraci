@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./client"
+
+  runtime      = "nodejs"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model StringExampleItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  fi        String
+  groupId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, fi])
+}
+
+model BinaryExampleItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  fi        Bytes
+  groupId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, fi])
+}

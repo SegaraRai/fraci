@@ -1,0 +1,19 @@
+packages:
+  - packages/core
+  - packages/examples/*
+
+allowBuilds:
+  "@prisma/client": true
+  "@prisma/engines": true
+  better-sqlite3: true
+  esbuild: true
+  prisma: true
+
+overrides:
+  vite: npm:@voidzero-dev/vite-plus-core@latest
+  vitest: npm:@voidzero-dev/vite-plus-test@latest
+
+peerDependencyRules:
+  allowAny:
+    - vite
+    - vitest

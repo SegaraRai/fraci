@@ -1,108 +1,35 @@
 {
-  "name": "fraci",
+  "name": "@fraci/workspace",
   "version": "0.18.0",
+  "private": true,
   "description": "Fractional indexing that's robust, performant, and secure, with first-class support for Drizzle ORM and Prisma ORM.",
-  "author": "SegaraRai",
-  "license": "MIT",
   "keywords": [
+    "drizzle",
+    "drizzle-orm",
+    "fractional",
     "fractional-index",
     "fractional-indexing",
-    "fractional",
     "index",
     "indexing",
     "order",
     "ordering",
-    "drizzle",
-    "drizzle-orm",
     "prisma",
     "prisma-extension",
     "prisma-orm"
   ],
+  "homepage": "https://fraci.roundtrip.dev/",
+  "license": "MIT",
+  "author": "SegaraRai",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SegaraRai/fraci.git"
   },
-  "homepage": "https://fraci.roundtrip.dev/",
-  "type": "module",
-  "module": "dist/index.js",
-  "main": "dist/index.cjs",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "development": {
-        "import": "./dist/dev/index.js",
-        "require": "./dist/dev/index.cjs"
-      },
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./drizzle": {
-      "development": {
-        "import": "./dist/dev/drizzle.js",
-        "require": "./dist/dev/drizzle.cjs"
-      },
-      "import": "./dist/drizzle.js",
-      "require": "./dist/drizzle.cjs"
-    },
-    "./prisma": {
-      "development": {
-        "import": "./dist/dev/prisma.js",
-        "require": "./dist/dev/prisma.cjs"
-      },
-      "import": "./dist/prisma.js",
-      "require": "./dist/prisma.cjs"
-    }
-  },
-  "sideEffects": false,
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE.md"
-  ],
-  "scripts": {
-    "changeset-version": "changeset version",
-    "changeset-publish": "changeset publish",
-    "generate-migrations": "bun run scripts/generate-migrations.ts",
-    "bench": "bun run src/lib/fractional-indexing-string.bench.ts && bun run src/lib/fractional-indexing-binary.bench.ts",
-    "build": "tsup",
-    "build-examples": "rolldown -c examples/rolldown.config.ts",
-    "build-docs": "typedoc && bun run scripts/copy-assets.ts",
-    "prepare": "prisma generate",
-    "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "attw": "attw --profile node16 --pack"
-  },
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.2",
-    "@changesets/cli": "^2.29.5",
-    "@hono/zod-validator": "^0.7.2",
-    "@libsql/client": "^0.15.10",
-    "@prisma/client": "^6.12.0",
-    "@types/bun": "latest",
-    "drizzle-kit": "^0.31.4",
-    "drizzle-orm": "^0.44.3",
-    "esbuild": "^0.25.8",
-    "hono": "^4.8.5",
-    "mitata": "^1.0.34",
-    "prettier": "^3.6.2",
-    "prettier-plugin-organize-imports": "^4.2.0",
-    "prisma": "^6.12.0",
-    "rolldown": "^1.0.0-beta.29",
-    "tsup": "^8.5.0",
-    "typedoc": "^0.28.7",
-    "typescript": "^5.8.3",
-    "zod": "^4.0.8"
+    "@changesets/cli": "^2.31.1",
+    "@types/node": "^26.1.2",
+    "typescript": "^6.0.3",
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "vite-plus": "^0.2.6"
   },
-  "peerDependencies": {
-    "drizzle-orm": ">= 0.30.0 < 0.45.0",
-    "@prisma/client": "^5.0.0 || ^6.0.0"
-  },
-  "peerDependenciesMeta": {
-    "drizzle-orm": {
-      "optional": true
-    },
-    "@prisma/client": {
-      "optional": true
-    }
-  }
+  "packageManager": "pnpm@11.18.0"
 }

@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./client"
+
+  runtime      = "bun"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("PRISMA_DB_URL")
+}
+
+// We use a somewhat practical schema in order to check, for example, whether our library can handle the complexity of types.
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Photo   Photo[]
+  Article Article[]
+}
+
+model Article {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  fi        String // Fractional Index
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User    @relation(fields: [userId], references: [id])
+  Photo Photo[]
+
+  // This will become a unique "index"
+  @@unique([userId, fi])
+}
+
+model Photo {
+  id        Int      @id @default(autoincrement())
+  title     String
+  altText   String
+  fi        String // Fractional Index
+  articleId Int
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tagsOnPhotos TagsOnPhotos[]
+  article      Article        @relation(fields: [articleId], references: [id])
+  user         User           @relation(fields: [userId], references: [id])
+
+  @@unique([articleId, fi])
+  @@index([userId])
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tagsOnPhotos TagsOnPhotos[]
+
+  @@index([name])
+}
+
+model TagsOnPhotos {
+  id        Int      @id @default(autoincrement())
+  photoFI   String // Fractional Index
+  tagFI     String // Another Fractional Index
+  photoId   Int
+  tagId     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  photo Photo @relation(fields: [photoId], references: [id])
+  tag   Tag   @relation(fields: [tagId], references: [id])
+
+  @@unique([tagId, photoFI])
+  @@unique([photoId, tagFI])
+}
+
+// Table only used for examples/prisma
+
+model BinaryExampleItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  fi        Bytes // Fractional Index
+  groupId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, fi])
+}
+
+model StringExampleItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  fi        String // Fractional Index
+  groupId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, fi])
+}
