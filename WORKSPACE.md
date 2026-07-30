@@ -1,6 +1,7 @@
 # Workspace Structure
 
-This project has been converted to a bun workspace to support comprehensive integration testing with different versions of Prisma and Drizzle ORM.
+This project uses a pnpm workspace and Vite+ for task orchestration, formatting,
+and linting. Bun remains the test runtime.
 
 ## Structure
 
@@ -23,6 +24,8 @@ fractional-indexing/
 │       ├── drizzle-v0-45/      # Drizzle v0.45 integration tests
 │       └── drizzle-v1/         # Drizzle v1 release-candidate tests
 ├── package.json                 # Root workspace configuration
+├── pnpm-workspace.yaml          # Workspace and dependency policy
+├── vite.config.ts               # Tasks, formatter, and linter configuration
 └── WORKSPACE.md                # This file
 ```
 
@@ -60,33 +63,38 @@ Each example package tests fraci with a specific version of Prisma or Drizzle:
 - Contains local schema and test files so each compiler resolves the package's own ORM version
 - Exercises the same behavior across every supported version
 
-## Scripts
+## Tasks
 
 Run from the root directory:
 
 ```bash
 # Build the core library
-bun run build
+vp run build
 
 # Test core library and compatibility packages
-bun run test
+vp run test
 
 # Typecheck core library and compatibility packages
-bun run typecheck
+vp run typecheck
 
 # Generate documentation
-bun run build-docs
+vp run build:docs
+
+# Format and lint
+vp run check
 ```
 
 ## Development
 
-1. Install dependencies: `bun install --linker=isolated`
-2. Build core library: `bun run build`
-3. Run tests: `bun run test`
+1. Install dependencies: `vp install --frozen-lockfile`
+2. Build the core library: `vp run build`
+3. Run tests: `vp run test`
 
 The workspace uses:
 
-- **bun workspaces** for dependency management
+- **pnpm workspaces** for dependency management
+- **Vite+** for tasks, formatting, and linting
+- **Bun** as the test runtime
 - **Workspace references** (`workspace:*`) for core library dependencies
 - **Version-local fixtures** so TypeScript validates against each installed ORM version
 

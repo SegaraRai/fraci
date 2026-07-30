@@ -9,7 +9,17 @@ const PRISMA_CONFLICT_CODE = "P2002";
 export type PrismaClientConflictError = {
   name: "PrismaClientKnownRequestError";
   code: typeof PRISMA_CONFLICT_CODE;
-  meta: { modelName: string; target: string[] };
+  meta: {
+    modelName: string;
+    target?: string[];
+    driverAdapterError?: {
+      cause?: {
+        constraint?: {
+          fields?: string[];
+        };
+      };
+    };
+  };
 };
 
 /**
@@ -28,12 +38,16 @@ export function isIndexConflictError(
   modelName: string,
   field: string,
 ): error is PrismaClientConflictError {
+  const meta = (error as any)?.meta;
+  const target =
+    meta?.target ?? meta?.driverAdapterError?.cause?.constraint?.fields;
+
   return (
     error instanceof Error &&
     error.name === "PrismaClientKnownRequestError" &&
     (error as any).code === PRISMA_CONFLICT_CODE && // P2002 is the Prisma code for unique constraint violations
-    (error as any).meta?.modelName === modelName && // Check if the error is for the correct model
-    Array.isArray((error as any).meta?.target) && // Check if the target field is specified
-    (error as any).meta.target.includes(field) // Check if the target includes our fractional index field
+    meta?.modelName === modelName && // Check if the error is for the correct model
+    Array.isArray(target) && // Check if the target field is specified
+    target.includes(field) // Check if the target includes our fractional index field
   );
 }

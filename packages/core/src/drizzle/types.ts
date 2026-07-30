@@ -27,7 +27,7 @@ export type DrizzleTableLike = {
  * @template FI - The specific fractional index type this column will store
  */
 export type DrizzleFraciColumn<
-  FI extends AnyFractionalIndex = AnyFractionalIndex
+  FI extends AnyFractionalIndex = AnyFractionalIndex,
 > = DrizzleColumnLike<FI>;
 
 /**
@@ -45,9 +45,8 @@ export type DrizzleFraciColumn<
 export interface DrizzleFraciConfig<
   F extends AnyFraci = AnyFraci,
   T extends DrizzleTableLike = DrizzleTableLike,
-  FraciColumn extends DrizzleFraciColumn<
-    FractionalIndexOf<F>
-  > = DrizzleFraciColumn<FractionalIndexOf<F>>,
+  FraciColumn extends DrizzleFraciColumn<FractionalIndexOf<F>> =
+    DrizzleFraciColumn<FractionalIndexOf<F>>,
   Group extends Record<string, DrizzleColumnLike> = Record<
     string,
     DrizzleColumnLike
@@ -55,7 +54,7 @@ export interface DrizzleFraciConfig<
   Cursor extends Record<string, DrizzleColumnLike> = Record<
     string,
     DrizzleColumnLike
-  >
+  >,
 > {
   /** A fraci instance. */
   readonly fraci: F;

@@ -1,45 +1,35 @@
 {
   "name": "@fraci/workspace",
   "version": "0.18.0",
+  "private": true,
   "description": "Fractional indexing that's robust, performant, and secure, with first-class support for Drizzle ORM and Prisma ORM.",
-  "author": "SegaraRai",
-  "license": "MIT",
-  "workspaces": [
-    "packages/core",
-    "packages/examples/*"
-  ],
   "keywords": [
+    "drizzle",
+    "drizzle-orm",
+    "fractional",
     "fractional-index",
     "fractional-indexing",
-    "fractional",
     "index",
     "indexing",
     "order",
     "ordering",
-    "drizzle",
-    "drizzle-orm",
     "prisma",
     "prisma-extension",
     "prisma-orm"
   ],
+  "homepage": "https://fraci.roundtrip.dev/",
+  "license": "MIT",
+  "author": "SegaraRai",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SegaraRai/fraci.git"
   },
-  "homepage": "https://fraci.roundtrip.dev/",
-  "private": true,
-  "scripts": {
-    "changeset-version": "changeset version",
-    "changeset-publish": "changeset publish",
-    "build": "bun run -F fraci build",
-    "build-docs": "bun run -F fraci build-docs",
-    "build-examples": "bun run -F fraci build-examples",
-    "bench": "bun run -F fraci bench",
-    "test": "bun run -F \"*\" test",
-    "typecheck": "bun run -F \"*\" typecheck",
-    "attw": "bun run -F fraci attw"
-  },
   "devDependencies": {
-    "@changesets/cli": "^2.29.5"
-  }
+    "@changesets/cli": "^2.31.1",
+    "@types/node": "^26.1.2",
+    "typescript": "^6.0.3",
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "vite-plus": "^0.2.6"
+  },
+  "packageManager": "pnpm@11.18.0"
 }

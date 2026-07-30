@@ -102,7 +102,9 @@ export type FractionalIndexBase =
 export type FractionalIndex<
   B extends FractionalIndexBase,
   X,
-> = (B extends AnyBinaryFractionalIndexBase ? Uint8Array : string) & {
+> = (B extends AnyBinaryFractionalIndexBase
+  ? Uint8Array<ArrayBuffer>
+  : string) & {
   /**
    * Branding information for the fractional index. Does not exist at runtime.
    * @internal

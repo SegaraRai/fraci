@@ -85,7 +85,7 @@ export default defineConfig(
       output: {
         dir: `examples-bundled/${entrypoint.replace(/\W+/g, "-")}`,
         chunkFileNames: "[name].js",
-        advancedChunks: {
+        codeSplitting: {
           minSize: 0,
           maxSize: 1024 * 1024 * 1024,
           maxModuleSize: 1024 * 1024 * 1024,

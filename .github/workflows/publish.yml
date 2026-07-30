@@ -22,52 +22,58 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
 
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
 
       - name: Install Dependencies
-        run: bun install --linker=isolated
+        run: vp install --frozen-lockfile
+
+      - name: Check Formatting, Lint, and Types
+        run: vp run check
 
       - name: Build
-        run: bun run build
+        run: vp run build
 
       - name: Type Check
-        run: bun run typecheck
+        run: vp run typecheck
 
       - name: Test
-        run: bun run test
+        run: vp run test
 
       - name: Run Benchmarks
-        run: bun run bench
+        run: vp run bench
 
       - name: Package Type Check
-        run: bun run attw
+        run: vp run attw
 
       - name: Build Docs
-        run: bun run build-docs
+        run: vp run build:docs
 
       - name: Build Examples
-        run: bun run build-examples
+        run: vp run build:examples
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
-          version: bun run changeset-version
-          publish: bun run changeset-publish
+          version: vp run changeset:version
+          publish: vp run changeset:publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
 
       - name: Create Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: packages/core/typedoc/
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

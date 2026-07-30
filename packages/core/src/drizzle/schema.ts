@@ -30,13 +30,13 @@ export function defineDrizzleFraci<
   T extends DrizzleTableLike,
   FraciColumn extends DrizzleFraciColumn<FractionalIndexOf<F>>,
   Group extends Record<string, DrizzleColumnLike>,
-  Cursor extends Record<string, DrizzleColumnLike>
+  Cursor extends Record<string, DrizzleColumnLike>,
 >(
   fraci: F,
   table: T,
   column: FraciColumn,
   group: Group,
-  cursor: Cursor
+  cursor: Cursor,
 ): DrizzleFraciConfig<F, T, FraciColumn, Group, Cursor> {
   return { fraci, table, column, group, cursor };
 }

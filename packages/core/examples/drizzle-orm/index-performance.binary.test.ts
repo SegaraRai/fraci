@@ -26,7 +26,7 @@ test("Ensure that the query plan is optimal (Binary)", async () => {
     await db
       .insert(exampleItems)
       .values(
-        new Array(NUM_GROUPS).fill(0).map((_, j) => ({
+        Array.from({ length: NUM_GROUPS }, (_, j) => ({
           groupId: GROUP_ID_START + j,
           name: `Item ${i + 1}`,
           fi: keys[i],

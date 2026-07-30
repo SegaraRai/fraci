@@ -32,7 +32,7 @@ test("drizzle basic functionality", async () => {
 
     const secondPair = await helper.indicesForAfter(
       { groupId: 1 },
-      { id: item1.id }
+      { id: item1.id },
     );
     expect(secondPair).toBeDefined();
     if (!secondPair) throw new Error("Expected adjacent indices");

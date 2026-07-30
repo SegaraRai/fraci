@@ -1,4 +1,4 @@
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { prismaFraci } from "fraci/prisma";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -6,7 +6,7 @@ import { PrismaClient } from "../prisma/client/client.js";
 
 test("prisma basic functionality", async () => {
   const prisma = new PrismaClient({
-    adapter: new PrismaBetterSqlite3({
+    adapter: new PrismaLibSql({
       url: `file:./test-${crypto.randomUUID()}.db`,
     }),
   });
@@ -35,7 +35,7 @@ test("prisma basic functionality", async () => {
           digitBase: "0123456789",
         },
       },
-    })
+    }),
   );
 
   try {
@@ -47,7 +47,7 @@ test("prisma basic functionality", async () => {
     });
     const secondPair = await helper.indicesForAfter(
       { groupId: 1 },
-      { id: first.id }
+      { id: first.id },
     );
     assert(secondPair);
     const [fi2] = helper.generateKeyBetween(...secondPair);
@@ -61,7 +61,7 @@ test("prisma basic functionality", async () => {
     });
     assert.deepEqual(
       items.map(({ name }) => name),
-      ["First Item", "Second Item"]
+      ["First Item", "Second Item"],
     );
   } finally {
     await prisma.$disconnect();

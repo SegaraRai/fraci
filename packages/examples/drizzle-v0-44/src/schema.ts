@@ -10,7 +10,7 @@ import { defineDrizzleFraci } from "fraci/drizzle";
 
 function fi<const Name extends string, const F extends AnyStringFraci>(
   name: Name,
-  _fraci: () => F
+  _fraci: () => F,
 ) {
   return text(name).notNull().$type<FractionalIndexOf<F>>();
 }
@@ -33,5 +33,5 @@ export const fiTestItems = defineDrizzleFraci(
   testItems,
   testItems.fi,
   { groupId: testItems.groupId },
-  { id: testItems.id }
+  { id: testItems.id },
 );

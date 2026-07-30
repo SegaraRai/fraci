@@ -17,12 +17,10 @@ export type ModelKey<C> = Extract<Exclude<keyof C, `$${string}`>, string>;
  *
  * @example { id: number; title: string; content: string; fi: string; userId: number; createdAt: Date; updatedAt: Date }, where M = "article"
  */
-export type ModelScalarPayload<C, M extends ModelKey<C>> = C extends Record<
-  M,
-  { [K: symbol]: { types: { payload: { scalars: any } } } }
->
-  ? C[M][symbol]["types"]["payload"]["scalars"]
-  : never;
+export type ModelScalarPayload<C, M extends ModelKey<C>> =
+  C extends Record<M, { [K: symbol]: { types: { payload: { scalars: any } } } }>
+    ? C[M][symbol]["types"]["payload"]["scalars"]
+    : never;
 
 /**
  * A union of the field names of a model.
@@ -62,7 +60,7 @@ type ModelFieldNameByType<C, M extends ModelKey<C>, T> = {
  */
 type SerializableModelFieldName<
   C,
-  M extends ModelKey<C>
+  M extends ModelKey<C>,
 > = ModelFieldNameByType<C, M, boolean | bigint | number | string>;
 
 /**
@@ -75,7 +73,7 @@ type SerializableModelFieldName<
  */
 export type StringModelFieldName<
   C,
-  M extends ModelKey<C>
+  M extends ModelKey<C>,
 > = ModelFieldNameByType<C, M, string>;
 
 /**
@@ -88,7 +86,7 @@ export type StringModelFieldName<
  */
 export type BinaryModelFieldName<
   C,
-  M extends ModelKey<C>
+  M extends ModelKey<C>,
 > = ModelFieldNameByType<C, M, Uint8Array>;
 
 /**
@@ -104,14 +102,14 @@ export type QualifiedFields<C> = {
         [F in BinaryModelFieldName<C, M>]: [
           `${M}.${F}`,
           Exclude<SerializableModelFieldName<C, M>, F>,
-          "binary"
+          "binary",
         ];
       }[BinaryModelFieldName<C, M>]
     | {
         [F in StringModelFieldName<C, M>]: [
           `${M}.${F}`,
           Exclude<SerializableModelFieldName<C, M>, F>,
-          "string"
+          "string",
         ];
       }[StringModelFieldName<C, M>];
 }[ModelKey<C>];

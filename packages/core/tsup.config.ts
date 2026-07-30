@@ -14,5 +14,5 @@ export default defineConfig(
     define: {
       "globalThis.__DEV__": JSON.stringify(mode === "DEV"),
     },
-  }))
+  })),
 );

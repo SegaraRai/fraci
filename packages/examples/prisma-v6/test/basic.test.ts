@@ -32,7 +32,7 @@ test("prisma basic functionality", async () => {
           digitBase: "0123456789",
         },
       },
-    })
+    }),
   );
 
   try {
@@ -44,7 +44,7 @@ test("prisma basic functionality", async () => {
     });
     const secondPair = await helper.indicesForAfter(
       { groupId: 1 },
-      { id: first.id }
+      { id: first.id },
     );
     expect(secondPair).toBeDefined();
     if (!secondPair) throw new Error("Expected adjacent indices");

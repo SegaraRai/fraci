@@ -18,10 +18,10 @@ export function equity(column: DrizzleColumnLike, value: unknown) {
   return value != null
     ? eq(column as Column, value)
     : value === null
-    ? // Use `isNull` if value is `null`
-      isNull(column as Column)
-    : // SECURITY: Always return `FALSE` if value is `undefined`, meaning it's missing
-      sql`FALSE`;
+      ? // Use `isNull` if value is `null`
+        isNull(column as Column)
+      : // SECURITY: Always return `FALSE` if value is `undefined`, meaning it's missing
+        sql`FALSE`;
 }
 
 /**

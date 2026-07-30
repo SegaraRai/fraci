@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
     // Enable latest features
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"],
+    "types": ["bun"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleDetection": "force",
@@ -21,14 +20,9 @@
     "exactOptionalPropertyTypes": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noPropertyAccessFromIndexSignature": true
+    "noPropertyAccessFromIndexSignature": true,
+    "ignoreDeprecations": "6.0"
   },
-  "include": [
-    "src",
-    "test"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "dist"]
 }

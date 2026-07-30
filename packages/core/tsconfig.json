@@ -2,6 +2,7 @@
   "compilerOptions": {
     // Enable latest features
     "lib": ["ESNext"],
+    "types": ["bun"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleDetection": "force",
@@ -19,7 +20,8 @@
     "exactOptionalPropertyTypes": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noPropertyAccessFromIndexSignature": true
+    "noPropertyAccessFromIndexSignature": true,
+    "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "dist", "examples-bundled", "typedoc", ".tsup"]
 }
