@@ -43,7 +43,7 @@ export const tasks = sqliteTable(
     // fi: blob("fi", { mode: "buffer" }).notNull().$type<FractionalIndexOf<typeof tasksFraci>>(), // For binary-based
     userId: integer("user_id").notNull(),
   },
-  (t) => [uniqueIndex("tasks_user_id_fi_idx").on(t.userId, t.fi)],
+  (t) => [uniqueIndex("tasks_user_id_fi_idx").on(t.userId, t.fi)]
 );
 
 // Define the fractional index configuration
@@ -52,7 +52,7 @@ export const fiTasks = defineDrizzleFraci(
   tasks, // Table
   tasks.fi, // Fractional index column
   { userId: tasks.userId }, // Group (columns that uniquely identify the group)
-  { id: tasks.id }, // Cursor (columns that uniquely identify the row within a group)
+  { id: tasks.id } // Cursor (columns that uniquely identify the row within a group)
 );
 
 // Define a helper function to check for index conflicts (may vary by database)
@@ -198,7 +198,7 @@ export const articles = table(
   (t) => [
     // IMPORTANT: This compound index is necessary for both uniqueness and performance
     uniqueIndex("user_id_fi_idx").on(t.userId, t.fi),
-  ],
+  ]
 );
 
 // Create a fraci instance
@@ -216,7 +216,7 @@ export const fiArticles = defineDrizzleFraci(
   articles, // Table
   articles.fi, // Fractional index column
   { userId: articles.userId }, // Group (columns that uniquely identify the group)
-  { id: articles.id }, // Cursor (columns that uniquely identify the row within a group)
+  { id: articles.id } // Cursor (columns that uniquely identify the row within a group)
 );
 ```
 
@@ -255,7 +255,7 @@ export const fiArticles = defineDrizzleFraci(
 >     // ...other columns
 >     fi: fi(() => fraciForArticles), // Binary fractional index column
 >     // ...other columns
->   },
+>   }
 >   // ...rest of the table definition
 > );
 > ```
@@ -331,7 +331,7 @@ async function append() {
     if (code === "MAX_RETRIES_EXCEEDED") {
       throw new HTTPError(
         503,
-        "Too many concurrent requests. Please try again.",
+        "Too many concurrent requests. Please try again."
       );
     }
   }
@@ -371,15 +371,15 @@ async function move() {
           .where(
             and(
               eq(articles.id, 3),
-              eq(articles.userId, 1), // IMPORTANT: Always filter by group columns
-            ),
+              eq(articles.userId, 1) // IMPORTANT: Always filter by group columns
+            )
           )
           .returning()
           .get();
 
         if (!result) {
           throw new Error(
-            "Article 3 does not exist or does not belong to user 1.",
+            "Article 3 does not exist or does not belong to user 1."
           );
         }
         return result;
@@ -414,7 +414,7 @@ async function remove() {
 > ```typescript
 > async function withKeyBetween<T, FI extends AnyFractionalIndex>(
 >   generator: Generator<FI, never, unknown>,
->   callback: (fi: FI) => Promise<T>,
+>   callback: (fi: FI) => Promise<T>
 > ): Promise<T> {
 >   try {
 >     for (const fi of generator) {
@@ -439,7 +439,7 @@ async function remove() {
 >     if (code === "MAX_RETRIES_EXCEEDED") {
 >       throw new HTTPError(
 >         503,
->         "Too many concurrent requests. Please try again.",
+>         "Too many concurrent requests. Please try again."
 >       );
 >     }
 >     throw error;
@@ -461,12 +461,12 @@ async function remove() {
 >       .where(
 >         and(
 >           eq(articles.id, 3),
->           eq(articles.userId, 1), // IMPORTANT: Always filter by group columns
->         ),
+>           eq(articles.userId, 1) // IMPORTANT: Always filter by group columns
+>         )
 >       )
 >       .returning()
 >       .get();
->   },
+>   }
 > );
 > ```
 
@@ -529,7 +529,7 @@ const prisma = new PrismaClient().$extends(
     },
     maxRetries: 5, // Maximum number of retries on conflict (default: 5)
     maxLength: 50, // Maximum length to prevent attacks (default: 50)
-  }),
+  })
 );
 ```
 
@@ -554,7 +554,7 @@ const prisma = new PrismaClient().$extends(
 >     },
 >     maxRetries: 5, // Maximum number of retries on conflict
 >     maxLength: 50, // Maximum length to prevent attacks
->   }),
+>   })
 > );
 > ```
 >
@@ -606,7 +606,7 @@ async function append() {
     if (code === "MAX_RETRIES_EXCEEDED") {
       throw new HTTPError(
         503,
-        "Too many concurrent requests. Please try again.",
+        "Too many concurrent requests. Please try again."
       );
     }
   }
@@ -663,7 +663,7 @@ async function move() {
           error.code === "P2025"
         ) {
           throw new Error(
-            "Article 3 does not exist or does not belong to user 1.",
+            "Article 3 does not exist or does not belong to user 1."
           );
         }
         throw error;
@@ -696,7 +696,7 @@ async function remove() {
 > async function withKeyBetween<T, FI extends AnyFractionalIndex>(
 >   generator: Generator<FI, never, unknown>,
 >   isIndexConflictError: (error: unknown) => boolean,
->   callback: (fi: FI) => Promise<T>,
+>   callback: (fi: FI) => Promise<T>
 > ): Promise<T> {
 >   try {
 >     for (const fi of generator) {
@@ -721,7 +721,7 @@ async function remove() {
 >     if (code === "MAX_RETRIES_EXCEEDED") {
 >       throw new HTTPError(
 >         503,
->         "Too many concurrent requests. Please try again.",
+>         "Too many concurrent requests. Please try again."
 >       );
 >     }
 >     throw error;
@@ -747,7 +747,7 @@ async function remove() {
 >         fi,
 >       },
 >     });
->   },
+>   }
 > );
 > ```
 
@@ -918,7 +918,7 @@ If you're seeing TypeScript errors related to fractional indices:
 
 - Ensure you're using the correct branded type for each column
 - Check that you're passing the correct parameters to `fraci()`
-- Ensure your ORM version is compatible with your fraci version (Drizzle ORM v0.30.x - v0.41.x and Prisma v5.x or v6.x required) and that the integration is correctly configured
+- Ensure your ORM version is compatible with your fraci version (Drizzle ORM v0.30.x through v0.x or v1.x, and Prisma v5.x, v6.x, or v7.x) and that the integration is correctly configured
 
 ### Runtime Errors
 
@@ -944,7 +944,7 @@ If you encounter runtime errors:
   - **Solution:** This indicates an internal library error. File an issue with details about how you encountered this error.
 - `[INITIALIZATION_FAILED] Could not get field information for <model>.<field>` (Prisma ORM only)
   - **Cause:** When configuring the Prisma extension, the specified model or field doesn't exist or isn't accessible.
-  - **Solution:** Regenerate the Prisma client. Verify that the specified field exists in your Prisma schema and is properly defined as a string or binary field. Check for typos in the model or field name. Also ensure your Prisma version is compatible with the fraci/Prisma integration (Prisma v5.x or v6.x required).
+  - **Solution:** Regenerate the Prisma client. Verify that the specified field exists in your Prisma schema and is properly defined as a string or binary field. Check for typos in the model or field name. Also ensure your Prisma version is compatible with the fraci/Prisma integration (Prisma v5.x, v6.x, or v7.x).
 
 ## License
 

@@ -1,1 +1,4 @@
-../common/tsconfig.json
+{
+  "extends": "../common/tsconfig.json",
+  "include": ["test/basic.test.ts", "prisma/client"]
+}

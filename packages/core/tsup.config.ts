@@ -8,11 +8,11 @@ export default defineConfig(
     external: ["drizzle-orm", "@prisma/client"],
     dts: true,
     sourcemap: true,
-    clean: true,
+    clean: false,
     minifyIdentifiers: true,
     minifySyntax: true,
     define: {
       "globalThis.__DEV__": JSON.stringify(mode === "DEV"),
     },
-  })),
+  }))
 );

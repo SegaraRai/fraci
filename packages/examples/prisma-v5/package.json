@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "prepare": "prisma generate",
-    "test": "bun test --preserve-symlinks-main",
-    "typecheck": "tsc --noEmit"
+    "test": "prisma generate && bun test",
+    "typecheck": "prisma generate && tsc --noEmit"
   },
   "dependencies": {
     "fraci": "workspace:*"
