@@ -1,0 +1,4 @@
+{
+  "extends": "../common/tsconfig.json",
+  "include": ["src/schema.ts", "test/basic.test.ts"]
+}

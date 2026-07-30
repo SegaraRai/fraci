@@ -14,11 +14,14 @@ fractional-indexing/
 │       │   ├── src/            # Implementation files (server.drizzle.ts, server.prisma.ts)
 │       │   ├── test/           # Test files (basic.drizzle.test.ts, basic.prisma.test.ts)
 │       │   └── test-utils.ts   # Shared test utilities
-│       ├── prisma-v5/          # Prisma v5 integration tests (symlinked files)
-│       ├── prisma-v6/          # Prisma v6 integration tests (symlinked files)
-│       ├── drizzle-v0-30/      # Drizzle v0.30 integration tests (symlinked files)
-│       ├── drizzle-v0-40/      # Drizzle v0.40 integration tests (symlinked files)
-│       └── drizzle-v0-44/      # Drizzle v0.44 integration tests (symlinked files)
+│       ├── prisma-v5/          # Prisma v5 integration tests
+│       ├── prisma-v6/          # Prisma v6 integration tests
+│       ├── prisma-v7/          # Prisma v7 integration tests
+│       ├── drizzle-v0-30/      # Drizzle v0.30 integration tests
+│       ├── drizzle-v0-40/      # Drizzle v0.39 integration tests
+│       ├── drizzle-v0-44/      # Drizzle v0.44 integration tests
+│       ├── drizzle-v0-45/      # Drizzle v0.45 integration tests
+│       └── drizzle-v1/         # Drizzle v1 release-candidate tests
 ├── package.json                 # Root workspace configuration
 └── WORKSPACE.md                # This file
 ```
@@ -36,17 +39,17 @@ Contains the main fraci library code. This is what gets published to npm.
 
 ### packages/examples/**centralized**
 
-Contains all implementation files, tests, and schemas that are shared via symlinks:
+Contains shared implementation files and test utilities:
 
 - **schemas/**: Database schema files that work across all versions
-  - `schema.drizzle.ts` - Universal Drizzle schema (works with v0.30-v0.44)
-  - `schema.prisma` - Universal Prisma schema (works with v5-v6)
+  - `schema.drizzle.ts` - Reference Drizzle schema
+  - `schema.prisma` - Reference Prisma schema
 - **src/**: Implementation files organized by ORM
   - `server.drizzle.ts` - Common Drizzle server utilities (all versions)
   - `server.prisma.ts` - Common Prisma server utilities (all versions)
 - **test/**: Test files that work across all versions
-  - `basic.drizzle.test.ts` - Universal Drizzle test (works with v0.30-v0.44)
-  - `basic.prisma.test.ts` - Universal Prisma test (works with v5-v6)
+  - `basic.drizzle.test.ts` - Reference Drizzle test
+  - `basic.prisma.test.ts` - Reference Prisma test
 - **test-utils.ts**: Shared test utilities
 
 ### packages/examples/\*
@@ -54,8 +57,8 @@ Contains all implementation files, tests, and schemas that are shared via symlin
 Each example package tests fraci with a specific version of Prisma or Drizzle:
 
 - Dedicated package.json with specific dependency versions
-- All files are symlinked from `__centralized__` (no version-specific code needed)
-- Uses the same schema, test, and implementation files across all versions
+- Contains local schema and test files so each compiler resolves the package's own ORM version
+- Exercises the same behavior across every supported version
 
 ## Scripts
 
@@ -65,17 +68,11 @@ Run from the root directory:
 # Build the core library
 bun run build
 
-# Test core library only
+# Test core library and compatibility packages
 bun run test
 
-# Test all packages (core + examples)
-bun run test:all
-
-# Typecheck core library only
+# Typecheck core library and compatibility packages
 bun run typecheck
-
-# Typecheck all packages
-bun run typecheck:all
 
 # Generate documentation
 bun run build-docs
@@ -85,14 +82,13 @@ bun run build-docs
 
 1. Install dependencies: `bun install --linker=isolated`
 2. Build core library: `bun run build`
-3. Run tests: `bun run test:all`
+3. Run tests: `bun run test`
 
 The workspace uses:
 
 - **bun workspaces** for dependency management
-- **Symbolic links** for sharing implementation files, tests, and schemas
 - **Workspace references** (`workspace:*`) for core library dependencies
-- **Universal compatibility** - single files work across all supported versions
+- **Version-local fixtures** so TypeScript validates against each installed ORM version
 
 ## Testing Strategy
 
@@ -100,23 +96,21 @@ Each example package:
 
 1. Installs a specific version of Prisma/Drizzle
 2. References the core fraci library via `workspace:*`
-3. Uses universal test files via symlinks from `__centralized__`
-4. Uses universal schema files via symlinks from `__centralized__`
-5. Uses shared utilities via symlinks to `__centralized__/test-utils.ts`
+3. Compiles a local schema against that package's installed ORM version
+4. Runs the same integration behavior against a real SQLite database
+5. Generates Prisma clients before Prisma tests and typechecks
 
 ## File Organization
 
 ### Naming Conventions
 
-- **Universal ORM support**: `schema.drizzle.ts`, `basic.prisma.test.ts`
-- **No version-specific files needed** - all files work across supported versions
+- **Version-local ORM fixtures**: `schema.ts` or `schema.prisma`, plus `basic.test.ts`
+- **Shared assertions**: common behavior is kept consistent across fixtures
 
 ### Centralization Benefits
 
-- **Maximum DRY**: Single file works across all versions
-- **Zero Duplication**: No version-specific code or tests needed
-- **Consistency**: Identical behavior across all versions
-- **Maintainability**: Single point of updates for all versions
-- **Simplicity**: Easy to understand and maintain
+- **Correct resolution**: every fixture loads its own ORM dependency
+- **Consistency**: identical behavior is asserted across all supported versions
+- **Coverage**: stable releases and Drizzle v1 prereleases are tested in CI
 
-This ensures fraci works correctly across all supported versions of both ORMs with absolute minimal code duplication - each file supports all versions through universal compatibility.
+This ensures fraci works correctly with Drizzle ORM v0.30 and later v0 releases, Drizzle ORM v1 prereleases, and Prisma ORM v5 through v7.

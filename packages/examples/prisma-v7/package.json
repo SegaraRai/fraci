@@ -1,0 +1,24 @@
+{
+  "name": "@fraci/example-prisma-v7",
+  "version": "0.17.0",
+  "private": true,
+  "description": "Integration tests for fraci with Prisma v7",
+  "type": "module",
+  "scripts": {
+    "prepare": "prisma generate",
+    "test": "prisma generate && tsx --test test/basic.test.ts",
+    "typecheck": "prisma generate && tsc --noEmit"
+  },
+  "dependencies": {
+    "fraci": "workspace:*"
+  },
+  "devDependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.0.0",
+    "prisma": "^7.9.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,7 +1,11 @@
-import type { Column, Table } from "drizzle-orm";
 import type { AnyFraci } from "../factory.js";
 import type { FractionalIndexOf } from "../types.js";
-import type { DrizzleFraciColumn, DrizzleFraciConfig } from "./types.js";
+import type {
+  DrizzleColumnLike,
+  DrizzleFraciColumn,
+  DrizzleFraciConfig,
+  DrizzleTableLike,
+} from "./types.js";
 
 /**
  * Creates a configuration object for fractional indexing with Drizzle ORM.
@@ -23,16 +27,16 @@ import type { DrizzleFraciColumn, DrizzleFraciConfig } from "./types.js";
  */
 export function defineDrizzleFraci<
   F extends AnyFraci,
-  T extends Table,
+  T extends DrizzleTableLike,
   FraciColumn extends DrizzleFraciColumn<FractionalIndexOf<F>>,
-  Group extends Record<string, Column>,
-  Cursor extends Record<string, Column>,
+  Group extends Record<string, DrizzleColumnLike>,
+  Cursor extends Record<string, DrizzleColumnLike>
 >(
   fraci: F,
   table: T,
   column: FraciColumn,
   group: Group,
-  cursor: Cursor,
+  cursor: Cursor
 ): DrizzleFraciConfig<F, T, FraciColumn, Group, Cursor> {
   return { fraci, table, column, group, cursor };
 }

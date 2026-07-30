@@ -1,5 +1,4 @@
 import { and, sql } from "drizzle-orm";
-import type { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
 import type { Fraci } from "../factory.js";
 import type { AnyFractionalIndex as AFI } from "../lib/types.js";
 import { equity, OPERATORS } from "./common.js";
@@ -12,10 +11,14 @@ import type {
 } from "./types.js";
 
 /**
- * Type representing supported synchronous Drizzle database clients.
- * This is specifically for Bun SQLite, which is the only synchronous database engine currently available.
+ * Structural type shared by synchronous Drizzle database clients.
+ *
+ * Drizzle renamed its SQLite database base class in v1, while the select API
+ * consumed by fraci stayed compatible.
  */
-export type SupportedDrizzleDatabaseSync = BaseSQLiteDatabase<"sync", any, any>;
+export type SupportedDrizzleDatabaseSync = {
+  readonly select: any;
+};
 
 /**
  * Internal function to retrieve indices for positioning items.
@@ -39,14 +42,14 @@ function indicesFor(
   }: DrizzleFraciConfig,
   group: DrizzleFraciGroup<DrizzleFraciConfig>,
   cursor: DrizzleFraciCursor<DrizzleFraciConfig> | null,
-  reverse: boolean,
+  reverse: boolean
 ): [AFI | null, AFI | null] | undefined {
   const [order, compare, tuple] = OPERATORS[Number(reverse)];
   const fiSelector = { v: sql<AFI>`${column}` };
 
   // SECURITY: Always use config for `Object.entries` so that all fields are included
   const groupConditions = Object.entries(groupConfig).map(([key, column]) =>
-    equity(column, group[key]),
+    equity(column, group[key])
   );
 
   // Case 1: No cursor provided - get the first/last item in the group
@@ -57,7 +60,7 @@ function indicesFor(
       .from(table)
       .where(and(...groupConditions))
       .limit(1)
-      .orderBy(order(column))
+      .orderBy(order(column as any))
       .all();
 
     // Return [null, firstItem] or [lastItem, null] depending on direction
@@ -71,8 +74,8 @@ function indicesFor(
     // SECURITY: Always use config for `Object.entries` so that all fields are included
     // This ensures we don't miss any cursor fields that should be matched
     ...Object.entries(cursorConfig).map(
-      ([key, column]) => equity(column, cursor[key]), // Use equity to safely handle null/undefined
-    ),
+      ([key, column]) => equity(column, cursor[key]) // Use equity to safely handle null/undefined
+    )
   );
 
   // Performance optimization: Use a subquery to get the fractional index of the cursor item
@@ -91,11 +94,11 @@ function indicesFor(
     .where(
       and(
         ...groupConditions, // Stay within the same group
-        compare(column, subQueryFIOfCursor), // Use gte/lte based on direction
-      ),
+        compare(column as any, subQueryFIOfCursor) // Use gte/lte based on direction
+      )
     )
     .limit(2) // We need at most 2 items (the cursor item and one adjacent item)
-    .orderBy(order(column)) // Sort in the appropriate direction
+    .orderBy(order(column as any)) // Sort in the appropriate direction
     .all();
 
   // Process the results
@@ -118,7 +121,7 @@ function indicesForAfter(
   client: SupportedDrizzleDatabaseSync,
   config: DrizzleFraciConfig,
   group: DrizzleFraciGroup<DrizzleFraciConfig>,
-  cursor: DrizzleFraciCursor<DrizzleFraciConfig> | null,
+  cursor: DrizzleFraciCursor<DrizzleFraciConfig> | null
 ): [AFI | null, AFI | null] | undefined {
   return indicesFor(client, config, group, cursor, false);
 }
@@ -137,7 +140,7 @@ function indicesForBefore(
   client: SupportedDrizzleDatabaseSync,
   config: DrizzleFraciConfig,
   group: DrizzleFraciGroup<DrizzleFraciConfig>,
-  cursor: DrizzleFraciCursor<DrizzleFraciConfig> | null,
+  cursor: DrizzleFraciCursor<DrizzleFraciConfig> | null
 ): [AFI | null, AFI | null] | undefined {
   return indicesFor(client, config, group, cursor, true);
 }
@@ -165,19 +168,16 @@ export type FraciForDrizzleSync<Config extends DrizzleFraciConfig> =
      * @returns The indices to calculate the new index of the item to be inserted after the cursor.
      */
     readonly indicesForAfter: {
-      (
-        group: DrizzleFraciGroup<Config>,
-        cursor: DrizzleFraciCursor<Config>,
-      ):
+      (group: DrizzleFraciGroup<Config>, cursor: DrizzleFraciCursor<Config>):
         | [
             DrizzleFractionalIndex<Config>,
-            DrizzleFractionalIndex<Config> | null,
+            DrizzleFractionalIndex<Config> | null
           ]
         | undefined;
-      (
-        group: DrizzleFraciGroup<Config>,
-        cursor: null,
-      ): [null, DrizzleFractionalIndex<Config> | null];
+      (group: DrizzleFraciGroup<Config>, cursor: null): [
+        null,
+        DrizzleFractionalIndex<Config> | null
+      ];
     };
 
     /**
@@ -188,19 +188,16 @@ export type FraciForDrizzleSync<Config extends DrizzleFraciConfig> =
      * @returns The indices to calculate the new index of the item to be inserted before the cursor.
      */
     readonly indicesForBefore: {
-      (
-        group: DrizzleFraciGroup<Config>,
-        cursor: DrizzleFraciCursor<Config>,
-      ):
+      (group: DrizzleFraciGroup<Config>, cursor: DrizzleFraciCursor<Config>):
         | [
             DrizzleFractionalIndex<Config> | null,
-            DrizzleFractionalIndex<Config>,
+            DrizzleFractionalIndex<Config>
           ]
         | undefined;
-      (
-        group: DrizzleFraciGroup<Config>,
-        cursor: null,
-      ): [DrizzleFractionalIndex<Config> | null, null];
+      (group: DrizzleFraciGroup<Config>, cursor: null): [
+        DrizzleFractionalIndex<Config> | null,
+        null
+      ];
     };
 
     /**
@@ -211,7 +208,7 @@ export type FraciForDrizzleSync<Config extends DrizzleFraciConfig> =
      * @returns The indices to calculate the new index of the first item in the group.
      */
     readonly indicesForFirst: (
-      group: DrizzleFraciGroup<Config>,
+      group: DrizzleFraciGroup<Config>
     ) => [null, DrizzleFractionalIndex<Config> | null];
 
     /**
@@ -222,7 +219,7 @@ export type FraciForDrizzleSync<Config extends DrizzleFraciConfig> =
      * @returns The indices to calculate the new index of the last item in the group.
      */
     readonly indicesForLast: (
-      group: DrizzleFraciGroup<Config>,
+      group: DrizzleFraciGroup<Config>
     ) => [DrizzleFractionalIndex<Config> | null, null];
   };
 
@@ -262,17 +259,17 @@ export type FraciForDrizzleSync<Config extends DrizzleFraciConfig> =
  */
 export function drizzleFraciSync<Config extends DrizzleFraciConfig>(
   client: SupportedDrizzleDatabaseSync,
-  config: Config,
+  config: Config
 ): FraciForDrizzleSync<Config> {
   return {
     ...config.fraci,
     indicesForAfter: (
       group: DrizzleFraciGroup<Config>,
-      cursor: DrizzleFraciCursor<Config> | null,
+      cursor: DrizzleFraciCursor<Config> | null
     ) => indicesForAfter(client, config, group, cursor),
     indicesForBefore: (
       group: DrizzleFraciGroup<Config>,
-      cursor: DrizzleFraciCursor<Config> | null,
+      cursor: DrizzleFraciCursor<Config> | null
     ) => indicesForBefore(client, config, group, cursor),
     indicesForFirst: (group: DrizzleFraciGroup<Config>) =>
       indicesForAfter(client, config, group, null),

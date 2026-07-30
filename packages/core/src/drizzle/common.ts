@@ -1,5 +1,6 @@
 import { asc, desc, eq, gte, isNull, lte, sql, type Column } from "drizzle-orm";
 import type { AnyFractionalIndex as AFI } from "../lib/types.js";
+import type { DrizzleColumnLike } from "./types.js";
 
 /**
  * Creates a SQL condition for equality comparison that safely handles null and undefined values.
@@ -13,14 +14,14 @@ import type { AnyFractionalIndex as AFI } from "../lib/types.js";
  * @param value - The value to compare against (can be any type including null/undefined)
  * @returns A SQL condition for use in database queries
  */
-export function equity(column: Column, value: unknown) {
+export function equity(column: DrizzleColumnLike, value: unknown) {
   return value != null
-    ? eq(column, value)
+    ? eq(column as Column, value)
     : value === null
-      ? // Use `isNull` if value is `null`
-        isNull(column)
-      : // SECURITY: Always return `FALSE` if value is `undefined`, meaning it's missing
-        sql`FALSE`;
+    ? // Use `isNull` if value is `null`
+      isNull(column as Column)
+    : // SECURITY: Always return `FALSE` if value is `undefined`, meaning it's missing
+      sql`FALSE`;
 }
 
 /**

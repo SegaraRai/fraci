@@ -62,7 +62,8 @@
   "scripts": {
     "generate-migrations": "bun run scripts/generate-migrations.ts",
     "bench": "bun run src/lib/fractional-indexing-string.bench.ts && bun run src/lib/fractional-indexing-binary.bench.ts",
-    "build": "tsup",
+    "build": "bun run clean && tsup",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build-examples": "rolldown -c examples/rolldown.config.ts",
     "build-docs": "typedoc && bun run scripts/copy-assets.ts",
     "prepare": "prisma generate",
@@ -89,8 +90,8 @@
     "zod": "^4.0.8"
   },
   "peerDependencies": {
-    "drizzle-orm": ">= 0.30.0 < 0.45.0",
-    "@prisma/client": "^5.0.0 || ^6.0.0"
+    "drizzle-orm": ">= 0.30.0 < 1.0.0 || ^1.0.0-0",
+    "@prisma/client": "^5.0.0 || ^6.0.0 || ^7.0.0"
   },
   "peerDependenciesMeta": {
     "drizzle-orm": {

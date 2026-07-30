@@ -1,10 +1,23 @@
-import type { Column, ColumnBaseConfig, Table } from "drizzle-orm";
 import type { AnyFraci } from "../factory.js";
-import type {
-  AnyBinaryFractionalIndex,
-  AnyFractionalIndex,
-} from "../lib/types.js";
+import type { AnyFractionalIndex } from "../lib/types.js";
 import type { FractionalIndexOf } from "../types.js";
+
+/**
+ * The stable structural portion of a Drizzle column used by fraci.
+ *
+ * Drizzle's nominal Column class changes between major versions, while the
+ * inferred data slot is shared by every supported version.
+ */
+export type DrizzleColumnLike<Data = unknown> = {
+  readonly _: { readonly data: Data };
+};
+
+/**
+ * The stable structural portion of a Drizzle table used by fraci.
+ */
+export type DrizzleTableLike = {
+  readonly _: unknown;
+};
 
 /**
  * Represents a Drizzle ORM column that stores a fractional index.
@@ -14,16 +27,8 @@ import type { FractionalIndexOf } from "../types.js";
  * @template FI - The specific fractional index type this column will store
  */
 export type DrizzleFraciColumn<
-  FI extends AnyFractionalIndex = AnyFractionalIndex,
-> = Column<
-  ColumnBaseConfig<
-    FI extends AnyBinaryFractionalIndex ? "buffer" : "string",
-    string
-  >,
-  object
-> & {
-  _: { data: FI };
-};
+  FI extends AnyFractionalIndex = AnyFractionalIndex
+> = DrizzleColumnLike<FI>;
 
 /**
  * Configuration for using fractional indexing with Drizzle ORM.
@@ -39,12 +44,18 @@ export type DrizzleFraciColumn<
  */
 export interface DrizzleFraciConfig<
   F extends AnyFraci = AnyFraci,
-  T extends Table = Table,
+  T extends DrizzleTableLike = DrizzleTableLike,
   FraciColumn extends DrizzleFraciColumn<
     FractionalIndexOf<F>
   > = DrizzleFraciColumn<FractionalIndexOf<F>>,
-  Group extends Record<string, Column> = Record<string, Column>,
-  Cursor extends Record<string, Column> = Record<string, Column>,
+  Group extends Record<string, DrizzleColumnLike> = Record<
+    string,
+    DrizzleColumnLike
+  >,
+  Cursor extends Record<string, DrizzleColumnLike> = Record<
+    string,
+    DrizzleColumnLike
+  >
 > {
   /** A fraci instance. */
   readonly fraci: F;
