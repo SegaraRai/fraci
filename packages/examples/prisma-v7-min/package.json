@@ -1,0 +1,17 @@
+{
+  "name": "@fraci/example-prisma-v7-min",
+  "version": "0.17.0",
+  "private": true,
+  "description": "Integration tests for the minimum supported Prisma v7 release",
+  "type": "module",
+  "dependencies": {
+    "fraci": "workspace:*"
+  },
+  "devDependencies": {
+    "@prisma/adapter-libsql": "7.0.0",
+    "@prisma/client": "7.0.0",
+    "@types/node": "^26.1.2",
+    "prisma": "7.0.0",
+    "typescript": "^6.0.3"
+  }
+}

@@ -64,6 +64,25 @@ describe("fraciBinary", () => {
     // @ts-expect-error - Should not allow using key2 with indexing1
     indexing1.generateKeyBetween(key2, null);
   });
+
+  it.each([
+    ["maxLength", { maxLength: 0 }],
+    ["maxLength", { maxLength: Number.NaN }],
+    ["maxRetries", { maxRetries: 0 }],
+    ["maxRetries", { maxRetries: 1.5 }],
+  ] as const)("should reject invalid %s", (_, options) => {
+    expect(() => fraciBinary(options)).toThrowError(
+      expect.objectContaining({ code: "INVALID_ARGUMENT" }),
+    );
+  });
+
+  it("should support safe integer skip values", () => {
+    const indexing = fraciBinary({ maxRetries: 1 });
+    const key = indexing.generateKeyBetween(null, null, 2 ** 31).next().value;
+
+    expect(key).toBeDefined();
+    expect(() => indexing.generateKeyBetween(key!, null).next()).not.toThrow();
+  });
 });
 
 describe("fraciString", () => {
@@ -238,6 +257,26 @@ describe("fraci", () => {
     expect(generator1.next().value).not.toBeUndefined();
     expect(generator2.next().value).not.toBeUndefined();
   });
+
+  it.each([-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+    "should reject invalid skip value %s",
+    (skip) => {
+      const indexing = fraci({ lengthBase, digitBase });
+      expect(() =>
+        indexing.generateKeyBetween(null, null, skip).next(),
+      ).toThrowError(expect.objectContaining({ code: "INVALID_ARGUMENT" }));
+    },
+  );
+
+  it.each([-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+    "should reject invalid key count %s",
+    (n) => {
+      const indexing = fraci({ lengthBase, digitBase });
+      expect(() =>
+        indexing.generateNKeysBetween(null, null, n).next(),
+      ).toThrowError(expect.objectContaining({ code: "INVALID_ARGUMENT" }));
+    },
+  );
 
   it("should throw an error if reached maxRetries", () => {
     const indexing = fraci({

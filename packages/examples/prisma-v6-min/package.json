@@ -1,0 +1,15 @@
+{
+  "name": "@fraci/example-prisma-v6-min",
+  "version": "0.17.0",
+  "private": true,
+  "description": "Integration tests for the minimum supported Prisma v6 release",
+  "type": "module",
+  "dependencies": {
+    "fraci": "workspace:*"
+  },
+  "devDependencies": {
+    "@prisma/client": "6.0.0",
+    "prisma": "6.0.0",
+    "typescript": "^6.0.3"
+  }
+}

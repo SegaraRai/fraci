@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("PRISMA_DB_URL")
+}
+
+model StringExampleItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  fi        String
+  groupId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, fi])
+}
+
+model BinaryExampleItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  fi        Bytes
+  groupId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([groupId, fi])
+}

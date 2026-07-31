@@ -1,0 +1,13 @@
+{
+  "name": "@fraci/example-typescript-v5",
+  "version": "0.17.0",
+  "private": true,
+  "description": "Consumer type test for the minimum supported TypeScript 5 release",
+  "type": "module",
+  "dependencies": {
+    "fraci": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "5.7.3"
+  }
+}

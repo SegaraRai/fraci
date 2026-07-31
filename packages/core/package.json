@@ -89,5 +89,8 @@
     "@prisma/client": {
       "optional": true
     }
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

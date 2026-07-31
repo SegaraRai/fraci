@@ -3,8 +3,11 @@ import { defineConfig } from "vite-plus";
 const prismaGenerateCommands = [
   "vp exec --filter fraci -- prisma generate",
   "vp exec --filter @fraci/example-prisma-v5 -- prisma generate",
+  "vp exec --filter @fraci/example-prisma-v5-min -- prisma generate",
   "vp exec --filter @fraci/example-prisma-v6 -- prisma generate",
+  "vp exec --filter @fraci/example-prisma-v6-min -- prisma generate",
   "vp exec --filter @fraci/example-prisma-v7 -- prisma generate",
+  "vp exec --filter @fraci/example-prisma-v7-min -- prisma generate",
 ];
 
 const fixtureTypecheckCommands = [
@@ -14,8 +17,12 @@ const fixtureTypecheckCommands = [
   "vp exec --filter @fraci/example-drizzle-v0-45 -- tsc --noEmit",
   "vp exec --filter @fraci/example-drizzle-v1 -- tsc --noEmit",
   "vp exec --filter @fraci/example-prisma-v5 -- tsc --noEmit",
+  "vp exec --filter @fraci/example-prisma-v5-min -- tsc --noEmit",
   "vp exec --filter @fraci/example-prisma-v6 -- tsc --noEmit",
+  "vp exec --filter @fraci/example-prisma-v6-min -- tsc --noEmit",
   "vp exec --filter @fraci/example-prisma-v7 -- tsc --noEmit",
+  "vp exec --filter @fraci/example-prisma-v7-min -- tsc --noEmit",
+  "vp exec --filter @fraci/example-typescript-v5 -- tsc --noEmit",
 ];
 
 export default defineConfig({
@@ -85,7 +92,7 @@ export default defineConfig({
           "vp exec --filter fraci -- tsc --noEmit",
           ...fixtureTypecheckCommands,
         ],
-        dependsOn: ["generate"],
+        dependsOn: ["build"],
         cache: false,
       },
       test: {

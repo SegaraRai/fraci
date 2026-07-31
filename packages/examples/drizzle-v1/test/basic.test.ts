@@ -1,8 +1,10 @@
 import { createClient } from "@libsql/client";
-import { expect, test } from "vite-plus/test";
+import { test } from "vite-plus/test";
 import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
+import type { FractionalIndexOf } from "fraci";
 import { drizzleFraci } from "fraci/drizzle";
+import { verifyOrderingContract } from "../../common/ordering-contract.js";
 import { fiTestItems, testItems } from "../src/schema.js";
 
 test("drizzle basic functionality", async () => {
@@ -23,33 +25,30 @@ test("drizzle basic functionality", async () => {
 
   try {
     const helper = drizzleFraci(db, fiTestItems);
-    const firstPair = await helper.indicesForFirst({ groupId: 1 });
-    const [fi1] = helper.generateKeyBetween(...firstPair);
-    const [item1] = await db
-      .insert(testItems)
-      .values({ name: "First Item", groupId: 1, fi: fi1 })
-      .returning();
-
-    const secondPair = await helper.indicesForAfter(
-      { groupId: 1 },
-      { id: item1.id },
-    );
-    expect(secondPair).toBeDefined();
-    if (!secondPair) throw new Error("Expected adjacent indices");
-    const [fi2] = helper.generateKeyBetween(...secondPair);
-    await db
-      .insert(testItems)
-      .values({ name: "Second Item", groupId: 1, fi: fi2 });
-
-    const items = await db
-      .select()
-      .from(testItems)
-      .where(eq(testItems.groupId, 1))
-      .orderBy(testItems.fi);
-    expect(items.map(({ name }) => name)).toEqual([
-      "First Item",
-      "Second Item",
-    ]);
+    await verifyOrderingContract<FractionalIndexOf<typeof helper>>({
+      generate: ([a, b]) => helper.generateKeyBetween(a, b).next().value!,
+      indicesForFirst: (groupId) => helper.indicesForFirst({ groupId }),
+      indicesForLast: (groupId) => helper.indicesForLast({ groupId }),
+      indicesForAfter: (groupId, id) =>
+        helper.indicesForAfter({ groupId }, { id }),
+      indicesForBefore: (groupId, id) =>
+        helper.indicesForBefore({ groupId }, { id }),
+      insert: async (name, groupId, fi) => {
+        const [item] = await db
+          .insert(testItems)
+          .values({ name, groupId, fi })
+          .returning();
+        return item;
+      },
+      names: async (groupId) =>
+        (
+          await db
+            .select({ name: testItems.name })
+            .from(testItems)
+            .where(eq(testItems.groupId, groupId))
+            .orderBy(testItems.fi)
+        ).map(({ name }) => name),
+    });
   } finally {
     client.close();
   }

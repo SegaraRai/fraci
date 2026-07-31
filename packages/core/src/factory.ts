@@ -47,6 +47,8 @@ const ERROR_CODE_INVALID_INPUT =
   "INVALID_FRACTIONAL_INDEX" satisfies FraciErrorCode;
 const ERROR_MESSAGE_INVALID_INPUT = "Invalid indices provided";
 
+const ERROR_CODE_INVALID_ARGUMENT = "INVALID_ARGUMENT" satisfies FraciErrorCode;
+
 const ERROR_CODE_EXCEEDED_MAX_LENGTH =
   "MAX_LENGTH_EXCEEDED" satisfies FraciErrorCode;
 const ERROR_MESSAGE_EXCEEDED_MAX_LENGTH = "Exceeded maximum length";
@@ -95,7 +97,7 @@ export interface Fraci<B extends FractionalIndexBase, X> {
    *
    * @param a - The lower bound key, or null if there is no lower bound
    * @param b - The upper bound key, or null if there is no upper bound
-   * @param skip - Number of conflict avoidance iterations to skip (default: 0)
+   * @param skip - Non-negative safe integer number of conflict avoidance iterations to skip (default: 0)
    * @returns A generator yielding fractional index keys
    * @throws {FraciError} Throws a {@link FraciError} when invalid input is provided
    * @throws {FraciError} Throws a {@link FraciError} when the generated key exceeds the maximum length
@@ -116,7 +118,7 @@ export interface Fraci<B extends FractionalIndexBase, X> {
    *
    * @param a - The lower bound key, or null if there is no lower bound
    * @param b - The upper bound key, or null if there is no upper bound
-   * @param skip - Number of conflict avoidance iterations to skip (default: 0)
+   * @param skip - Non-negative safe integer number of conflict avoidance iterations to skip (default: 0)
    * @returns A generator yielding fractional index keys
    * @throws {FraciError} Throws a {@link FraciError} when invalid input is provided
    * @throws {FraciError} Throws a {@link FraciError} when the generated key exceeds the maximum length
@@ -137,8 +139,8 @@ export interface Fraci<B extends FractionalIndexBase, X> {
    *
    * @param a - The lower bound key, or null if there is no lower bound
    * @param b - The upper bound key, or null if there is no upper bound
-   * @param n - Number of keys to generate
-   * @param skip - Number of conflict avoidance iterations to skip (default: 0)
+   * @param n - Non-negative safe integer number of keys to generate
+   * @param skip - Non-negative safe integer number of conflict avoidance iterations to skip (default: 0)
    * @returns A generator yielding arrays of fractional index keys
    * @throws {FraciError} Throws a {@link FraciError} when invalid input is provided
    * @throws {FraciError} Throws a {@link FraciError} when the generated keys would exceed the maximum length
@@ -160,8 +162,8 @@ export interface Fraci<B extends FractionalIndexBase, X> {
    *
    * @param a - The lower bound key, or null if there is no lower bound
    * @param b - The upper bound key, or null if there is no upper bound
-   * @param n - Number of keys to generate
-   * @param skip - Number of conflict avoidance iterations to skip (default: 0)
+   * @param n - Non-negative safe integer number of keys to generate
+   * @param skip - Non-negative safe integer number of conflict avoidance iterations to skip (default: 0)
    * @returns A generator yielding arrays of fractional index keys
    * @throws {FraciError} Throws a {@link FraciError} when invalid input is provided
    * @throws {FraciError} Throws a {@link FraciError} when the generated keys would exceed the maximum length
@@ -317,13 +319,14 @@ export type FraciOptionsBaseToBase<B extends FraciOptionsBase> = B extends {
  */
 export type FraciOptions<B extends FraciOptionsBase> = B & {
   /**
-   * Maximum allowed length for generated keys.
+   * Maximum allowed length for generated keys. Must be a positive safe integer.
    * @default DEFAULT_MAX_LENGTH (50)
    */
   readonly maxLength?: number | undefined;
 
   /**
-   * Maximum number of retry attempts when generating keys.
+   * Maximum number of retry attempts when generating keys. Must be a positive
+   * safe integer or `Infinity`.
    * @default DEFAULT_MAX_RETRIES (5)
    */
   readonly maxRetries?: number | undefined;
@@ -479,6 +482,50 @@ File an issue if you use the library correctly and still encounter this error.`,
   }
 }
 
+function assertPositiveSafeInteger(value: number, name: "maxLength"): void {
+  if (!Number.isSafeInteger(value) || value < 1) {
+    throw new FraciError(
+      ERROR_CODE_INVALID_ARGUMENT,
+      `${name} must be a positive safe integer`,
+    );
+  }
+}
+
+function assertPositiveSafeIntegerOrInfinity(
+  value: number,
+  name: "maxRetries",
+): void {
+  if (
+    value !== Number.POSITIVE_INFINITY &&
+    (!Number.isSafeInteger(value) || value < 1)
+  ) {
+    throw new FraciError(
+      ERROR_CODE_INVALID_ARGUMENT,
+      `${name} must be a positive safe integer or Infinity`,
+    );
+  }
+}
+
+function assertNonNegativeSafeInteger(value: number, name: "n" | "skip"): void {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new FraciError(
+      ERROR_CODE_INVALID_ARGUMENT,
+      `${name} must be a non-negative safe integer`,
+    );
+  }
+}
+
+function validateOptions(maxLength: number, maxRetries: number): void {
+  assertPositiveSafeInteger(maxLength, "maxLength");
+  assertPositiveSafeIntegerOrInfinity(maxRetries, "maxRetries");
+}
+
+function retryCount(iteration: number, skip: number): number {
+  const count = iteration + skip;
+  assertNonNegativeSafeInteger(count, "skip");
+  return count;
+}
+
 /**
  * Creates a binary-based fractional indexing utility with the specified configuration.
  *
@@ -513,10 +560,12 @@ export function fraciBinary<const X = unknown>({
   X
 > = {}): Fraci<AnyBinaryFractionalIndexBase, X> {
   type F = FractionalIndex<AnyBinaryFractionalIndexBase, X>;
+  validateOptions(maxLength, maxRetries);
 
   return {
     base: { type: "binary" },
     *generateKeyBetween(a: F | null, b: F | null, skip = 0) {
+      assertNonNegativeSafeInteger(skip, "skip");
       // Generate the base key between a and b (without conflict avoidance)
       const base = generateKeyBetweenBinary(a, b);
       if (!base) {
@@ -533,7 +582,10 @@ export function fraciBinary<const X = unknown>({
       // Generate multiple possible keys with conflict avoidance suffixes
       // This allows the caller to try multiple keys if earlier ones conflict
       for (let i = 0; i < maxRetries; i++) {
-        const value = concat(base, avoidConflictSuffixBinary(i + skip));
+        const value = concat(
+          base,
+          avoidConflictSuffixBinary(retryCount(i, skip)),
+        );
         if (value.length > maxLength) {
           throw new FraciError(
             ERROR_CODE_EXCEEDED_MAX_LENGTH,
@@ -550,6 +602,8 @@ export function fraciBinary<const X = unknown>({
       );
     },
     *generateNKeysBetween(a: F | null, b: F | null, n: number, skip = 0) {
+      assertNonNegativeSafeInteger(n, "n");
+      assertNonNegativeSafeInteger(skip, "skip");
       // Generate n base keys between a and b (without conflict avoidance)
       const base = generateNKeysBetweenBinary(a, b, n);
       if (!base) {
@@ -569,7 +623,7 @@ export function fraciBinary<const X = unknown>({
       // Generate multiple sets of keys with conflict avoidance suffixes
       // Each set has the same suffix applied to all keys to maintain relative ordering
       for (let i = 0; i < maxRetries; i++) {
-        const suffix = avoidConflictSuffixBinary(i + skip);
+        const suffix = avoidConflictSuffixBinary(retryCount(i, skip));
         if (longest + suffix.length > maxLength) {
           throw new FraciError(
             ERROR_CODE_EXCEEDED_MAX_LENGTH,
@@ -636,6 +690,7 @@ export function fraciString<
   cache?: FraciCache,
 ): Fraci<FraciOptionsBaseToBase<B>, X> {
   type F = FractionalIndex<FraciOptionsBaseToBase<B>, X>;
+  validateOptions(maxLength, maxRetries);
 
   // Create and potentially cache the digit and length base maps
   // This optimization avoids recreating these maps when using the same bases multiple times
@@ -658,6 +713,7 @@ export function fraciString<
       digitBase,
     } as FraciOptionsBaseToBase<B>,
     *generateKeyBetween(a: F | null, b: F | null, skip = 0) {
+      assertNonNegativeSafeInteger(skip, "skip");
       // Generate the base key between a and b (without conflict avoidance)
       const base = generateKeyBetween(
         a,
@@ -682,7 +738,10 @@ export function fraciString<
       // Generate multiple possible keys with conflict avoidance suffixes
       // This allows the caller to try multiple keys if earlier ones conflict
       for (let i = 0; i < maxRetries; i++) {
-        const value = `${base}${avoidConflictSuffix(i + skip, digBaseForward)}`;
+        const value = `${base}${avoidConflictSuffix(
+          retryCount(i, skip),
+          digBaseForward,
+        )}`;
         if (value.length > maxLength) {
           throw new FraciError(
             ERROR_CODE_EXCEEDED_MAX_LENGTH,
@@ -699,6 +758,8 @@ export function fraciString<
       );
     },
     *generateNKeysBetween(a: F | null, b: F | null, n: number, skip = 0) {
+      assertNonNegativeSafeInteger(n, "n");
+      assertNonNegativeSafeInteger(skip, "skip");
       // Generate n base keys between a and b (without conflict avoidance)
       const base = generateNKeysBetween(
         a,
@@ -727,7 +788,7 @@ export function fraciString<
       // Generate multiple sets of keys with conflict avoidance suffixes
       // Each set has the same suffix applied to all keys to maintain relative ordering
       for (let i = 0; i < maxRetries; i++) {
-        const suffix = avoidConflictSuffix(i + skip, digBaseForward);
+        const suffix = avoidConflictSuffix(retryCount(i, skip), digBaseForward);
         if (longest + suffix.length > maxLength) {
           throw new FraciError(
             ERROR_CODE_EXCEEDED_MAX_LENGTH,
