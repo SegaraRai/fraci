@@ -154,6 +154,24 @@ each example.
 - As shown in the test at the bottom of `fractional-indexing-*.test.ts`, a malicious user could intentionally create very long indices by repeatedly moving items back and forth.
 - Fraci includes a configurable `maxLength` parameter (default: 50) to prevent these attacks from creating excessively long indices.
 - When this limit is exceeded, an exception is thrown, preventing database bloat and performance degradation.
+- Fraci checks both input and output index lengths before performing potentially
+  expensive midpoint work.
+
+### Database Collation Requirements
+
+String fractional indices require the database to compare text by raw character
+code in the same order as JavaScript. Configure the fractional-index column and
+its compound unique index with a binary, bytewise, case-sensitive collation.
+Locale-aware or case-insensitive collations can reorder distinct keys or treat
+them as equal.
+
+- SQLite: use the default `BINARY` collation and do not apply `NOCASE`.
+- MySQL/MariaDB: use a verified `NO PAD` binary collation (for example,
+  `utf8mb4_0900_bin` on MySQL 8), or a binary column. Older `PAD SPACE`
+  collations can incorrectly equate keys that differ by trailing spaces.
+- PostgreSQL: use the `C` collation or another verified bytewise collation.
+
+If a bytewise text collation cannot be guaranteed, use `fraciBinary`.
 
 ## Installation
 
@@ -234,8 +252,11 @@ export const fiArticles = defineDrizzleFraci(
 ```
 
 `maxLength` must be a positive safe integer. `maxRetries` accepts a positive
-safe integer or `Infinity`. Generation counts and `skip` values must be
-non-negative safe integers.
+safe integer or `Infinity`. `skip` values must be non-negative safe integers.
+Generation counts must be non-negative safe integers no greater than the
+exported `MAX_GENERATED_KEYS` limit (currently 1,000,000). Generate larger
+collections in bounded batches, carrying the final key of one batch forward as
+the lower bound of the next.
 
 > [!TIP]
 > The fractional index column should be placed at the end of the compound index for optimal performance.
@@ -812,19 +833,42 @@ Fraci handles the generation of these indices automatically, with conflict resol
 
 - **Database Structure:** The compound index structure (`[groupId, fi]`) is optimized for both uniqueness and query performance
 - **Character Sets:** Using larger character sets (BASE62, BASE95) results in shorter indices, reducing storage requirements
-- **Binary vs String:** Binary-based fractional indexing provides significantly better performance and smaller storage footprint compared to string-based indexing
+- **Binary vs String:** Binary indexing generally uses less storage and performs
+  better once keys become long. String indexing can be faster for short,
+  ordinary append/prepend workloads, so benchmark the expected workload.
 - **Bundle Size:** Use `fraciBinary` or `fraciString` instead of `fraci` for instantiation to reduce bundle size
 - **Efficient Implementation:** The library is designed to minimize allocations and computations during index generation
 - **Concurrency:** For optimal performance in high-concurrency scenarios, consider [skipping indices for collision avoidance](#skipping-indices-for-collision-avoidance)
 
 ### Performance Impact of Implementation Choices
 
-| Choice            | Impact                                                                            |
-| ----------------- | --------------------------------------------------------------------------------- |
-| Binary vs String  | Binary implementation is ~25% smaller and processes faster                        |
-| Compound Index    | Ensures efficient queries when filtering by group and sorting by index            |
-| Index Length      | Shorter indices (from larger character sets) improve storage and comparison speed |
-| Conflict Handling | Automatic regeneration with retry limits prevents performance degradation         |
+| Choice            | Impact                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| Binary vs String  | Binary uses less storage and excels for long/dense keys; short string keys can be faster |
+| Compound Index    | Ensures efficient queries when filtering by group and sorting by index                   |
+| Index Length      | Shorter indices (from larger character sets) improve storage and comparison speed        |
+| Conflict Handling | Automatic regeneration with retry limits prevents performance degradation                |
+
+The repository benchmarks use a fixed pseudo-random operation sequence so string
+and binary runs receive the same workload. Array insertion costs are still part
+of the random-list scenarios; use the append, prepend, and middle-key cases when
+comparing key-generation cost directly.
+
+### Recovering from the Maximum Length
+
+`maxLength` deliberately turns unbounded index growth into a controlled failure.
+If a legitimate group reaches the limit, compact that group under an exclusive
+lock or serializable transaction:
+
+1. Read every row in fractional-index order.
+2. Generate the same number of evenly distributed replacements with
+   `generateNKeysBetween(null, null, rowCount)`.
+3. Move existing rows to unique temporary values outside the fraci namespace.
+4. Apply the replacement keys in the same transaction and release the lock.
+
+The temporary phase is necessary because direct row-by-row replacement can
+transiently violate the compound unique index. Do not increase `maxLength`
+automatically in response to untrusted traffic.
 
 ## Skipping Indices for Collision Avoidance
 
@@ -948,8 +992,11 @@ If you encounter runtime errors:
   - **Cause:** The characters in the `digitBase` or `lengthBase` are not in ascending order or contain duplicates.
   - **Solution:** Ensure the characters in your base strings are unique and arranged in ascending order by character code. Consider using the predefined constants.
 - `[MAX_LENGTH_EXCEEDED] Exceeded maximum length`
-  - **Cause:** A generated fractional index has exceeded the configured maximum length (default: 50).
-  - **Solution:** Increase the `maxLength` parameter when creating your fraci instance. This could also indicate an index expansion attack, so review your security measures.
+  - **Cause:** An input or generated fractional index has exceeded the configured maximum length (default: 50).
+  - **Solution:** Review the operation for an expansion attack. For legitimate dense groups, use the [compaction procedure](#recovering-from-the-maximum-length); do not automatically increase the limit.
+- `[INVALID_ARGUMENT] n must be less than or equal to 1000000`
+  - **Cause:** A single call requested an unsafe number of in-memory keys.
+  - **Solution:** Generate and persist the collection in bounded batches.
 - `[MAX_RETRIES_EXCEEDED] Exceeded maximum retries`
   - **Cause:** The maximum number of retries on conflict has been exceeded (default: 5).
   - **Solution:** Implement the [skipping indices for collision avoidance](#skipping-indices-for-collision-avoidance) technique to reduce conflicts. You can also increase the `maxRetries` parameter when creating your fraci instance.

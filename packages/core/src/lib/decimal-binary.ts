@@ -229,55 +229,53 @@ export function getMidpointFractional(
     return;
   }
 
-  // Optimization: If a and b share a common prefix, preserve it
-  if (b) {
-    // Find the first position where a and b differ
-    const prefixLength = b.findIndex((value, i) => value !== (a[i] ?? 0));
+  const result: number[] = [];
+  let aOffset = 0;
+  let bOffset = 0;
+  let upper = b;
 
-    // If they share a prefix, keep it and recursively find midpoint of the differing parts
-    if (prefixLength > 0) {
-      const suffix = getMidpointFractional(
-        a.subarray(prefixLength),
-        b.subarray(prefixLength),
-      );
-      if (!suffix) {
-        return;
+  // Avoid recursive concatenation, which can otherwise consume quadratic
+  // allocation and exhaust the stack for long fractional parts.
+  while (true) {
+    if (upper) {
+      const remainingUpperLength = upper.length - bOffset;
+      let prefixLength = 0;
+      while (
+        prefixLength < remainingUpperLength &&
+        upper[bOffset + prefixLength] === (a[aOffset + prefixLength] ?? 0)
+      ) {
+        prefixLength++;
       }
 
-      return concat(b.subarray(0, prefixLength), suffix);
+      if (prefixLength > 0) {
+        for (let i = 0; i < prefixLength; i++) {
+          result.push(upper[bOffset + i]);
+        }
+        aOffset += prefixLength;
+        bOffset += prefixLength;
+        continue;
+      }
     }
-  }
 
-  // At this point, we're handling the first differing digits
-  const aDigit = a[0] ?? 0;
-  const bDigit = b ? b[0] : 256;
-  if (bDigit == null) {
-    return;
-  }
+    const aDigit = a[aOffset] ?? 0;
+    const bDigit = upper ? upper[bOffset] : 256;
+    if (bDigit == null) {
+      return;
+    }
 
-  // Case 1: Non-consecutive digits - we can simply use their average
-  if (aDigit + 1 !== bDigit) {
-    const mid = (aDigit + bDigit) >> 1; // Fast integer division by 2
-    return new Uint8Array([mid]);
-  }
+    if (aDigit + 1 !== bDigit) {
+      result.push(Math.floor((aDigit + bDigit) / 2));
+      return new Uint8Array(result);
+    }
 
-  // Case 2: Consecutive digits with b having two or more digits
-  if (b && b.length > 1) {
-    // We can just use b's first digit (which is one more than a's first digit)
-    return new Uint8Array([b[0]]);
-  }
+    if (upper && upper.length - bOffset > 1) {
+      result.push(upper[bOffset]);
+      return new Uint8Array(result);
+    }
 
-  // Case 3: Consecutive digits with b having length 1 or null
-  // This is the most complex case requiring recursive construction
-  // Example: midpoint('49', '5') becomes '495'
-  // We take a's first digit, then recursively find midpoint of a's remainder and null
-  const suffix = getMidpointFractional(a.subarray(1), null);
-  if (!suffix) {
-    return;
+    result.push(aDigit);
+    aOffset++;
+    upper = null;
+    bOffset = 0;
   }
-
-  const result = new Uint8Array(1 + suffix.length);
-  result[0] = aDigit;
-  result.set(suffix, 1);
-  return result;
 }

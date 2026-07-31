@@ -259,19 +259,28 @@ function generateNKeysBetweenUnsafe(
     ).reverse();
   }
 
-  // Divide-and-conquer approach for better distribution of keys
-  const mid = n >> 1; // Fast integer division by 2
+  const result = Array<Uint8Array>(n);
 
-  // Find a midpoint key between a and b
-  const c = generateKeyBetweenUnsafe(a, b);
+  const fill = (
+    lower: Uint8Array,
+    upper: Uint8Array,
+    start: number,
+    count: number,
+  ): void => {
+    if (count < 1) {
+      return;
+    }
 
-  // Recursively generate keys in both halves and combine them
-  // This creates a more balanced distribution than sequential generation
-  return [
-    ...generateNKeysBetweenUnsafe(a, c, mid),
-    c,
-    ...generateNKeysBetweenUnsafe(c, b, n - mid - 1),
-  ];
+    const leftCount = Math.floor(count / 2);
+    const position = start + leftCount;
+    const midpoint = generateKeyBetweenUnsafe(lower, upper);
+    result[position] = midpoint;
+    fill(lower, midpoint, start, leftCount);
+    fill(midpoint, upper, position + 1, count - leftCount - 1);
+  };
+
+  fill(a, b, 0, n);
+  return result;
 }
 
 /**
