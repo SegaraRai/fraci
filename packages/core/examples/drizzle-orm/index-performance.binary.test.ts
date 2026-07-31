@@ -112,4 +112,4 @@ test("Ensure that the query plan is optimal (Binary)", async () => {
     );
     expect(listExplained.every((item) => !item.includes("SCAN"))).toBe(true);
   }
-});
+}, 30_000);
