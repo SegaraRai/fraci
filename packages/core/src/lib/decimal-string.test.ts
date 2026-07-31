@@ -176,6 +176,9 @@ describe("getMidpointFractional", () => {
     expect(getMidpointFractional("999998", null, DF10, DR10)).toBe("999999");
     expect(getMidpointFractional("999999", null, DF10, DR10)).toBe("9999995");
 
+    const long = "9".repeat(20_000);
+    expect(getMidpointFractional(long, null, DF10, DR10)).toBe(`${long}5`);
+
     // Invalid
     expect(getMidpointFractional("abc", null, DF10, DR10)).toBeUndefined();
     expect(getMidpointFractional("abc", "123", DF10, DR10)).toBeUndefined();

@@ -322,6 +322,12 @@ describe("getMidpointFractional", () => {
     expect(emptyNullMidpoint).toBeDefined();
     expect(toHex(emptyNullMidpoint!)).toBe(toHex(new Uint8Array([128])));
 
+    const long = new Uint8Array(20_000).fill(255);
+    const longMidpoint = getMidpointFractional(long, null);
+    expect(longMidpoint).toBeDefined();
+    expect(longMidpoint).toHaveLength(20_001);
+    expect(longMidpoint?.at(-1)).toBe(128);
+
     // Invalid inputs
     expect(getMidpointFractional(b, a)).toBeUndefined(); // a >= b
     expect(getMidpointFractional(b, b)).toBeUndefined(); // a === b

@@ -259,56 +259,58 @@ export function getMidpointFractional(
     return;
   }
 
-  // Optimization: If a and b share a common prefix, preserve it
-  if (b) {
-    // Pad a with zeros to match b's length for comparison
-    const aPadded = a.padEnd(b.length, digBaseForward[0]);
+  const chunks: string[] = [];
+  let aOffset = 0;
+  let bOffset = 0;
+  let upper = b;
 
-    // Find the first position where a and b differ
-    const prefixLength = Array.prototype.findIndex.call(
-      b,
-      (char, i) => char !== aPadded[i],
-    );
+  // Use an iterative implementation so adversarially long, but otherwise valid,
+  // fractional parts cannot exhaust the JavaScript call stack.
+  while (true) {
+    if (upper) {
+      const remainingUpperLength = upper.length - bOffset;
+      let prefixLength = 0;
+      while (
+        prefixLength < remainingUpperLength &&
+        upper[bOffset + prefixLength] ===
+          (a[aOffset + prefixLength] ?? digBaseForward[0])
+      ) {
+        prefixLength++;
+      }
 
-    // If they share a prefix, keep it and recursively find midpoint of the differing parts
-    if (prefixLength > 0) {
-      return `${b.slice(0, prefixLength)}${getMidpointFractional(
-        a.slice(prefixLength),
-        b.slice(prefixLength),
-        digBaseForward,
-        digBaseReverse,
-      )}`;
+      if (prefixLength > 0) {
+        chunks.push(upper.slice(bOffset, bOffset + prefixLength));
+        aOffset += prefixLength;
+        bOffset += prefixLength;
+        continue;
+      }
     }
-  }
 
-  // At this point, we're handling the first differing digits
-  const aDigit = a ? digBaseReverse.get(a[0]) : 0;
-  const bDigit = b ? digBaseReverse.get(b[0]) : digBaseForward.length;
-  if (aDigit == null || bDigit == null) {
-    // Invalid digit.
-    return;
-  }
+    const aChar = a[aOffset];
+    const bChar = upper?.[bOffset];
+    const aDigit = aChar ? digBaseReverse.get(aChar) : 0;
+    const bDigit = bChar
+      ? digBaseReverse.get(bChar)
+      : upper
+        ? undefined
+        : digBaseForward.length;
+    if (aDigit == null || bDigit == null) {
+      return;
+    }
 
-  // Case 1: Non-consecutive digits - we can simply use their average
-  if (aDigit + 1 !== bDigit) {
-    const mid = (aDigit + bDigit) >> 1; // Fast integer division by 2
-    return digBaseForward[mid];
-  }
+    if (aDigit + 1 !== bDigit) {
+      chunks.push(digBaseForward[Math.floor((aDigit + bDigit) / 2)]);
+      return chunks.join("");
+    }
 
-  // Case 2: Consecutive digits with b having two or more digits
-  if (b && b.length > 1) {
-    // We can just use b's first digit (which is one more than a's first digit)
-    return b[0];
-  }
+    if (upper && upper.length - bOffset > 1) {
+      chunks.push(upper[bOffset]);
+      return chunks.join("");
+    }
 
-  // Case 3: Consecutive digits with b having length 1 or null
-  // This is the most complex case requiring recursive construction
-  // Example: midpoint('49', '5') becomes '495'
-  // We take a's first digit, then recursively find midpoint of a's remainder and null
-  return `${digBaseForward[aDigit]}${getMidpointFractional(
-    a.slice(1),
-    null,
-    digBaseForward,
-    digBaseReverse,
-  )}`;
+    chunks.push(digBaseForward[aDigit]);
+    aOffset++;
+    upper = null;
+    bOffset = 0;
+  }
 }

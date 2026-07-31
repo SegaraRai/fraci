@@ -12,16 +12,13 @@ import type {
   BASE88,
   BASE95,
 } from "./bases.js";
-import { concat } from "./lib/decimal-binary.js";
 import { getSmallestInteger } from "./lib/decimal-string.js";
 import { FraciError, type FraciErrorCode } from "./lib/errors.js";
 import {
-  avoidConflictSuffix as avoidConflictSuffixBinary,
   generateKeyBetween as generateKeyBetweenBinary,
   generateNKeysBetween as generateNKeysBetweenBinary,
 } from "./lib/fractional-indexing-binary.js";
 import {
-  avoidConflictSuffix,
   generateKeyBetween,
   generateNKeysBetween,
 } from "./lib/fractional-indexing-string.js";
@@ -42,6 +39,14 @@ export const DEFAULT_MAX_LENGTH = 50;
  * Default maximum number of retry attempts when generating keys.
  */
 export const DEFAULT_MAX_RETRIES = 5;
+
+/**
+ * Maximum number of keys that can be generated in one call.
+ *
+ * Returning more keys as one in-memory array is not a safe or practical API.
+ * Callers that need more should generate them in bounded batches.
+ */
+export const MAX_GENERATED_KEYS = 1_000_000;
 
 const ERROR_CODE_INVALID_INPUT =
   "INVALID_FRACTIONAL_INDEX" satisfies FraciErrorCode;
@@ -139,7 +144,7 @@ export interface Fraci<B extends FractionalIndexBase, X> {
    *
    * @param a - The lower bound key, or null if there is no lower bound
    * @param b - The upper bound key, or null if there is no upper bound
-   * @param n - Non-negative safe integer number of keys to generate
+   * @param n - Number of keys to generate, from 0 through {@link MAX_GENERATED_KEYS}
    * @param skip - Non-negative safe integer number of conflict avoidance iterations to skip (default: 0)
    * @returns A generator yielding arrays of fractional index keys
    * @throws {FraciError} Throws a {@link FraciError} when invalid input is provided
@@ -162,7 +167,7 @@ export interface Fraci<B extends FractionalIndexBase, X> {
    *
    * @param a - The lower bound key, or null if there is no lower bound
    * @param b - The upper bound key, or null if there is no upper bound
-   * @param n - Non-negative safe integer number of keys to generate
+   * @param n - Number of keys to generate, from 0 through {@link MAX_GENERATED_KEYS}
    * @param skip - Non-negative safe integer number of conflict avoidance iterations to skip (default: 0)
    * @returns A generator yielding arrays of fractional index keys
    * @throws {FraciError} Throws a {@link FraciError} when invalid input is provided
@@ -515,6 +520,16 @@ function assertNonNegativeSafeInteger(value: number, name: "n" | "skip"): void {
   }
 }
 
+function assertGenerationCount(value: number): void {
+  assertNonNegativeSafeInteger(value, "n");
+  if (value > MAX_GENERATED_KEYS) {
+    throw new FraciError(
+      ERROR_CODE_INVALID_ARGUMENT,
+      `n must be less than or equal to ${MAX_GENERATED_KEYS}`,
+    );
+  }
+}
+
 function validateOptions(maxLength: number, maxRetries: number): void {
   assertPositiveSafeInteger(maxLength, "maxLength");
   assertPositiveSafeIntegerOrInfinity(maxRetries, "maxRetries");
@@ -524,6 +539,106 @@ function retryCount(iteration: number, skip: number): number {
   const count = iteration + skip;
   assertNonNegativeSafeInteger(count, "skip");
   return count;
+}
+
+function assertInputLengths(
+  a: { readonly length: number } | null,
+  b: { readonly length: number } | null,
+  maxLength: number,
+): void {
+  if (
+    (a != null && a.length > maxLength) ||
+    (b != null && b.length > maxLength)
+  ) {
+    throw new FraciError(
+      ERROR_CODE_EXCEEDED_MAX_LENGTH,
+      ERROR_MESSAGE_EXCEEDED_MAX_LENGTH,
+    );
+  }
+}
+
+function retryDirections(count: number): string {
+  const stage = Math.floor(Math.log2(count));
+  const stageStart = 2n ** BigInt(stage);
+  const offset = BigInt(count) - stageStart;
+  const denominatorPower = 2 * stage + 1;
+  const denominator = 2n ** BigInt(denominatorPower);
+
+  // Allocate each power-of-two stage a disjoint interval approaching 1.
+  // Within a stage, consecutive counts occupy consecutive dyadic points.
+  const target = denominator - 2n ** BigInt(stage + 1) + offset + 1n;
+  let lower = 0n;
+  let upper = denominator;
+  let directions = "";
+
+  while (true) {
+    const midpoint = (lower + upper) / 2n;
+    if (target === midpoint) {
+      return directions;
+    }
+
+    if (target < midpoint) {
+      directions += "0";
+      upper = midpoint;
+    } else {
+      directions += "1";
+      lower = midpoint;
+    }
+  }
+}
+
+/**
+ * Selects a stable node from the binary subdivision tree of (base, upper).
+ * Count zero preserves the original midpoint. Positive counts map to a
+ * strictly increasing dyadic sequence, giving O(log count) conflict retries
+ * that are distinct and remain strictly inside the requested interval.
+ */
+function generateRetryKey<T>(
+  base: T,
+  upper: T | null,
+  count: number,
+  generateBetween: (a: T, b: T | null) => T | undefined,
+): T {
+  if (count === 0) {
+    return base;
+  }
+
+  let lower = base;
+  let currentUpper = upper;
+  let candidate = generateBetween(lower, currentUpper);
+  if (candidate === undefined) {
+    throw new FraciError("INTERNAL_ERROR", "Unexpected undefined");
+  }
+
+  for (const direction of retryDirections(count)) {
+    if (direction === "0") {
+      currentUpper = candidate;
+    } else {
+      lower = candidate;
+    }
+
+    candidate = generateBetween(lower, currentUpper);
+    if (candidate === undefined) {
+      throw new FraciError("INTERNAL_ERROR", "Unexpected undefined");
+    }
+  }
+
+  return candidate;
+}
+
+function generateRetryKeys<T>(
+  base: readonly T[],
+  upper: T | null,
+  count: number,
+  generateBetween: (a: T, b: T | null) => T | undefined,
+): T[] {
+  if (count === 0) {
+    return [...base];
+  }
+
+  return base.map((value, index) =>
+    generateRetryKey(value, base[index + 1] ?? upper, count, generateBetween),
+  );
 }
 
 /**
@@ -566,6 +681,7 @@ export function fraciBinary<const X = unknown>({
     base: { type: "binary" },
     *generateKeyBetween(a: F | null, b: F | null, skip = 0) {
       assertNonNegativeSafeInteger(skip, "skip");
+      assertInputLengths(a, b, maxLength);
       // Generate the base key between a and b (without conflict avoidance)
       const base = generateKeyBetweenBinary(a, b);
       if (!base) {
@@ -579,12 +695,13 @@ export function fraciBinary<const X = unknown>({
         );
       }
 
-      // Generate multiple possible keys with conflict avoidance suffixes
-      // This allows the caller to try multiple keys if earlier ones conflict
+      // Generate stable, distinct candidates within the original interval.
       for (let i = 0; i < maxRetries; i++) {
-        const value = concat(
+        const value = generateRetryKey(
           base,
-          avoidConflictSuffixBinary(retryCount(i, skip)),
+          b,
+          retryCount(i, skip),
+          generateKeyBetweenBinary,
         );
         if (value.length > maxLength) {
           throw new FraciError(
@@ -602,8 +719,9 @@ export function fraciBinary<const X = unknown>({
       );
     },
     *generateNKeysBetween(a: F | null, b: F | null, n: number, skip = 0) {
-      assertNonNegativeSafeInteger(n, "n");
+      assertGenerationCount(n);
       assertNonNegativeSafeInteger(skip, "skip");
+      assertInputLengths(a, b, maxLength);
       // Generate n base keys between a and b (without conflict avoidance)
       const base = generateNKeysBetweenBinary(a, b, n);
       if (!base) {
@@ -617,20 +735,20 @@ export function fraciBinary<const X = unknown>({
         );
       }
 
-      // Find the longest key to ensure we don't exceed maxLength when adding suffixes
-      const longest = base.reduce((acc, v) => Math.max(acc, v.length), 0);
-
-      // Generate multiple sets of keys with conflict avoidance suffixes
-      // Each set has the same suffix applied to all keys to maintain relative ordering
       for (let i = 0; i < maxRetries; i++) {
-        const suffix = avoidConflictSuffixBinary(retryCount(i, skip));
-        if (longest + suffix.length > maxLength) {
+        const values = generateRetryKeys(
+          base,
+          b,
+          retryCount(i, skip),
+          generateKeyBetweenBinary,
+        );
+        if (values.some((value) => value.length > maxLength)) {
           throw new FraciError(
             ERROR_CODE_EXCEEDED_MAX_LENGTH,
             ERROR_MESSAGE_EXCEEDED_MAX_LENGTH,
           );
         }
-        yield base.map((v) => concat(v, suffix) as F);
+        yield values as F[];
       }
 
       // If we reach here, it means we exceeded the maximum retries
@@ -714,6 +832,7 @@ export function fraciString<
     } as FraciOptionsBaseToBase<B>,
     *generateKeyBetween(a: F | null, b: F | null, skip = 0) {
       assertNonNegativeSafeInteger(skip, "skip");
+      assertInputLengths(a, b, maxLength);
       // Generate the base key between a and b (without conflict avoidance)
       const base = generateKeyBetween(
         a,
@@ -735,13 +854,23 @@ export function fraciString<
         );
       }
 
-      // Generate multiple possible keys with conflict avoidance suffixes
-      // This allows the caller to try multiple keys if earlier ones conflict
+      // Generate stable, distinct candidates within the original interval.
       for (let i = 0; i < maxRetries; i++) {
-        const value = `${base}${avoidConflictSuffix(
+        const value = generateRetryKey(
+          base,
+          b,
           retryCount(i, skip),
-          digBaseForward,
-        )}`;
+          (lower, upper) =>
+            generateKeyBetween(
+              lower,
+              upper,
+              digBaseForward,
+              digBaseReverse,
+              lenBaseForward,
+              lenBaseReverse,
+              smallestInteger,
+            ),
+        );
         if (value.length > maxLength) {
           throw new FraciError(
             ERROR_CODE_EXCEEDED_MAX_LENGTH,
@@ -758,8 +887,9 @@ export function fraciString<
       );
     },
     *generateNKeysBetween(a: F | null, b: F | null, n: number, skip = 0) {
-      assertNonNegativeSafeInteger(n, "n");
+      assertGenerationCount(n);
       assertNonNegativeSafeInteger(skip, "skip");
+      assertInputLengths(a, b, maxLength);
       // Generate n base keys between a and b (without conflict avoidance)
       const base = generateNKeysBetween(
         a,
@@ -782,20 +912,29 @@ export function fraciString<
         );
       }
 
-      // Find the longest key to ensure we don't exceed maxLength when adding suffixes
-      const longest = base.reduce((acc, v) => Math.max(acc, v.length), 0);
-
-      // Generate multiple sets of keys with conflict avoidance suffixes
-      // Each set has the same suffix applied to all keys to maintain relative ordering
       for (let i = 0; i < maxRetries; i++) {
-        const suffix = avoidConflictSuffix(retryCount(i, skip), digBaseForward);
-        if (longest + suffix.length > maxLength) {
+        const values = generateRetryKeys(
+          base,
+          b,
+          retryCount(i, skip),
+          (lower, upper) =>
+            generateKeyBetween(
+              lower,
+              upper,
+              digBaseForward,
+              digBaseReverse,
+              lenBaseForward,
+              lenBaseReverse,
+              smallestInteger,
+            ),
+        );
+        if (values.some((value) => value.length > maxLength)) {
           throw new FraciError(
             ERROR_CODE_EXCEEDED_MAX_LENGTH,
             ERROR_MESSAGE_EXCEEDED_MAX_LENGTH,
           );
         }
-        yield base.map((v) => `${v}${suffix}` as F);
+        yield values as F[];
       }
 
       // If we reach here, it means we exceeded the maximum retries

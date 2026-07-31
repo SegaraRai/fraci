@@ -1,12 +1,24 @@
 import { describe, expect, it } from "vite-plus/test";
 import {
   DEFAULT_MAX_LENGTH,
+  MAX_GENERATED_KEYS,
   createFraciCache,
   fraci,
   fraciBinary,
   fraciString,
 } from "./factory.js";
 import type { FractionalIndexOf } from "./types.js";
+
+function compareBinary(a: Uint8Array, b: Uint8Array): number {
+  const length = Math.min(a.length, b.length);
+  for (let i = 0; i < length; i++) {
+    const difference = a[i] - b[i];
+    if (difference !== 0) {
+      return difference;
+    }
+  }
+  return a.length - b.length;
+}
 
 describe("fraciBinary", () => {
   it("should create a binary fractional indexing utility", () => {
@@ -82,6 +94,25 @@ describe("fraciBinary", () => {
 
     expect(key).toBeDefined();
     expect(() => indexing.generateKeyBetween(key!, null).next()).not.toThrow();
+  });
+
+  it("keeps every retry candidate inside the requested interval", () => {
+    const indexing = fraciBinary({ maxRetries: 5 });
+    const lower = new Uint8Array([128, 0, 4]) as any;
+    const upper = new Uint8Array([128, 0, 5, 1]) as any;
+    const generator = indexing.generateKeyBetween(lower, upper);
+    const candidates = Array.from({ length: 5 }, () => generator.next().value!);
+
+    expect(
+      new Set(candidates.map((value) => Array.from(value).join(","))).size,
+    ).toBe(5);
+    expect(candidates).toEqual(
+      [...candidates].sort((a, b) => compareBinary(a, b)),
+    );
+    for (const candidate of candidates) {
+      expect(compareBinary(lower, candidate)).toBeLessThan(0);
+      expect(compareBinary(candidate, upper)).toBeLessThan(0);
+    }
   });
 });
 
@@ -184,6 +215,43 @@ describe("fraciString", () => {
     // @ts-expect-error - Should not allow using string key with binary indexing
     binaryIndexing.generateKeyBetween(stringKey, null);
   });
+
+  it("keeps single and batch retry candidates ordered inside the interval", () => {
+    const indexing = fraciString({
+      lengthBase,
+      digitBase,
+      maxRetries: 5,
+    });
+    const lower = "504" as any;
+    const upper = "5051" as any;
+
+    const singleGenerator = indexing.generateKeyBetween(lower, upper);
+    const candidates = Array.from(
+      { length: 5 },
+      () => singleGenerator.next().value!,
+    );
+    expect(new Set(candidates).size).toBe(5);
+    expect(candidates).toEqual([...candidates].sort());
+    for (const candidate of candidates) {
+      expect(lower < candidate && candidate < upper).toBe(true);
+    }
+
+    const batchGenerator = indexing.generateNKeysBetween(lower, upper, 3);
+    const batches = Array.from(
+      { length: 5 },
+      () => batchGenerator.next().value!,
+    );
+    const flattened = batches.flat();
+    expect(new Set(flattened).size).toBe(flattened.length);
+    for (const batch of batches) {
+      expect(batch).toEqual([...batch].sort());
+      expect(batch.every((value) => lower < value && value < upper)).toBe(true);
+    }
+    for (let position = 0; position < batches[0].length; position++) {
+      const retriesAtPosition = batches.map((batch) => batch[position]);
+      expect(retriesAtPosition).toEqual([...retriesAtPosition].sort());
+    }
+  });
 });
 
 describe("fraci", () => {
@@ -267,6 +335,25 @@ describe("fraci", () => {
       ).toThrowError(expect.objectContaining({ code: "INVALID_ARGUMENT" }));
     },
   );
+
+  it("rejects impractically large generation counts before allocation", () => {
+    const indexing = fraci({ lengthBase, digitBase });
+    expect(() =>
+      indexing.generateNKeysBetween(null, null, MAX_GENERATED_KEYS + 1).next(),
+    ).toThrowError(expect.objectContaining({ code: "INVALID_ARGUMENT" }));
+  });
+
+  it("rejects oversized input before midpoint computation", () => {
+    const indexing = fraci({
+      lengthBase,
+      digitBase,
+      maxLength: 50,
+    });
+    const oversized = `999999${"9".repeat(20_000)}` as any;
+    expect(() =>
+      indexing.generateKeyBetween(oversized, null).next(),
+    ).toThrowError(expect.objectContaining({ code: "MAX_LENGTH_EXCEEDED" }));
+  });
 
   it.each([-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
     "should reject invalid key count %s",

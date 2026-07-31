@@ -19,6 +19,16 @@ const args = [
   L_MIN_INT,
 ] as const;
 
+function seededRandom(seed = 0x46524143): () => number {
+  return () => {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let value = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    value = (value + Math.imul(value ^ (value >>> 7), 61 | value)) ^ value;
+    return ((value ^ (value >>> 14)) >>> 0) / 4_294_967_296;
+  };
+}
+
 bench("append keys x10000", () => {
   let [a] = generateNKeysBetween(null, null, 2, ...args)!;
   for (let i = 0; i < 10000; i++) {
@@ -59,9 +69,10 @@ bench("generate middle keys x10000", () => {
 });
 
 bench("random operations x10000", () => {
+  const random = seededRandom();
   const keys: string[] = [];
   for (let i = 0; i < 10000; i++) {
-    const operation = Math.floor(Math.random() * 3);
+    const operation = Math.floor(random() * 3);
     switch (operation) {
       // append
       case 0: {
@@ -90,7 +101,7 @@ bench("random operations x10000", () => {
       // insert
       case 2: {
         const targetIndex = Math.max(
-          Math.floor(Math.random() * (keys.length - 1)),
+          Math.floor(random() * (keys.length - 1)),
           0,
         );
         const before = keys[targetIndex] ?? null;
@@ -107,12 +118,10 @@ bench("random operations x10000", () => {
 });
 
 bench("random operations 2 x10000", () => {
+  const random = seededRandom();
   const keys: string[] = [];
   for (let i = 0; i < 10000; i++) {
-    const targetIndex = Math.max(
-      Math.floor(Math.random() * (keys.length - 1)),
-      0,
-    );
+    const targetIndex = Math.max(Math.floor(random() * (keys.length - 1)), 0);
     const before = keys[targetIndex] ?? null;
     const after = keys[targetIndex + 1] ?? null;
     const result = generateKeyBetween(before, after, ...args);
