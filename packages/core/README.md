@@ -88,7 +88,7 @@ See the detailed examples below for more information.
 ## Runtime Compatibility
 
 - Modern runtimes with ES2022 support
-- Node.js 22.12 or newer
+- Node.js 22.13 or newer
 - TypeScript 5.7 or newer
 - Prisma ORM 5, 6, and 7
 - Drizzle ORM 0.30 and later v0 releases
