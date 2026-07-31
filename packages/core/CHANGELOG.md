@@ -1,5 +1,34 @@
 # fraci
 
+## 0.19.0
+
+### Minor Changes
+
+- 977b2f0: **BREAKING CHANGE:** Published output now targets ES2022 and requires Node.js
+  22.13 or newer and TypeScript 5.7 or newer. Invalid numeric options and
+  generation arguments that were previously accepted now throw a `FraciError`
+  with the `INVALID_ARGUMENT` code.
+
+  Also add lower-bound ORM and TypeScript compatibility coverage and allow Prisma
+  transaction clients in ordering helpers.
+
+- 7ecfe80: Add compatibility with Drizzle ORM 0.45 and v1 prereleases and Prisma ORM 7, while preserving support for Drizzle ORM 0.30 and later v0 releases and Prisma ORM 5 and 6.
+- 9866b54: Keep every conflict-retry candidate strictly inside its requested bounds,
+  including batched generation, and make retry selection logarithmic in `skip`.
+
+  Reject oversized input keys and impractically large generation counts before
+  expensive work. Replace recursive midpoint construction and repeated array
+  spreads with stack-safe, allocation-efficient implementations.
+
+  Document bytewise database collation requirements and safe group compaction,
+  and make random-operation benchmarks deterministic.
+
+### Patch Changes
+
+- 7ecfe80: Migrate the repository to a pnpm and Vite+ workspace without changing the
+  published entry points, and ensure the npm package includes its MIT license as
+  `LICENSE`.
+
 ## 0.18.0
 
 ### Minor Changes
@@ -26,6 +55,7 @@
   ```
 
   Along with this, the `PrismaClient` type argument was added first to the following related public type definitions:
+
   - `prismaFraci`
   - `definePrismaFraci`
   - `FraciForPrisma`
@@ -61,20 +91,24 @@
 - 9bc7f1d: Implemented Binary Fractional Indexing.
 
   Added support for binary-based fractional indices using `Uint8Array` for more efficient storage and operations. This implementation provides:
+
   - Improved performance with optimized binary operations for generating and comparing indices
   - Enhanced memory efficiency for applications handling large numbers of indices
   - Specialized factory functions for creating binary or string-based indices
 
   New Features:
+
   - Added `fraciBinary` and `fraciString` factory functions for creating specialized fractional indexing utilities
   - Added `base` and `brand` properties to `Fraci` for better type safety and runtime information
   - Enhanced validation and error handling for binary fractional indices
 
   Breaking Changes:
+
   - **Template Parameter Signature**: Changed template parameter signature for `fraci`, `Fraci`, and `FractionalIndex` types
   - **Removed Properties**: Removed `digitBase` and `lengthBase` properties from `Fraci`
 
   Added comprehensive type system with clear separation between binary and string-based indices:
+
   - `AnyFractionalIndex`, `AnyBinaryFractionalIndex`, `AnyStringFractionalIndex`
   - `AnyFractionalIndexBase`, `AnyBinaryFractionalIndexBase`, `AnyStringFractionalIndexBase`
   - `AnyFraci`, `AnyBinaryFraci`, `AnyStringFraci`
@@ -105,17 +139,20 @@
 ### Minor Changes
 
 - 6451d6a: **BREAKING CHANGE**: Renamed base constants for better consistency and clarity:
+
   - `BASE16` -> `BASE16L` (lowercase hex digits)
   - `BASE26` -> `BASE26L` (lowercase alphabets)
   - `BASE36` -> `BASE36L` (lowercase alphanumeric)
   - `BASE64` -> `BASE64URL` (URL-safe Base64 characters)
 
   Added new complementary constants:
+
   - `BASE16U` (uppercase hex digits)
 
   The naming convention now uses `L` suffix for lowercase and `U` suffix for uppercase variants.
 
 - 1ba4bab: **BREAKING CHANGE**: Renamed Prisma integration function and type for better consistency with other database integrations:
+
   - `fraciExtension` -> `prismaFraci` - The main function for creating Prisma extensions
   - `FraciExtensionOptions` ->`PrismaFraciOptions` - The options interface for configuration
 
