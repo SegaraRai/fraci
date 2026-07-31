@@ -84,7 +84,12 @@ export default defineConfig({
       },
       check: {
         command: "vp check",
-        dependsOn: ["generate"],
+        dependsOn: ["generate", "check:release-state"],
+        cache: false,
+      },
+      "check:release-state": {
+        command:
+          "vp exec --filter fraci -- node scripts/check-release-state.mjs",
         cache: false,
       },
       typecheck: {
@@ -135,7 +140,10 @@ export default defineConfig({
         cache: false,
       },
       "changeset:version": {
-        command: "vp exec changeset version",
+        command: [
+          "vp exec changeset version",
+          "vp fmt packages/core/CHANGELOG.md",
+        ],
         cache: false,
       },
       "changeset:publish": {
