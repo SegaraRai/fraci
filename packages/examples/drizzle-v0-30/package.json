@@ -10,7 +10,7 @@
   "devDependencies": {
     "@libsql/client": "^0.17.4",
     "drizzle-kit": "^0.24.2",
-    "drizzle-orm": "^0.30.10",
+    "drizzle-orm": "0.30.0",
     "typescript": "^6.0.3"
   }
 }

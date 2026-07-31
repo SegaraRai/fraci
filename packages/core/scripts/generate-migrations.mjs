@@ -1,12 +1,12 @@
 import { execFileSync } from "node:child_process";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 
-const run = (...args: string[]) =>
+const run = (...args) =>
   execFileSync("vp", ["exec", ...args], {
     env: process.env,
     stdio: "inherit",
   });
-const capture = (...args: string[]) =>
+const capture = (...args) =>
   execFileSync("vp", ["exec", ...args], {
     encoding: "utf8",
     env: process.env,

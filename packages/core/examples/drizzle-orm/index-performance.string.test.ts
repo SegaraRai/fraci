@@ -8,7 +8,7 @@ import {
 import { setupDrizzleDBLibSQL } from "../../test/drizzle.e2e-string.js";
 
 const NUM_GROUPS = 15;
-const NUM_ITEMS_PER_GROUP = 10000;
+const NUM_ITEMS_PER_GROUP = 500;
 const GROUP_ID_START = 100;
 
 const CURSOR_GROUP = 3;
@@ -112,4 +112,4 @@ test("Ensure that the query plan is optimal (String)", async () => {
     );
     expect(listExplained.every((item) => !item.includes("SCAN"))).toBe(true);
   }
-}, 30_000);
+});

@@ -1,5 +1,7 @@
-import { expect, test } from "vite-plus/test";
+import { test } from "vite-plus/test";
+import type { FractionalIndexOf } from "fraci";
 import { prismaFraci } from "fraci/prisma";
+import { verifyOrderingContract } from "../../common/ordering-contract.js";
 import { PrismaClient } from "../prisma/client/index.js";
 import { createTempDbName } from "../../common/test-utils.js";
 
@@ -37,30 +39,39 @@ test("prisma basic functionality", async () => {
 
   try {
     const helper = extended.stringExampleItem.fraci("fi");
-    const firstPair = await helper.indicesForFirst({ groupId: 1 });
-    const [fi1] = helper.generateKeyBetween(...firstPair);
-    const first = await extended.stringExampleItem.create({
-      data: { name: "First Item", groupId: 1, fi: fi1 },
+    await verifyOrderingContract<FractionalIndexOf<typeof helper>>({
+      generate: ([a, b]) => helper.generateKeyBetween(a, b).next().value!,
+      indicesForFirst: (groupId) => helper.indicesForFirst({ groupId }),
+      indicesForLast: (groupId) => helper.indicesForLast({ groupId }),
+      indicesForAfter: (groupId, id) =>
+        helper.indicesForAfter({ groupId }, { id }),
+      indicesForBefore: (groupId, id) =>
+        helper.indicesForBefore({ groupId }, { id }),
+      insert: (name, groupId, fi) =>
+        extended.stringExampleItem.create({
+          data: { name, groupId, fi },
+        }),
+      names: async (groupId) =>
+        (
+          await extended.stringExampleItem.findMany({
+            where: { groupId },
+            orderBy: { fi: "asc" },
+            select: { name: true },
+          })
+        ).map(({ name }) => name),
+      isConflictError: (error) => helper.isIndexConflictError(error),
+      verifyTransaction: () =>
+        extended.$transaction(async (transaction) => {
+          const bounds = await helper.indicesForFirst(
+            { groupId: 3 },
+            transaction,
+          );
+          const [fi] = helper.generateKeyBetween(...bounds);
+          await transaction.stringExampleItem.create({
+            data: { name: "Transaction Item", groupId: 3, fi },
+          });
+        }),
     });
-    const secondPair = await helper.indicesForAfter(
-      { groupId: 1 },
-      { id: first.id },
-    );
-    expect(secondPair).toBeDefined();
-    if (!secondPair) throw new Error("Expected adjacent indices");
-    const [fi2] = helper.generateKeyBetween(...secondPair);
-    await extended.stringExampleItem.create({
-      data: { name: "Second Item", groupId: 1, fi: fi2 },
-    });
-
-    const items = await extended.stringExampleItem.findMany({
-      where: { groupId: 1 },
-      orderBy: { fi: "asc" },
-    });
-    expect(items.map(({ name }) => name)).toEqual([
-      "First Item",
-      "Second Item",
-    ]);
   } finally {
     await prisma.$disconnect();
   }

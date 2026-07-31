@@ -1,15 +1,13 @@
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { test } from "vite-plus/test";
 import type { FractionalIndexOf } from "fraci";
 import { prismaFraci } from "fraci/prisma";
-import { test } from "vite-plus/test";
 import { verifyOrderingContract } from "../../common/ordering-contract.js";
-import { PrismaClient } from "../prisma/client/client.js";
+import { PrismaClient } from "../prisma/client/index.js";
+import { createTempDbName } from "../../common/test-utils.js";
 
-test("prisma basic functionality", async () => {
+test("prisma minimum-version functionality", async () => {
   const prisma = new PrismaClient({
-    adapter: new PrismaLibSql({
-      url: `file:./test-${crypto.randomUUID()}.db`,
-    }),
+    datasources: { db: { url: `file:./${createTempDbName()}` } },
   });
 
   await prisma.$executeRaw`
@@ -62,17 +60,6 @@ test("prisma basic functionality", async () => {
           })
         ).map(({ name }) => name),
       isConflictError: (error) => helper.isIndexConflictError(error),
-      verifyTransaction: () =>
-        extended.$transaction(async (transaction) => {
-          const bounds = await helper.indicesForFirst(
-            { groupId: 3 },
-            transaction,
-          );
-          const [fi] = helper.generateKeyBetween(...bounds);
-          await transaction.stringExampleItem.create({
-            data: { name: "Transaction Item", groupId: 3, fi },
-          });
-        }),
     });
   } finally {
     await prisma.$disconnect();

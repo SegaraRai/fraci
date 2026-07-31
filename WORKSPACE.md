@@ -10,19 +10,23 @@ fractional-indexing/
 ├── packages/
 │   ├── core/                    # Main fraci library
 │   └── examples/
-│       ├── __centralized__/     # Centralized schemas, tests, and utilities
+│       ├── common/              # Shared schemas, tests, and utilities
 │       │   ├── schemas/        # Database schemas (schema.drizzle.ts, schema.prisma)
 │       │   ├── src/            # Implementation files (server.drizzle.ts, server.prisma.ts)
 │       │   ├── test/           # Test files (basic.drizzle.test.ts, basic.prisma.test.ts)
 │       │   └── test-utils.ts   # Shared test utilities
 │       ├── prisma-v5/          # Prisma v5 integration tests
+│       ├── prisma-v5-min/      # Prisma v5.0 lower-bound tests
 │       ├── prisma-v6/          # Prisma v6 integration tests
+│       ├── prisma-v6-min/      # Prisma v6.0 lower-bound tests
 │       ├── prisma-v7/          # Prisma v7 integration tests
+│       ├── prisma-v7-min/      # Prisma v7.0 lower-bound tests
 │       ├── drizzle-v0-30/      # Drizzle v0.30 integration tests
 │       ├── drizzle-v0-40/      # Drizzle v0.39 integration tests
 │       ├── drizzle-v0-44/      # Drizzle v0.44 integration tests
 │       ├── drizzle-v0-45/      # Drizzle v0.45 integration tests
-│       └── drizzle-v1/         # Drizzle v1 release-candidate tests
+│       ├── drizzle-v1/         # Drizzle v1 release-candidate tests
+│       └── typescript-v5/      # TypeScript 5.7 consumer type tests
 ├── package.json                 # Root workspace configuration
 ├── pnpm-workspace.yaml          # Workspace and dependency policy
 ├── vite.config.ts               # Tasks, formatter, and linter configuration
@@ -40,7 +44,7 @@ Contains the main fraci library code. This is what gets published to npm.
 - Documentation generation (`typedoc.json`)
 - Core tests (`test/`)
 
-### packages/examples/**centralized**
+### packages/examples/common
 
 Contains shared implementation files and test utilities:
 
@@ -107,6 +111,10 @@ Each example package:
 3. Compiles a local schema against that package's installed ORM version
 4. Runs the same integration behavior against a real SQLite database
 5. Generates Prisma clients before Prisma tests and typechecks
+
+The `*-min` Prisma packages and `drizzle-v0-30` pin the declared lower
+bounds. The other version packages use compatible ranges so lockfile updates
+exercise current releases.
 
 ## File Organization
 

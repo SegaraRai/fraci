@@ -85,6 +85,18 @@ for (const fi of tfi.generateKeyBetween(...indices)) {
 
 See the detailed examples below for more information.
 
+## Runtime Compatibility
+
+- Modern runtimes with ES2022 support
+- Node.js 22.13 or newer
+- TypeScript 5.7 or newer
+- Prisma ORM 5, 6, and 7
+- Drizzle ORM 0.30 and later v0 releases
+- Drizzle ORM 1 prereleases matching `^1.0.0-0`
+
+The repository tests declared lower bounds separately from current dependency
+releases.
+
 ## Key Features
 
 - **Fractional indexing** with arbitrary base characters
@@ -102,7 +114,7 @@ See the detailed examples below for more information.
 | -------------------- | ------------------------------------- | ---------------------------------------- |
 | **Storage**          | Stored as text strings                | Stored as binary data (`Uint8Array`)     |
 | **Performance**      | Good                                  | Better (faster comparisons, less memory) |
-| **Bundle Size**      | 1.82 KiB (Core-only, gzipped)         | 1.45 KiB (Core-only, gzipped)            |
+| **Bundle Size**      | 1.98 KiB (Core-only, gzipped)         | 1.61 KiB (Core-only, gzipped)            |
 | **Database Column**  | `text` or `varchar`                   | `blob` or `bytea`                        |
 | **Visual Debugging** | Easier (human-readable)               | Harder (requires conversion)             |
 | **Configuration**    | Requires `digitBase` and `lengthBase` | Simpler configuration                    |
@@ -115,13 +127,13 @@ each example.
 
 | Integration              | Total Size (minified)     | Total Size (minified + gzipped) |
 | ------------------------ | ------------------------- | ------------------------------- |
-| **Core only (Binary)**   | 3.37 KiB                  | **1.45 KiB**                    |
-| **Core only (String)**   | 4.15 KiB                  | **1.82 KiB**                    |
-| **Core only (Both)**     | 7.24 KiB                  | **2.76 KiB**                    |
-| **Drizzle ORM (Binary)** | 4.36 KiB (Core +1.00 KiB) | **1.90 KiB** (Core +0.45 KiB)   |
-| **Drizzle ORM (String)** | 5.15 KiB (Core +1.00 KiB) | **2.25 KiB** (Core +0.42 KiB)   |
-| **Drizzle ORM (Both)**   | 8.21 KiB (Core +0.97 KiB) | **3.19 KiB** (Core +0.43 KiB)   |
-| **Prisma ORM (Both)**    | 8.56 KiB (Core +1.32 KiB) | **3.39 KiB** (Core +0.63 KiB)   |
+| **Core only (Binary)**   | 3.87 KiB                  | **1.61 KiB**                    |
+| **Core only (String)**   | 4.64 KiB                  | **1.98 KiB**                    |
+| **Core only (Both)**     | 7.80 KiB                  | **2.93 KiB**                    |
+| **Drizzle ORM (Binary)** | 4.88 KiB (Core +1.01 KiB) | **2.06 KiB** (Core +0.45 KiB)   |
+| **Drizzle ORM (String)** | 5.65 KiB (Core +1.01 KiB) | **2.41 KiB** (Core +0.42 KiB)   |
+| **Drizzle ORM (Both)**   | 8.78 KiB (Core +0.97 KiB) | **3.35 KiB** (Core +0.42 KiB)   |
+| **Prisma ORM (Both)**    | 9.14 KiB (Core +1.34 KiB) | **3.56 KiB** (Core +0.63 KiB)   |
 
 ## Security Considerations
 
@@ -220,6 +232,10 @@ export const fiArticles = defineDrizzleFraci(
   { id: articles.id }, // Cursor (columns that uniquely identify the row within a group)
 );
 ```
+
+`maxLength` must be a positive safe integer. `maxRetries` accepts a positive
+safe integer or `Infinity`. Generation counts and `skip` values must be
+non-negative safe integers.
 
 > [!TIP]
 > The fractional index column should be placed at the end of the compound index for optimal performance.

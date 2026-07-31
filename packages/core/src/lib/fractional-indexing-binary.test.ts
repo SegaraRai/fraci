@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vite-plus/test";
 import { createBinary, fromHex, toHex } from "../../test/binary.js";
+import { createDeterministicRandom } from "../../test/random.js";
 import { INTEGER_ZERO, compare } from "./decimal-binary.js";
 import {
   avoidConflictSuffix,
@@ -308,10 +309,11 @@ describe("generateNKeysBetween", () => {
   test("property 2 - random operations", () => {
     // Start with a valid key
     const keys: Uint8Array[] = [INTEGER_ZERO.slice()];
+    const random = createDeterministicRandom(0x42_49_4e_41);
 
     // Perform fewer operations to avoid potential issues
     for (let i = 0; i < 1000; i++) {
-      const operation = Math.floor(Math.random() * 3);
+      const operation = Math.floor(random() * 3);
       switch (operation) {
         // append
         case 0: {
@@ -348,7 +350,7 @@ describe("generateNKeysBetween", () => {
             continue;
           }
           const targetIndex = Math.max(
-            Math.floor(Math.random() * (keys.length - 1)),
+            Math.floor(random() * (keys.length - 1)),
             0,
           );
           const before = keys[targetIndex];
@@ -362,35 +364,21 @@ describe("generateNKeysBetween", () => {
             continue;
           }
 
-          try {
-            const result = generateKeyBetween(before, after);
-            if (!result) {
-              console.error(
-                `Failed to generate key between ${toHex(before)} and ${toHex(
-                  after,
-                )}`,
-              );
-              continue;
-            }
-
-            // Verify the result is valid
-            expect(isValidFractionalIndex(result)).toBe(true);
-
-            // Check if the result is between the bounds
-            if (compare(before, result) >= 0 || compare(result, after) >= 0) {
-              console.error(
-                `Generated key ${toHex(result)} is not between ${toHex(
-                  before,
-                )} and ${toHex(after)}`,
-              );
-              continue;
-            }
-
-            keys.splice(targetIndex + 1, 0, result);
-          } catch (error) {
-            console.error(`Error generating key: ${error}`);
-            continue;
+          const result = generateKeyBetween(before, after);
+          if (!result) {
+            throw new Error(
+              `Failed to generate key between ${toHex(before)} and ${toHex(
+                after,
+              )}`,
+            );
           }
+
+          // Verify the result is valid and between the bounds.
+          expect(isValidFractionalIndex(result)).toBe(true);
+          expect(compare(before, result)).toBeLessThan(0);
+          expect(compare(result, after)).toBeLessThan(0);
+
+          keys.splice(targetIndex + 1, 0, result);
           break;
         }
       }

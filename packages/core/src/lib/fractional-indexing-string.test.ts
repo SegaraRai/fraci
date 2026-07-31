@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vite-plus/test";
 import { BASE95 } from "../bases.js";
+import { createDeterministicRandom } from "../../test/random.js";
 import { getSmallestInteger } from "./decimal-string.js";
 import {
   avoidConflictSuffix,
@@ -253,8 +254,9 @@ describe("generateNKeysBetween", () => {
 
   test("property 2", () => {
     const keys: string[] = [];
+    const random = createDeterministicRandom(0x5_74_52_49_4e_47);
     for (let i = 0; i < 10000; i++) {
-      const operation = Math.floor(Math.random() * 3);
+      const operation = Math.floor(random() * 3);
       switch (operation) {
         // append
         case 0: {
@@ -285,7 +287,7 @@ describe("generateNKeysBetween", () => {
         // insert
         case 2: {
           const targetIndex = Math.max(
-            Math.floor(Math.random() * (keys.length - 1)),
+            Math.floor(random() * (keys.length - 1)),
             0,
           );
           const before = keys[targetIndex];

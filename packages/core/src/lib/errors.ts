@@ -6,6 +6,7 @@
  * - `INITIALIZATION_FAILED`: Indicates that the library failed to initialize.
  *   Currently seen when the base string does not meet the requirements, or when the specified model or field does not exist in the generated Prisma client.
  * - `INTERNAL_ERROR`: Indicates an internal error in the library. Please file an issue if you see this.
+ * - `INVALID_ARGUMENT`: Indicates that a numeric option or generation argument is outside its supported range.
  * - `INVALID_FRACTIONAL_INDEX`: Indicates that an invalid fractional index was provided to `generateKeyBetween` or `generateNKeysBetween` functions.
  * - `MAX_LENGTH_EXCEEDED`: Indicates that the maximum length of the generated key was exceeded.
  * - `MAX_RETRIES_EXCEEDED`: Indicates that the maximum number of retries was exceeded when generating a key.
@@ -15,6 +16,7 @@
 export type FraciErrorCode =
   | "INITIALIZATION_FAILED"
   | "INTERNAL_ERROR"
+  | "INVALID_ARGUMENT"
   | "INVALID_FRACTIONAL_INDEX"
   | "MAX_LENGTH_EXCEEDED"
   | "MAX_RETRIES_EXCEEDED";

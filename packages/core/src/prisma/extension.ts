@@ -46,6 +46,13 @@ type PrismaBrand<Model extends string, Field extends string> = {
 type Indices<FI extends AnyFractionalIndex> = [a: FI | null, b: FI | null];
 
 /**
+ * The subset of a Prisma client needed to query a configured model. Both a
+ * full Prisma client and an interactive transaction client satisfy this type.
+ */
+type PrismaQueryClient<Client, Model extends ModelKey<Client>> =
+  Client extends Record<Model, object> ? Record<Model, object> : never;
+
+/**
  * Type representing the enhanced fractional indexing utility for Prisma ORM.
  * This type extends the base fractional indexing utility with additional methods for retrieving indices.
  *
@@ -83,12 +90,12 @@ type FraciForPrismaInternal<
     (
       where: Where & QueryArgs<Client, Model>["where"],
       cursor: QueryArgs<Client, Model>["cursor"],
-      client?: Client,
+      client?: PrismaQueryClient<Client, Model>,
     ): Promise<Indices<FI> | undefined>;
     (
       where: Where & QueryArgs<Client, Model>["where"],
       cursor: null,
-      client?: Client,
+      client?: PrismaQueryClient<Client, Model>,
     ): Promise<Indices<FI>>;
   };
   /**
@@ -101,14 +108,14 @@ type FraciForPrismaInternal<
    */
   indicesForBefore: {
     (
-      where: Where & QueryArgs<Client>["where"],
-      cursor: QueryArgs<Client>["cursor"],
-      client?: Client,
+      where: Where & QueryArgs<Client, Model>["where"],
+      cursor: QueryArgs<Client, Model>["cursor"],
+      client?: PrismaQueryClient<Client, Model>,
     ): Promise<Indices<FI> | undefined>;
     (
-      where: Where & QueryArgs<Client>["where"],
+      where: Where & QueryArgs<Client, Model>["where"],
       cursor: null,
-      client?: Client,
+      client?: PrismaQueryClient<Client, Model>,
     ): Promise<Indices<FI>>;
   };
   /**
@@ -121,7 +128,7 @@ type FraciForPrismaInternal<
    */
   indicesForFirst(
     where: Where & QueryArgs<Client, Model>["where"],
-    client?: Client,
+    client?: PrismaQueryClient<Client, Model>,
   ): Promise<Indices<FI>>;
   /**
    * Retrieves the existing indices to generate a new fractional index for the last item.
@@ -133,7 +140,7 @@ type FraciForPrismaInternal<
    */
   indicesForLast(
     where: Where & QueryArgs<Client, Model>["where"],
-    client?: Client,
+    client?: PrismaQueryClient<Client, Model>,
   ): Promise<Indices<FI>>;
 };
 

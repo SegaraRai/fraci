@@ -324,7 +324,7 @@ export function avoidConflictSuffix(count: number): Uint8Array {
     // Add the byte for the current remainder
     additionalFrac.push(count & 255);
     // Integer division to get the next byte
-    count >>= 8;
+    count = Math.floor(count / 256);
   }
 
   // The result is a unique suffix for each count value
