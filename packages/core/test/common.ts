@@ -3,11 +3,13 @@ import { resolve } from "node:path";
 
 export async function collectMigrations(dir: string): Promise<string[]> {
   const migrationSQLFiles = await Array.fromAsync(
-    glob("**/*.sql", { cwd: dir, exclude: ["**/node_modules/**"] }),
+    glob("**/*.sql", { cwd: dir }),
   );
 
   const queries: string[] = [];
-  for (const file of migrationSQLFiles) {
+  for (const file of migrationSQLFiles.filter(
+    (path) => !path.split(/[\\/]/).includes("node_modules"),
+  )) {
     const content = await readFile(resolve(dir, file), "utf-8");
     const withoutComments = content.replace(/--.*$/gm, "");
     const fileQueries =
