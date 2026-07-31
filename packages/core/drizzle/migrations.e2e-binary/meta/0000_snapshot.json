@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9eb3cf68-7056-4453-8cfb-12501dd1d568",
+  "id": "afaf7426-98e3-42a1-8a47-f33728292ba3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "exampleItem": {
@@ -55,7 +55,10 @@
       "indexes": {
         "group_id_fi_idx": {
           "name": "group_id_fi_idx",
-          "columns": ["group_id", "fi"],
+          "columns": [
+            "group_id",
+            "fi"
+          ],
           "isUnique": true
         }
       },

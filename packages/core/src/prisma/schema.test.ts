@@ -1,5 +1,5 @@
 // Note that this test needs the package to be built before running and type checking.
-import { expect, test } from "bun:test";
+import { expect, test } from "vite-plus/test";
 import { BASE26L, BASE36L } from "fraci";
 import { definePrismaFraci } from "fraci/prisma";
 import { PrismaClient } from "../../prisma/client/client.js";

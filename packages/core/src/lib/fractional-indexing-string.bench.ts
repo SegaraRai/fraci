@@ -1,4 +1,4 @@
-import { bench, run } from "mitata";
+import { bench } from "vite-plus/test";
 import { BASE95 } from "../bases.js";
 import { getSmallestInteger } from "./decimal-string.js";
 import {
@@ -104,7 +104,7 @@ bench("random operations x10000", () => {
       }
     }
   }
-}).gc("inner");
+});
 
 bench("random operations 2 x10000", () => {
   const keys: string[] = [];
@@ -121,6 +121,4 @@ bench("random operations 2 x10000", () => {
     }
     keys.splice(targetIndex + 1, 0, result);
   }
-}).gc("inner");
-
-await run();
+});

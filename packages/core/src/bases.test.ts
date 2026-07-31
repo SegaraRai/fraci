@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vite-plus/test";
 import * as BASES from "./bases.js";
 import { createDigitBaseMap, createIntegerLengthBaseMap } from "./lib/utils.js";
 

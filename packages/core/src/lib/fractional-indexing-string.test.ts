@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vite-plus/test";
 import { BASE95 } from "../bases.js";
 import { getSmallestInteger } from "./decimal-string.js";
 import {

@@ -9,11 +9,11 @@ import {
   exampleItems as exampleItemsString,
   fiExampleItems as fiExampleItemsString,
 } from "../../drizzle/schema.e2e-string.js";
-import { setupDrizzleDBBunSQLite as setupDrizzleDBBunSQLiteBinary } from "../../test/drizzle.e2e-binary.js";
-import { setupDrizzleDBBunSQLite as setupDrizzleDBBunSQLiteString } from "../../test/drizzle.e2e-string.js";
+import { setupDrizzleDBBetterSQLite as setupDrizzleDBBetterSQLiteBinary } from "../../test/drizzle.e2e-binary.js";
+import { setupDrizzleDBBetterSQLite as setupDrizzleDBBetterSQLiteString } from "../../test/drizzle.e2e-string.js";
 
-const dbBinary = setupDrizzleDBBunSQLiteBinary();
-const dbString = setupDrizzleDBBunSQLiteString();
+const dbBinary = setupDrizzleDBBetterSQLiteBinary();
+const dbString = setupDrizzleDBBetterSQLiteString();
 
 const app = new Hono().get("/test", async (c) => {
   const [binaryFI] = drizzleFraciSync(

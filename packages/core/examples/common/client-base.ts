@@ -1,4 +1,4 @@
-import { expect } from "bun:test";
+import { expect } from "vite-plus/test";
 import { hc } from "hono/client";
 import type { ServerType } from "./server-base.js";
 

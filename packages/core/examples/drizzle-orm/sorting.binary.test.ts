@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { expect, test } from "vite-plus/test";
 import { asc, sql } from "drizzle-orm";
 import { exampleItems } from "../../drizzle/schema.e2e-binary.js";
 import { setupDrizzleDBLibSQL } from "../../test/drizzle.e2e-binary.js";

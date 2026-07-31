@@ -1,5 +1,6 @@
+import Database from "better-sqlite3";
 import { sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/bun-sqlite";
+import { drizzle } from "drizzle-orm/better-sqlite3";
 import { drizzle as drizzleLibSQL } from "drizzle-orm/libsql";
 import { fileURLToPath } from "node:url";
 import * as schema from "../drizzle/schema.js";
@@ -13,11 +14,8 @@ function asSingleTuple<T>(arr: T[]): [T] {
   return arr as [T];
 }
 
-export function setupDrizzleDBBunSQLite() {
-  const db = drizzle({
-    connection: ":memory:",
-    schema,
-  });
+export function setupDrizzleDBBetterSQLite() {
+  const db = drizzle(new Database(":memory:"), { schema });
 
   db.transaction((tx): void => {
     for (const query of migrationQueries) {

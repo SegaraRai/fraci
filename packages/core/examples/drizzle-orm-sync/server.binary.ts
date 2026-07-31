@@ -10,10 +10,10 @@ import {
   exampleItems,
   fiExampleItems,
 } from "../../drizzle/schema.e2e-binary.js";
-import { setupDrizzleDBBunSQLite } from "../../test/drizzle.e2e-binary.js";
+import { setupDrizzleDBBetterSQLite } from "../../test/drizzle.e2e-binary.js";
 import type { ServerType } from "../common/server-base.js";
 
-const db = setupDrizzleDBBunSQLite();
+const db = setupDrizzleDBBetterSQLite();
 
 // Fraci does not have a built-in function to detect index conflict errors for Drizzle ORM, since Drizzle ORM does not have a unified error handling mechanism.
 function isIndexConflictError(error: unknown): boolean {

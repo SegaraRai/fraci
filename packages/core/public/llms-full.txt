@@ -21,13 +21,11 @@ npm install fraci
 yarn add fraci
 # or
 pnpm add fraci
-# or
-bun add fraci
 ```
 
 ## Usage Examples
 
-Synchronous API of Drizzle ORM is only for Bun SQLite, which is the only DB engine that has a synchronous API.
+Use `drizzleFraciSync` with synchronous database drivers such as better-sqlite3.
 
 ### With Drizzle ORM (Binary-based)
 
@@ -172,7 +170,7 @@ function isIndexConflictError(error: unknown): boolean {
   );
 }
 
-// Get the helper object with synchronous API (only for Bun SQLite)
+// Get the helper object with a synchronous database driver
 const tfi = drizzleFraciSync(db, fiTasks);
 
 // Create a new task at the end of the list
@@ -353,7 +351,7 @@ function isIndexConflictError(error: unknown): boolean {
   );
 }
 
-// Get the helper object with synchronous API (only for Bun SQLite)
+// Get the helper object with a synchronous database driver
 const tfi = drizzleFraciSync(db, fiTasks);
 
 // Create a new task at the end of the list
@@ -643,7 +641,7 @@ const fiConfig = defineDrizzleFraci(
 // Get helper
 const fi = drizzleFraci(db, fiConfig);
 
-// or for synchronous database (only for Bun SQLite)
+// or for a synchronous database driver
 const fiSync = drizzleFraciSync(db, fiConfig);
 
 // Methods

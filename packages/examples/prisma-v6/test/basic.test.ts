@@ -1,7 +1,7 @@
-import { expect, test } from "bun:test";
+import { expect, test } from "vite-plus/test";
 import { prismaFraci } from "fraci/prisma";
 import { PrismaClient } from "../prisma/client/index.js";
-import { createTempDbName } from "../test-utils.js";
+import { createTempDbName } from "../../common/test-utils.js";
 
 test("prisma basic functionality", async () => {
   const prisma = new PrismaClient({

@@ -14,7 +14,7 @@ Fraci offers both string-based and binary-based fractional indexing implementati
 
 ## Examples
 
-Synchronous API of Drizzle ORM is only for Bun SQLite, which is the only DB engine that has a synchronous API.
+Use `drizzleFraciSync` with synchronous database drivers such as better-sqlite3.
 
 - With Drizzle ORM (Binary-based):
 

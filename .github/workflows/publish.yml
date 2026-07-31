@@ -29,8 +29,6 @@ jobs:
           node-version-file: ".node-version"
           cache: true
 
-      - uses: oven-sh/setup-bun@v2
-
       - name: Install Dependencies
         run: vp install --frozen-lockfile
 

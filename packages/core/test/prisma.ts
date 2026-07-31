@@ -11,7 +11,8 @@ const migrationQueries = await collectMigrations(
 export async function setupPrisma(): Promise<PrismaClient> {
   const prisma = new PrismaClient({
     adapter: new PrismaLibSql({
-      url: `file:prisma/temp/${crypto.randomUUID()}.db`,
+      url: new URL(`../prisma/temp/${crypto.randomUUID()}.db`, import.meta.url)
+        .href,
     }),
   });
   await prisma.$transaction(async (tx) => {
