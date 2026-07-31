@@ -112,7 +112,7 @@ export default defineConfig({
       "build:docs": {
         command: [
           "vp exec --filter fraci -- typedoc",
-          "vp exec --filter fraci -- node scripts/copy-assets.ts",
+          "vp exec --filter fraci -- node scripts/copy-assets.mjs",
         ],
         dependsOn: ["build"],
       },
@@ -123,7 +123,7 @@ export default defineConfig({
       },
       "generate:migrations": {
         command:
-          "vp exec --filter fraci -- node scripts/generate-migrations.ts",
+          "vp exec --filter fraci -- node scripts/generate-migrations.mjs",
         cache: false,
       },
       format: {
