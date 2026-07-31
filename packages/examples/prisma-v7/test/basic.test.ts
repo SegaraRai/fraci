@@ -1,7 +1,6 @@
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { prismaFraci } from "fraci/prisma";
-import assert from "node:assert/strict";
-import test from "node:test";
+import { expect, test } from "vite-plus/test";
 import { PrismaClient } from "../prisma/client/client.js";
 
 test("prisma basic functionality", async () => {
@@ -49,7 +48,10 @@ test("prisma basic functionality", async () => {
       { groupId: 1 },
       { id: first.id },
     );
-    assert(secondPair);
+    expect(secondPair).toBeDefined();
+    if (!secondPair) {
+      throw new Error("Expected indices for the second item");
+    }
     const [fi2] = helper.generateKeyBetween(...secondPair);
     await extended.stringExampleItem.create({
       data: { name: "Second Item", groupId: 1, fi: fi2 },
@@ -59,10 +61,10 @@ test("prisma basic functionality", async () => {
       where: { groupId: 1 },
       orderBy: { fi: "asc" },
     });
-    assert.deepEqual(
-      items.map(({ name }) => name),
-      ["First Item", "Second Item"],
-    );
+    expect(items.map(({ name }) => name)).toEqual([
+      "First Item",
+      "Second Item",
+    ]);
   } finally {
     await prisma.$disconnect();
   }

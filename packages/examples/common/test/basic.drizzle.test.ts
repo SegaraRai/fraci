@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client";
-import { expect, test } from "bun:test";
+import { expect, test } from "vite-plus/test";
 import { eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import { drizzleFraci } from "fraci/drizzle";

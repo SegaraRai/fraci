@@ -1,5 +1,5 @@
 import { createClient } from "@libsql/client";
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, test } from "vite-plus/test";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
@@ -83,7 +83,7 @@ describe("drizzleFraci with group columns", () => {
   test("indicesForFirst should return correct indices", async () => {
     const indices = await fetcher.indicesForFirst({ groupId: 1 });
 
-    expect(indices).toBeArrayOfSize(2);
+    expect(indices).toHaveLength(2);
     expect(indices[0]).toBeNull();
     expect(indices[1]).toBe("a" as FI);
   });
@@ -91,7 +91,7 @@ describe("drizzleFraci with group columns", () => {
   test("indicesForLast should return correct indices", async () => {
     const indices = await fetcher.indicesForLast({ groupId: 1 });
 
-    expect(indices).toBeArrayOfSize(2);
+    expect(indices).toHaveLength(2);
     expect(indices[0]).toBe("z" as FI);
     expect(indices[1]).toBeNull();
   });
@@ -113,7 +113,7 @@ describe("drizzleFraci with group columns", () => {
       { id: item!.id },
     );
 
-    expect(indices).toBeArrayOfSize(2);
+    expect(indices).toHaveLength(2);
     expect(indices![0]).toBe("a" as FI);
     expect(indices![1]).toBe("m" as FI);
   });
@@ -135,7 +135,7 @@ describe("drizzleFraci with group columns", () => {
       { id: item!.id },
     );
 
-    expect(indices).toBeArrayOfSize(2);
+    expect(indices).toHaveLength(2);
     expect(indices![0]).toBe("m" as FI);
     expect(indices![1]).toBe("z" as FI);
   });
@@ -282,7 +282,7 @@ describe("drizzleFraci without group columns", () => {
   test("indicesForFirst should return correct indices with empty group", async () => {
     const indices = await fetcher.indicesForFirst({});
 
-    expect(indices).toBeArrayOfSize(2);
+    expect(indices).toHaveLength(2);
     expect(indices[0]).toBeNull();
     expect(indices[1]).toBe("a" as FI);
   });
@@ -290,7 +290,7 @@ describe("drizzleFraci without group columns", () => {
   test("indicesForLast should return correct indices with empty group", async () => {
     const indices = await fetcher.indicesForLast({});
 
-    expect(indices).toBeArrayOfSize(2);
+    expect(indices).toHaveLength(2);
     expect(indices[0]).toBe("z" as FI);
     expect(indices[1]).toBeNull();
   });
@@ -307,7 +307,7 @@ describe("drizzleFraci without group columns", () => {
 
     const indices = await fetcher.indicesForAfter({}, { id: item!.id });
 
-    expect(indices).toBeArrayOfSize(2);
+    expect(indices).toHaveLength(2);
     expect(indices![0]).toBe("a" as FI);
     expect(indices![1]).toBe("m" as FI);
   });
@@ -324,7 +324,7 @@ describe("drizzleFraci without group columns", () => {
 
     const indices = await fetcher.indicesForBefore({}, { id: item!.id });
 
-    expect(indices).toBeArrayOfSize(2);
+    expect(indices).toHaveLength(2);
     expect(indices![0]).toBe("m" as FI);
     expect(indices![1]).toBe("z" as FI);
   });

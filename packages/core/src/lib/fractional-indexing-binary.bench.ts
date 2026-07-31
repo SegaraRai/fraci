@@ -1,4 +1,4 @@
-import { bench, run } from "mitata";
+import { bench } from "vite-plus/test";
 import {
   generateKeyBetween,
   generateNKeysBetween,
@@ -85,7 +85,7 @@ bench("random operations x10000", () => {
       }
     }
   }
-}).gc("inner");
+});
 
 bench("random operations 2 x10000", () => {
   const keys: Uint8Array[] = [];
@@ -102,6 +102,4 @@ bench("random operations 2 x10000", () => {
     }
     keys.splice(targetIndex + 1, 0, result);
   }
-}).gc("inner");
-
-await run();
+});

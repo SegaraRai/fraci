@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { expect, test } from "vite-plus/test";
 import { prismaFraci } from "fraci/prisma";
 import { PrismaClient } from "../prisma/client/index.js";
 import { createTempDbName } from "../test-utils.js";

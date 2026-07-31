@@ -1,7 +1,7 @@
 # Workspace Structure
 
 This project uses a pnpm workspace and Vite+ for task orchestration, formatting,
-and linting. Bun remains the test runtime.
+linting, and testing.
 
 ## Structure
 
@@ -36,7 +36,7 @@ fractional-indexing/
 Contains the main fraci library code. This is what gets published to npm.
 
 - All source code (`src/`)
-- Build configuration (`tsup.config.ts`)
+- Vite+ package configuration (`vite.config.ts`)
 - Documentation generation (`typedoc.json`)
 - Core tests (`test/`)
 
@@ -94,7 +94,7 @@ The workspace uses:
 
 - **pnpm workspaces** for dependency management
 - **Vite+** for tasks, formatting, and linting
-- **Bun** as the test runtime
+- **Vite+ Test** as the test and benchmark runner
 - **Workspace references** (`workspace:*`) for core library dependencies
 - **Version-local fixtures** so TypeScript validates against each installed ORM version
 

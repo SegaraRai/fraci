@@ -2,7 +2,7 @@ generator client {
   provider = "prisma-client"
   output   = "./client"
 
-  runtime      = "bun"
+  runtime      = "nodejs"
   moduleFormat = "esm"
 }
 

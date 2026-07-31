@@ -102,7 +102,7 @@ See the detailed examples below for more information.
 | -------------------- | ------------------------------------- | ---------------------------------------- |
 | **Storage**          | Stored as text strings                | Stored as binary data (`Uint8Array`)     |
 | **Performance**      | Good                                  | Better (faster comparisons, less memory) |
-| **Bundle Size**      | 2.06 KiB (Core-only, gzipped)         | 1.55 KiB (Core-only, gzipped)            |
+| **Bundle Size**      | 1.82 KiB (Core-only, gzipped)         | 1.45 KiB (Core-only, gzipped)            |
 | **Database Column**  | `text` or `varchar`                   | `blob` or `bytea`                        |
 | **Visual Debugging** | Easier (human-readable)               | Harder (requires conversion)             |
 | **Configuration**    | Requires `digitBase` and `lengthBase` | Simpler configuration                    |
@@ -115,13 +115,13 @@ each example.
 
 | Integration              | Total Size (minified)     | Total Size (minified + gzipped) |
 | ------------------------ | ------------------------- | ------------------------------- |
-| **Core only (Binary)**   | 3.50 KiB                  | **1.56 KiB**                    |
-| **Core only (String)**   | 4.86 KiB                  | **2.07 KiB**                    |
-| **Core only (Both)**     | 7.96 KiB                  | **3.02 KiB**                    |
-| **Drizzle ORM (Binary)** | 4.56 KiB (Core +1.06 KiB) | **2.01 KiB** (Core +0.46 KiB)   |
-| **Drizzle ORM (String)** | 5.93 KiB (Core +1.07 KiB) | **2.51 KiB** (Core +0.44 KiB)   |
-| **Drizzle ORM (Both)**   | 8.99 KiB (Core +1.03 KiB) | **3.46 KiB** (Core +0.44 KiB)   |
-| **Prisma ORM (Both)**    | 9.30 KiB (Core +1.35 KiB) | **3.64 KiB** (Core +0.62 KiB)   |
+| **Core only (Binary)**   | 3.37 KiB                  | **1.45 KiB**                    |
+| **Core only (String)**   | 4.15 KiB                  | **1.82 KiB**                    |
+| **Core only (Both)**     | 7.24 KiB                  | **2.76 KiB**                    |
+| **Drizzle ORM (Binary)** | 4.36 KiB (Core +1.00 KiB) | **1.90 KiB** (Core +0.45 KiB)   |
+| **Drizzle ORM (String)** | 5.15 KiB (Core +1.00 KiB) | **2.25 KiB** (Core +0.42 KiB)   |
+| **Drizzle ORM (Both)**   | 8.21 KiB (Core +0.97 KiB) | **3.19 KiB** (Core +0.43 KiB)   |
+| **Prisma ORM (Both)**    | 8.56 KiB (Core +1.32 KiB) | **3.39 KiB** (Core +0.63 KiB)   |
 
 ## Security Considerations
 
@@ -155,7 +155,7 @@ yarn add fraci
 pnpm add fraci
 
 # or
-bun add fraci
+pnpm add fraci
 ```
 
 > [!NOTE]
@@ -273,7 +273,7 @@ export const fiArticles = defineDrizzleFraci(
 ```typescript
 import { getFraciErrorCode } from "fraci";
 import { drizzleFraci } from "fraci/drizzle";
-// Or import `drizzleFraciSync` if you're using synchronous database (i.e. Bun SQLite)
+// Or import `drizzleFraciSync` if you're using a synchronous database driver
 import { articles, fiArticles } from "./schema";
 
 // Create your own function to check if the error is a unique constraint error

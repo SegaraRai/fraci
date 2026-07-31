@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vite-plus/test";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { BASE36L } from "../bases.js";
 import { fraciString } from "../factory.js";

@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, test } from "bun:test";
+import { beforeAll, describe, expect, test } from "vite-plus/test";
 import { BASE26L, BASE36L, BASE95, type FractionalIndexOf } from "fraci";
 import {
   definePrismaFraci,
@@ -224,7 +224,7 @@ test("should throw error if invalid column specified", () => {
 
 describe("basic", () => {
   test("photo.fi", async () => {
-    expect(prisma.photo.fraci("fi")).toBeObject();
+    expect(prisma.photo.fraci("fi")).toEqual(expect.any(Object));
   });
 
   test("should not exist in photo.title", async () => {
@@ -245,14 +245,14 @@ describe("indicesForBefore and indicesForAfter", () => {
       orderBy: { fi: "asc" },
     });
 
-    expect(articles).toBeArrayOfSize(2);
+    expect(articles).toHaveLength(2);
     expect(articles[0].title).toBe("article1 (user1)");
     expect(articles[1].title).toBe("article2 (user1)");
 
     const indicesForLast1 = await prisma.article
       .fraci("fi")
       .indicesForBefore({ userId: 1 }, null);
-    expect(indicesForLast1).toBeArrayOfSize(2);
+    expect(indicesForLast1).toHaveLength(2);
     expect(indicesForLast1[0] as string).toBe(articles[1].fi);
     expect(indicesForLast1[1]).toBeNull();
 
@@ -264,7 +264,7 @@ describe("indicesForBefore and indicesForAfter", () => {
     const indicesForFirst1 = await prisma.article
       .fraci("fi")
       .indicesForAfter({ userId: 1 }, null);
-    expect(indicesForFirst1).toBeArrayOfSize(2);
+    expect(indicesForFirst1).toHaveLength(2);
     expect(indicesForFirst1[0]).toBeNull();
     expect(indicesForFirst1[1] as string).toBe(articles[0].fi);
 
@@ -276,7 +276,7 @@ describe("indicesForBefore and indicesForAfter", () => {
     const indicesForMiddle1 = await prisma.article
       .fraci("fi")
       .indicesForBefore({ userId: 1 }, { id: articles[1].id });
-    expect(indicesForMiddle1).toBeArrayOfSize(2);
+    expect(indicesForMiddle1).toHaveLength(2);
     expect(indicesForMiddle1?.[0] as string).toBe(articles[0].fi);
     expect(indicesForMiddle1?.[1] as string).toBe(articles[1].fi);
 
@@ -292,13 +292,13 @@ describe("indicesForBefore and indicesForAfter", () => {
       orderBy: { fi: "asc" },
     });
 
-    expect(photos).toBeArrayOfSize(1);
+    expect(photos).toHaveLength(1);
     expect(photos[0].title).toBe("photo3 (article2)");
 
     const indicesForLast1 = await prisma.photo
       .fraci("fi")
       .indicesForBefore({ articleId: 2, userId: 1 }, null);
-    expect(indicesForLast1).toBeArrayOfSize(2);
+    expect(indicesForLast1).toHaveLength(2);
     expect(indicesForLast1[0] as string).toBe(photos[0].fi);
     expect(indicesForLast1[1]).toBeNull();
 
@@ -310,7 +310,7 @@ describe("indicesForBefore and indicesForAfter", () => {
     const indicesForFirst1 = await prisma.photo
       .fraci("fi")
       .indicesForAfter({ articleId: 2, userId: 1 }, null);
-    expect(indicesForFirst1).toBeArrayOfSize(2);
+    expect(indicesForFirst1).toHaveLength(2);
     expect(indicesForFirst1[0]).toBeNull();
     expect(indicesForFirst1[1] as string).toBe(photos[0].fi);
 
@@ -326,19 +326,19 @@ describe("indicesForBefore and indicesForAfter", () => {
       orderBy: { fi: "asc" },
     });
 
-    expect(photos).toBeArrayOfSize(0);
+    expect(photos).toHaveLength(0);
 
     const indicesForLast = await prisma.photo
       .fraci("fi")
       .indicesForBefore({ articleId: 999, userId: 1 }, null);
-    expect(indicesForLast).toBeArrayOfSize(2);
+    expect(indicesForLast).toHaveLength(2);
     expect(indicesForLast[0]).toBeNull();
     expect(indicesForLast[1]).toBeNull();
 
     const indicesForFirst = await prisma.photo
       .fraci("fi")
       .indicesForAfter({ articleId: 999, userId: 1 }, null);
-    expect(indicesForFirst).toBeArrayOfSize(2);
+    expect(indicesForFirst).toHaveLength(2);
     expect(indicesForFirst[0]).toBeNull();
     expect(indicesForFirst[1]).toBeNull();
   });
@@ -523,6 +523,7 @@ test("FraciForPrisma", () => {
   markAsUsed<Error1>();
   markAsUsed<Error2>();
 
-  // @ts-expect-error afi and bfi are not compatible
-  expect(afi).toBe(bfi);
+  // @ts-expect-error afi and bfi are not type-compatible
+  const incompatible: typeof afi = bfi;
+  markAsUsed<typeof incompatible>();
 });

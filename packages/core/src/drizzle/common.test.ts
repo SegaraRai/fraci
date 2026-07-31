@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vite-plus/test";
 import { eq, isNull, sql } from "drizzle-orm";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { AnyFractionalIndex as AFI } from "../types.js";
@@ -31,16 +31,16 @@ describe("equity", () => {
 
 describe("OPERATORS", () => {
   test("should have correct structure", () => {
-    expect(OPERATORS).toBeArrayOfSize(2);
+    expect(OPERATORS).toHaveLength(2);
 
     // First operator (asc)
-    expect(OPERATORS[0]).toBeArrayOfSize(3);
+    expect(OPERATORS[0]).toHaveLength(3);
     expect(OPERATORS[0][0].name).toBe("asc");
     expect(OPERATORS[0][1].name).toBe("gte");
     expect(typeof OPERATORS[0][2]).toBe("function");
 
     // Second operator (desc)
-    expect(OPERATORS[1]).toBeArrayOfSize(3);
+    expect(OPERATORS[1]).toHaveLength(3);
     expect(OPERATORS[1][0].name).toBe("desc");
     expect(OPERATORS[1][1].name).toBe("lte");
     expect(typeof OPERATORS[1][2]).toBe("function");

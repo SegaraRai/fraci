@@ -235,7 +235,7 @@ export type FraciForDrizzleSync<Config extends DrizzleFraciConfig> =
  * methods for retrieving indices based on synchronous database queries.
  *
  * This is the synchronous counterpart to the {@link drizzleFraci} function.
- * Use this function when working with Bun SQLite.
+ * Use this function when working with synchronous SQLite drivers.
  * The API is identical except that methods return values directly instead of Promises.
  *
  * @template Config - The type of the fractional indexing configuration

@@ -18,17 +18,6 @@ const fixtureTypecheckCommands = [
   "vp exec --filter @fraci/example-prisma-v7 -- tsc --noEmit",
 ];
 
-const fixtureTestCommands = [
-  "vp exec --filter @fraci/example-drizzle-v0-30 -- bun test",
-  "vp exec --filter @fraci/example-drizzle-v0-40 -- bun test",
-  "vp exec --filter @fraci/example-drizzle-v0-44 -- bun test",
-  "vp exec --filter @fraci/example-drizzle-v0-45 -- bun test",
-  "vp exec --filter @fraci/example-drizzle-v1 -- bun test",
-  "vp exec --filter @fraci/example-prisma-v5 -- bun test",
-  "vp exec --filter @fraci/example-prisma-v6 -- bun test",
-  "vp exec --filter @fraci/example-prisma-v7 -- tsx --test test/basic.test.ts",
-];
-
 export default defineConfig({
   lint: {
     options: {
@@ -55,11 +44,22 @@ export default defineConfig({
     ignorePatterns: [
       "**/dist/**",
       "**/examples-bundled/**",
-      "**/migrations/**",
+      "**/LICENSE.md",
+      "**/migrations*/**",
       "**/prisma/client/**",
       "**/public/llms*.txt",
       "**/typedoc/**",
       "pnpm-lock.yaml",
+    ],
+  },
+  test: {
+    exclude: [
+      "**/dist/**",
+      "**/examples-bundled/**",
+      "**/node_modules/**",
+      "**/prisma/client/**",
+      "**/typedoc/**",
+      "packages/examples/common/test/**",
     ],
   },
   run: {
@@ -70,8 +70,8 @@ export default defineConfig({
       },
       build: {
         command: [
-          "vp exec --filter fraci -- node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
-          "vp exec --filter fraci -- tsup",
+          "vp exec --filter fraci -- vp pack",
+          "vp exec --filter fraci -- vp pack --out-dir dist/dev --no-clean",
         ],
         dependsOn: ["generate"],
       },
@@ -89,15 +89,12 @@ export default defineConfig({
         cache: false,
       },
       test: {
-        command: ["vp exec --filter fraci -- bun test", ...fixtureTestCommands],
+        command: "vp test run",
         dependsOn: ["build"],
         cache: false,
       },
       bench: {
-        command: [
-          "vp exec --filter fraci -- bun src/lib/fractional-indexing-string.bench.ts",
-          "vp exec --filter fraci -- bun src/lib/fractional-indexing-binary.bench.ts",
-        ],
+        command: "vp test bench packages/core/src/lib",
         cache: false,
       },
       attw: {
@@ -108,7 +105,7 @@ export default defineConfig({
       "build:docs": {
         command: [
           "vp exec --filter fraci -- typedoc",
-          "vp exec --filter fraci -- bun scripts/copy-assets.ts",
+          "vp exec --filter fraci -- node scripts/copy-assets.ts",
         ],
         dependsOn: ["build"],
       },
@@ -118,7 +115,8 @@ export default defineConfig({
         dependsOn: ["build"],
       },
       "generate:migrations": {
-        command: "vp exec --filter fraci -- bun scripts/generate-migrations.ts",
+        command:
+          "vp exec --filter fraci -- node scripts/generate-migrations.ts",
         cache: false,
       },
       format: {

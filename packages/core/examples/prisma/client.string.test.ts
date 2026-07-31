@@ -1,5 +1,5 @@
 // Note that this test needs the package to be built before running and type checking.
-import { test } from "bun:test";
+import { test } from "vite-plus/test";
 import { runTest } from "../common/client-base.js";
 import app from "./server.string.js";
 

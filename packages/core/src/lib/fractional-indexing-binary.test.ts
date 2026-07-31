@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vite-plus/test";
 import { createBinary, fromHex, toHex } from "../../test/binary.js";
 import { INTEGER_ZERO, compare } from "./decimal-binary.js";
 import {

@@ -1,4 +1,4 @@
-import { expect, test } from "bun:test";
+import { expect, test } from "vite-plus/test";
 import { and, asc, desc, gte, lte, SQL, sql } from "drizzle-orm";
 import { drizzleFraci } from "fraci/drizzle";
 import {

@@ -73,9 +73,8 @@ export default defineConfig(
     ([entrypoint, id]): RolldownOptions => ({
       input: `examples/${entrypoint}.ts`,
       external: [
-        "bun",
-        /^bun:/,
         /^node:/,
+        /^better-sqlite3$/,
         /^drizzle-orm/,
         /^@prisma/,
         /^@?hono/,
