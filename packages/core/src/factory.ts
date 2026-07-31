@@ -607,7 +607,7 @@ function generateRetryKey<T>(
   let currentUpper = upper;
   let candidate = generateBetween(lower, currentUpper);
   if (candidate === undefined) {
-    throw new FraciError("INTERNAL_ERROR", "Could not generate retry key");
+    throw new FraciError("INTERNAL_ERROR", "Unexpected undefined");
   }
 
   for (const direction of retryDirections(count)) {
@@ -619,7 +619,7 @@ function generateRetryKey<T>(
 
     candidate = generateBetween(lower, currentUpper);
     if (candidate === undefined) {
-      throw new FraciError("INTERNAL_ERROR", "Could not generate retry key");
+      throw new FraciError("INTERNAL_ERROR", "Unexpected undefined");
     }
   }
 

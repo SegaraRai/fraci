@@ -862,7 +862,9 @@ lock or serializable transaction:
 
 1. Read every row in fractional-index order.
 2. Generate the same number of evenly distributed replacements with
-   `generateNKeysBetween(null, null, rowCount)`.
+   `generateNKeysBetween(null, null, rowCount)`. If `rowCount` exceeds
+   `MAX_GENERATED_KEYS`, generate replacements in bounded batches and carry the
+   final key of one batch forward as the lower bound of the next.
 3. Move existing rows to unique temporary values outside the fraci namespace.
 4. Apply the replacement keys in the same transaction and release the lock.
 
