@@ -3,7 +3,7 @@
   "name": "Fraci",
   "out": "typedoc",
   "entryPoints": ["./src/index.ts", "./src/drizzle.ts", "./src/prisma.ts"],
-  "projectDocuments": ["CHANGELOG.md", "LICENSE.md"],
+  "projectDocuments": ["CHANGELOG.md", "LICENSE"],
   "highlightLanguages": ["prisma", "shell", "text", "typescript"],
   "headings": {
     "readme": false

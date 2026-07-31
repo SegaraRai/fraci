@@ -51,7 +51,7 @@ export default defineConfig({
     ignorePatterns: [
       "**/dist/**",
       "**/examples-bundled/**",
-      "**/LICENSE.md",
+      "**/LICENSE",
       "**/migrations*/**",
       "**/prisma/client/**",
       "**/public/llms*.txt",
